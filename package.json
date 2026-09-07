@@ -13,7 +13,8 @@
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run",
-    "validate-config": "tsx scripts/validate-config.ts"
+    "validate-config": "tsx scripts/validate-config.ts",
+    "codex-review": "tsx scripts/codex-review.ts"
   },
   "dependencies": {
     "locar": "^0.1.4",
