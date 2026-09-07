@@ -1,0 +1,190 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const patterns = [
+  {
+    id: 'locar',
+    icon: '🧭',
+    title: 'Pattern A: LocAR',
+    description: 'LocAR.js + three.js。GPSスムージングと高度安定化を備えた実績のある実装。',
+    href: '/ar/locar',
+  },
+  {
+    id: 'deviceorientation',
+    icon: '🎯',
+    title: 'Pattern C: DeviceOrientation',
+    description: 'コンパス絶対値に依存しない、シルエット位置合わせによる独自実装。',
+    href: '/ar/deviceorientation',
+  },
+  {
+    id: 'arjs',
+    icon: '🅰️',
+    title: 'Pattern B: AR.js',
+    description: 'A-Frame + AR.js の位置情報AR機能(gps-new-entity-place)を使用。',
+    href: '/ar/arjs',
+  },
+];
+---
+
+<BaseLayout title="閉伊川水門 AR">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+
+  <div class="wrap">
+    <h1>閉伊川水門 AR</h1>
+    <p class="lead">
+      指定した地点に水門の3Dモデルを実物大で重ねて表示する位置情報ARです。3つの実装方式を比較しながら開発しています。
+      スマートフォンで開き、いずれかの方式を選んで「ARを開始」してください。
+    </p>
+
+    <div class="grid">
+      {
+        patterns.map((p) => (
+          <a class="card" href={p.href}>
+            <div class="card-icon">{p.icon}</div>
+            <h2>{p.title}</h2>
+            <p>{p.description}</p>
+            <span class="btn">開く →</span>
+          </a>
+        ))
+      }
+    </div>
+
+    <div class="map-section">
+      <h2>水門地点マップ</h2>
+      <p>OpenStreetMap 上に対象地点をプロットしています。ピンをタップすると各方式を開けます。</p>
+      <div id="locations-map"></div>
+    </div>
+
+    <div class="note">カメラ・位置情報・モーションセンサーの許可が必要です。屋外の見通しの良い場所でご利用ください。</div>
+  </div>
+
+  <script>
+    import { loadLocationCatalog } from '../lib/config/locationConfig';
+    import { withBase } from '../lib/paths';
+
+    async function initLocationsMap() {
+      const L = (window as any).L;
+      const mapEl = document.getElementById('locations-map');
+      if (!mapEl || !L) return;
+
+      const map = L.map('locations-map', { zoomControl: true });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors',
+      }).addTo(map);
+
+      try {
+        const catalog = await loadLocationCatalog(withBase('/config/locations/index.json'));
+        const latlngs: [number, number][] = [];
+        for (const loc of catalog) {
+          latlngs.push([loc.latitude, loc.longitude]);
+          const icon = loc.icon || '📍';
+          const popup = `
+            <strong>${icon} ${loc.name}</strong><br/>
+            <a href="${withBase(`/ar/locar?loc=${loc.id}`)}">Pattern A</a> ·
+            <a href="${withBase(`/ar/deviceorientation?loc=${loc.id}`)}">Pattern C</a> ·
+            <a href="${withBase(`/ar/arjs?loc=${loc.id}`)}">Pattern B</a>
+          `;
+          L.marker([loc.latitude, loc.longitude]).addTo(map).bindPopup(popup);
+        }
+        if (latlngs.length) {
+          map.fitBounds(latlngs, { padding: [20, 20] });
+        } else {
+          map.setView([39.7021, 141.1544], 14);
+        }
+      } catch (e) {
+        console.warn('ロケーション一覧の読み込みに失敗しました', e);
+        map.setView([39.7021, 141.1544], 14);
+      }
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.crossOrigin = '';
+    script.onload = () => initLocationsMap();
+    document.head.appendChild(script);
+  </script>
+</BaseLayout>
+
+<style>
+  .wrap {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 16px 64px;
+  }
+  h1 {
+    margin: 0 0 6px;
+    font-size: 28px;
+  }
+  p.lead {
+    margin: 0 0 24px;
+    opacity: 0.8;
+    line-height: 1.6;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 20px 20px 16px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+  }
+  .card-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
+  .card h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+  }
+  .card p {
+    margin: 0 0 14px;
+    line-height: 1.6;
+    opacity: 0.9;
+    flex: 1;
+  }
+  .btn {
+    display: inline-block;
+    align-self: flex-start;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #4e9bff, #6ad0ff);
+    color: #0c1018;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  .map-section {
+    margin-top: 32px;
+  }
+  .map-section h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+  }
+  .map-section p {
+    margin: 0 0 12px;
+    font-size: 14px;
+    opacity: 0.8;
+  }
+  #locations-map {
+    width: 100%;
+    height: 360px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  }
+  .note {
+    margin-top: 24px;
+    font-size: 14px;
+    opacity: 0.75;
+    line-height: 1.6;
+  }
+</style>

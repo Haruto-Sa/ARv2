@@ -1,0 +1,653 @@
+// engine.ts (Pattern C: 独自 DeviceOrientation)
+// 旧 suimonAR の src/location/core.ts を移植。Pattern A の engine.ts と同じく
+// LocAR を GPS 原点・カメラ描画の土台として使うが、こちらは追加で
+// コンパス非依存のヨー補正(シルエット合わせで確定)と RelativeOrientationControls
+// への切り替えを提供する。Pattern A とは意図的に import を共有しない
+// (パターン間の独立性を保つため、GPSスムージング等のロジックは重複を許容する)。
+
+import * as THREE from 'three';
+import * as LocAR from 'locar';
+import { calcDistanceMeters } from '../../lib/geo/geodesy';
+import { yawCorrectionQuaternion } from '../../lib/alignment/heading';
+import { RelativeOrientationControls } from '../../lib/ar/RelativeOrientationControls';
+
+const DEFAULT_VIDEO_ELEMENT_ID = 'locar-video-feed';
+const ORIENTATION_WATCHDOG_MS = 5000;
+const TOUCH_SENSITIVITY = 0.004;
+const PITCH_LIMIT = Math.PI * 0.45;
+const GPS_SMOOTHING_WINDOW = 8;
+const GPS_INITIAL_SAMPLE_COUNT = 3;
+const GPS_ACCEPT_ACCURACY_MULTIPLIER = 1.5;
+const GPS_POSITION_DEADBAND_METERS = 1.5;
+const GPS_ACCURACY_IMPROVEMENT_METERS = 8;
+const GPS_DYNAMIC_DEADBAND_ACCURACY_FACTOR = 0.5;
+const GPS_DYNAMIC_DEADBAND_MAX_METERS = 12;
+const ELEVATION_UPDATE_THRESHOLD_METERS = 4;
+
+type PendingPlacement = {
+  object: THREE.Object3D;
+  lat: number;
+  lon: number;
+  altitude: number;
+};
+
+type GpsSample = {
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+  altitude: number | null;
+};
+
+export type LocationSceneOptions = {
+  gpsMinDistance?: number;
+  gpsMinAccuracy?: number;
+  videoElementId?: string;
+  facingMode?: 'environment' | 'user';
+};
+
+type OrientationStatus = 'pending' | 'sensor' | 'touch';
+
+export class LocationScene {
+  private scene: THREE.Scene;
+  private camera: THREE.PerspectiveCamera;
+  private renderer: THREE.WebGLRenderer;
+  private locationBased: LocAR.LocationBased | null = null;
+  private webcam: LocAR.Webcam | null = null;
+  private deviceControls: LocAR.DeviceOrientationControls | null = null;
+  private videoElement: HTMLVideoElement | null;
+  private pendingAdds: PendingPlacement[] = [];
+  private animationFrameId = 0;
+  private originReady = false;
+  private isDisposed = false;
+  private readonly handleResize = () => this.onResize();
+  private readonly handleBeforeUnload = () => this.dispose();
+  private readonly gpsMinDistance: number;
+  private readonly gpsMinAccuracy: number;
+  private geolocationWatchId: number | null = null;
+  private gpsCallbacks: Array<(pos: GpsSample) => void> = [];
+  private gpsSampleCallbacks: Array<(pos: GpsSample) => void> = [];
+  private gpsSamples: GpsSample[] = [];
+  private lastInjectedGps: GpsSample | null = null;
+  private smoothedElevation: number | null = null;
+  private gpsInjectionPaused = false;
+
+  // ヨー補正(シルエット合わせの確定値)。orientation 更新の「後」に premultiply する。
+  // iOS では locar の DeviceOrientationControls が毎フレーム compass でヨーを
+  // 上書きするため、補正はフレーム毎の後段適用でしか成立しない。
+  private yawCorrectionDeg = 0;
+  private yawCorrectionQuat: THREE.Quaternion | null = null;
+  // 補正適用前のセンサ生姿勢(getCameraQuaternion が補正込みの値を合成するために保持)
+  private readonly lastRawQuaternion = new THREE.Quaternion();
+  private relativeControls: RelativeOrientationControls | null = null;
+  private beforeRenderCallbacks: Array<(deltaSeconds: number) => void> = [];
+  private readonly renderClock = new THREE.Clock();
+
+  private _orientationStatus: OrientationStatus = 'pending';
+  private orientationEventReceived = false;
+  private orientationStatusCallbacks: Array<(status: OrientationStatus) => void> = [];
+  private watchdogTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private touchYaw = 0;
+  private touchPitch = 0;
+  private touchActive = false;
+  private touchStartX = 0;
+  private touchStartY = 0;
+  private touchPrevX = 0;
+  private touchPrevY = 0;
+
+  constructor(options: LocationSceneOptions = {}) {
+    this.gpsMinDistance = options.gpsMinDistance ?? 3;
+    this.gpsMinAccuracy = options.gpsMinAccuracy ?? 60;
+
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200000);
+    this.camera.position.set(0, 1.6, 0);
+
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    this.renderer.setPixelRatio(window.devicePixelRatio || 1);
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setClearColor(0x000000, 0);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+    dir.position.set(1, 2, 1);
+    this.scene.add(ambient);
+    this.scene.add(dir);
+
+    this.videoElement = this.setupVideoElement(options.videoElementId);
+
+    const mountTarget = document.body || document.documentElement;
+    if (mountTarget) {
+      mountTarget.appendChild(this.renderer.domElement);
+    }
+    const canvas = this.renderer.domElement;
+    canvas.style.position = 'fixed';
+    canvas.style.inset = '0';
+    canvas.style.width = '100vw';
+    canvas.style.height = '100vh';
+    canvas.style.zIndex = '0';
+    canvas.style.display = 'block';
+    canvas.style.backgroundColor = 'transparent';
+    canvas.setAttribute('aria-hidden', 'true');
+
+    const facingMode = options.facingMode ?? 'environment';
+    const videoSelector = this.videoElement ? `#${this.videoElement.id}` : undefined;
+    this.webcam = new LocAR.Webcam({ video: { facingMode } }, videoSelector);
+    if (this.webcam.on) {
+      this.webcam.on('webcamstarted', () => {
+        if (this.videoElement) this.videoElement.style.opacity = '1';
+      });
+      this.webcam.on('webcamerror', (event: any) => {
+        console.warn('[LocationScene] カメラの初期化に失敗しました', event);
+        if (this.videoElement) this.videoElement.style.opacity = '0';
+      });
+    }
+
+    this.locationBased = new LocAR.LocationBased(this.scene, this.camera, {
+      gpsMinDistance: this.gpsMinDistance,
+      gpsMinAccuracy: this.gpsMinAccuracy,
+    });
+    this.startGeolocationWatch();
+
+    this.deviceControls = new LocAR.DeviceOrientationControls(this.camera, {
+      enablePermissionDialog: false,
+    });
+    this.deviceControls.init();
+    this.deviceControls.connect();
+
+    this.setupOrientationWatchdog();
+    this.setupTouchControls();
+
+    window.addEventListener('resize', this.handleResize);
+    window.addEventListener('beforeunload', this.handleBeforeUnload);
+
+    this.animate();
+  }
+
+  // --- Orientation watchdog ---
+
+  private setupOrientationWatchdog(): void {
+    const handler = () => {
+      if (this.orientationEventReceived) return;
+      this.orientationEventReceived = true;
+      this.setOrientationStatus('sensor');
+      window.removeEventListener('deviceorientation', handler);
+      window.removeEventListener('deviceorientationabsolute', handler);
+    };
+
+    window.addEventListener('deviceorientation', handler);
+    window.addEventListener('deviceorientationabsolute', handler);
+
+    this.watchdogTimer = setTimeout(() => {
+      if (!this.orientationEventReceived) {
+        this.setOrientationStatus('touch');
+      }
+      window.removeEventListener('deviceorientation', handler);
+      window.removeEventListener('deviceorientationabsolute', handler);
+    }, ORIENTATION_WATCHDOG_MS);
+  }
+
+  private setOrientationStatus(status: OrientationStatus): void {
+    if (this._orientationStatus === status) return;
+    this._orientationStatus = status;
+    for (const cb of this.orientationStatusCallbacks) {
+      try { cb(status); } catch (e) { console.warn('[LocationScene] orientation status callback error', e); }
+    }
+  }
+
+  restartOrientationDetection(): void {
+    this.orientationEventReceived = false;
+    this._orientationStatus = 'pending';
+    if (this.watchdogTimer) {
+      clearTimeout(this.watchdogTimer);
+      this.watchdogTimer = null;
+    }
+    this.setupOrientationWatchdog();
+  }
+
+  // --- GPS filtering ---
+
+  private startGeolocationWatch(): void {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      console.warn('[LocationScene] Geolocation API が利用できません');
+      return;
+    }
+    try {
+      this.geolocationWatchId = navigator.geolocation.watchPosition(
+        (position) => this.handleGpsPosition(position),
+        (error) => console.warn('[LocationScene] GPS 取得中にエラーが発生しました', error),
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+      );
+    } catch (error) {
+      console.warn('[LocationScene] GPS watchPosition の開始に失敗しました', error);
+    }
+  }
+
+  private handleGpsPosition(position: GeolocationPosition): void {
+    try {
+      const coords = position.coords;
+      const raw: GpsSample = {
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        accuracy: typeof coords.accuracy === 'number' && Number.isFinite(coords.accuracy) ? coords.accuracy : 0,
+        altitude: typeof coords.altitude === 'number' && Number.isFinite(coords.altitude) ? coords.altitude : null,
+      };
+      // 生サンプルは注入停止中も通知し続ける(確定後のGPSドリフト計測に使う)
+      for (const cb of this.gpsSampleCallbacks) {
+        try { cb(raw); } catch (e) { console.warn('[LocationScene] gps sample callback error', e); }
+      }
+      if (this.gpsInjectionPaused) return;
+      const data = this.smoothGps(raw);
+      if (!this.shouldInjectGps(raw, data)) return;
+      this.injectGps(data);
+    } catch (error) {
+      console.warn('[LocationScene] GPS callback dispatch error', error);
+    }
+  }
+
+  private shouldInjectGps(raw: GpsSample, smoothed: GpsSample): boolean {
+    const allowedAccuracy = this.lastInjectedGps ? this.gpsMinAccuracy : this.gpsMinAccuracy * GPS_ACCEPT_ACCURACY_MULTIPLIER;
+    if (raw.accuracy > allowedAccuracy) return false;
+    if (!this.lastInjectedGps) return this.gpsSamples.length >= GPS_INITIAL_SAMPLE_COUNT;
+
+    const moved = calcDistanceMeters(
+      this.lastInjectedGps.latitude,
+      this.lastInjectedGps.longitude,
+      smoothed.latitude,
+      smoothed.longitude
+    );
+    if (moved >= this.movementThresholdMeters(raw, smoothed)) return true;
+    return smoothed.accuracy + GPS_ACCURACY_IMPROVEMENT_METERS < this.lastInjectedGps.accuracy;
+  }
+
+  private injectGps(data: GpsSample): void {
+    this.locationBased?.fakeGps(data.longitude, data.latitude, undefined, data.accuracy);
+    this.lastInjectedGps = data;
+    if (!this.originReady) this.originReady = true;
+    this.flushPendingAdds();
+    this.updateCameraElevation(data.altitude);
+    for (const cb of this.gpsCallbacks) cb(data);
+  }
+
+  private movementThresholdMeters(raw: GpsSample, smoothed: GpsSample): number {
+    const effectiveAccuracy = Math.max(raw.accuracy || 0, smoothed.accuracy || 0, this.lastInjectedGps?.accuracy || 0);
+    const accuracyScaledDeadband = Math.min(GPS_DYNAMIC_DEADBAND_MAX_METERS, effectiveAccuracy * GPS_DYNAMIC_DEADBAND_ACCURACY_FACTOR);
+    return Math.max(this.gpsMinDistance, GPS_POSITION_DEADBAND_METERS, accuracyScaledDeadband);
+  }
+
+  // --- Touch drag fallback ---
+
+  private setupTouchControls(): void {
+    const el = this.renderer.domElement;
+
+    el.addEventListener('touchstart', (e: TouchEvent) => {
+      if (this._orientationStatus === 'sensor') return;
+      if (e.touches.length !== 1) return;
+      this.touchActive = true;
+      this.touchStartX = e.touches[0].clientX;
+      this.touchStartY = e.touches[0].clientY;
+      this.touchPrevX = this.touchStartX;
+      this.touchPrevY = this.touchStartY;
+    }, { passive: true });
+
+    el.addEventListener('touchmove', (e: TouchEvent) => {
+      if (!this.touchActive || this._orientationStatus === 'sensor') return;
+      if (e.touches.length !== 1) return;
+      const x = e.touches[0].clientX;
+      const y = e.touches[0].clientY;
+      this.touchYaw -= (x - this.touchPrevX) * TOUCH_SENSITIVITY;
+      this.touchPitch -= (y - this.touchPrevY) * TOUCH_SENSITIVITY;
+      this.touchPitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.touchPitch));
+      this.touchPrevX = x;
+      this.touchPrevY = y;
+    }, { passive: true });
+
+    el.addEventListener('touchend', () => { this.touchActive = false; }, { passive: true });
+    el.addEventListener('touchcancel', () => { this.touchActive = false; }, { passive: true });
+
+    let mouseDown = false;
+    let mouseX = 0;
+    let mouseY = 0;
+    el.addEventListener('mousedown', (e: MouseEvent) => {
+      if (this._orientationStatus === 'sensor') return;
+      mouseDown = true;
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+    el.addEventListener('mousemove', (e: MouseEvent) => {
+      if (!mouseDown || this._orientationStatus === 'sensor') return;
+      this.touchYaw -= (e.clientX - mouseX) * TOUCH_SENSITIVITY;
+      this.touchPitch -= (e.clientY - mouseY) * TOUCH_SENSITIVITY;
+      this.touchPitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.touchPitch));
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+    el.addEventListener('mouseup', () => { mouseDown = false; });
+    el.addEventListener('mouseleave', () => { mouseDown = false; });
+  }
+
+  private applyTouchRotation(): void {
+    const euler = new THREE.Euler(this.touchPitch, this.touchYaw, 0, 'YXZ');
+    this.camera.quaternion.setFromEuler(euler);
+  }
+
+  // --- Video element setup ---
+
+  private setupVideoElement(preferredId?: string): HTMLVideoElement | null {
+    if (typeof document === 'undefined') return null;
+    const targetId = preferredId || DEFAULT_VIDEO_ELEMENT_ID;
+    let element = document.getElementById(targetId) as HTMLVideoElement | null;
+    if (!element) {
+      element = document.createElement('video');
+      element.id = targetId;
+      element.muted = true;
+      element.defaultMuted = true;
+      element.playsInline = true;
+      element.autoplay = true;
+      element.controls = false;
+      element.loop = false;
+      element.setAttribute('playsinline', 'true');
+      element.setAttribute('webkit-playsinline', 'true');
+      element.setAttribute('muted', 'true');
+      element.setAttribute('autoplay', 'true');
+      element.setAttribute('aria-hidden', 'true');
+      element.style.position = 'fixed';
+      element.style.inset = '0';
+      element.style.width = '100vw';
+      element.style.height = '100vh';
+      element.style.objectFit = 'cover';
+      element.style.zIndex = '-1';
+      element.style.pointerEvents = 'none';
+      element.style.backgroundColor = '#000';
+      element.style.opacity = '0';
+      element.style.transition = 'opacity 0.25s ease';
+      element.classList.add('locar-video-feed');
+      const target = document.body || document.documentElement;
+      target?.prepend(element);
+    }
+    if (element) {
+      element.style.zIndex = '-1';
+      element.style.pointerEvents = 'none';
+      if (!element.style.opacity) element.style.opacity = '0';
+    }
+    return element;
+  }
+
+  // --- Animation loop ---
+
+  private animate = () => {
+    this.animationFrameId = window.requestAnimationFrame(this.animate);
+    if (this.relativeControls) {
+      // ステージ3: コンパス非依存追従(オフセットは alignTo で引き継ぎ済み)
+      if (this.relativeControls.update(this.camera.quaternion)) {
+        this.lastRawQuaternion.copy(this.camera.quaternion);
+      }
+    } else {
+      if (this._orientationStatus === 'sensor' && this.deviceControls?.update) {
+        this.deviceControls.update();
+      } else if (this._orientationStatus === 'touch') {
+        this.applyTouchRotation();
+      } else if (this._orientationStatus === 'pending' && this.deviceControls?.update) {
+        this.deviceControls.update();
+      }
+      this.lastRawQuaternion.copy(this.camera.quaternion);
+      if (this.yawCorrectionQuat) {
+        this.camera.quaternion.premultiply(this.yawCorrectionQuat);
+      }
+    }
+    const delta = this.renderClock.getDelta();
+    for (const cb of this.beforeRenderCallbacks) {
+      try { cb(delta); } catch (e) { console.warn('[LocationScene] before-render callback error', e); }
+    }
+    this.renderer.render(this.scene, this.camera);
+  };
+
+  // --- Object placement ---
+
+  private tryPlaceObject(placement: PendingPlacement): boolean {
+    if (!this.locationBased) return false;
+    try {
+      this.locationBased.add(placement.object, placement.lon, placement.lat, placement.altitude);
+      return true;
+    } catch (error) {
+      const message = (error as Error)?.message || String(error);
+      if (typeof message === 'string' && message.includes('No initial position determined')) return false;
+      console.error('[LocationScene] addAtLatLon でエラーが発生しました', error);
+      return true;
+    }
+  }
+
+  private flushPendingAdds(): void {
+    if (!this.pendingAdds.length) return;
+    this.pendingAdds = this.pendingAdds.filter((placement) => !this.tryPlaceObject(placement));
+  }
+
+  addAtLatLon(object: THREE.Object3D, lat: number, lon: number, altitude?: number): void {
+    const height = typeof altitude === 'number' ? altitude : typeof object.position?.y === 'number' ? object.position.y : 0;
+    const placement: PendingPlacement = { object, lat, lon, altitude: height };
+    if (!this.tryPlaceObject(placement)) this.pendingAdds.push(placement);
+  }
+
+  remove(object: THREE.Object3D): void {
+    this.pendingAdds = this.pendingAdds.filter((placement) => placement.object !== object);
+    if (object.parent === this.scene) this.scene.remove(object);
+  }
+
+  // --- GPS smoothing ---
+
+  private smoothGps(sample: GpsSample): GpsSample {
+    this.gpsSamples.push(sample);
+    if (this.gpsSamples.length > GPS_SMOOTHING_WINDOW) this.gpsSamples.shift();
+
+    const len = this.gpsSamples.length;
+    if (!len) return sample;
+
+    let lat = 0, lon = 0, acc = 0, accWeightSum = 0, weightSum = 0, alt = 0, altWeightSum = 0, altCount = 0;
+    this.gpsSamples.forEach((s, index) => {
+      const recencyWeight = 1 + index / len;
+      const accuracyWeight = 1 / Math.max(s.accuracy, 1);
+      const weight = recencyWeight * accuracyWeight;
+      lat += s.latitude * weight;
+      lon += s.longitude * weight;
+      acc += s.accuracy * recencyWeight;
+      accWeightSum += recencyWeight;
+      weightSum += weight;
+      if (typeof s.altitude === 'number') {
+        alt += s.altitude * weight;
+        altWeightSum += weight;
+        altCount += 1;
+      }
+    });
+
+    const normalizedWeight = weightSum || 1;
+    return {
+      latitude: lat / normalizedWeight,
+      longitude: lon / normalizedWeight,
+      accuracy: acc / (accWeightSum || 1),
+      altitude: altCount > 0 ? alt / (altWeightSum || 1) : null,
+    };
+  }
+
+  private updateCameraElevation(altitude: number | null): void {
+    if (typeof altitude !== 'number' || !Number.isFinite(altitude)) return;
+    if (this.smoothedElevation === null || Math.abs(altitude - this.smoothedElevation) >= ELEVATION_UPDATE_THRESHOLD_METERS) {
+      this.locationBased?.setElevation(altitude);
+      this.smoothedElevation = altitude;
+    }
+  }
+
+  // --- Public API ---
+
+  onGpsUpdate(callback: (pos: GpsSample) => void): void {
+    this.gpsCallbacks.push(callback);
+  }
+
+  /** 平滑化前の全GPSサンプルを通知する(注入停止中も発火。計測用)。 */
+  onGpsSample(callback: (pos: GpsSample) => void): void {
+    this.gpsSampleCallbacks.push(callback);
+  }
+
+  /**
+   * GPS のカメラ反映を停止する(watch は維持し onGpsSample は発火し続ける)。
+   * シルエット合わせ確定後、GPS再注入でアンカーが動かないようにするために使う。
+   */
+  pauseGpsInjection(): void {
+    this.gpsInjectionPaused = true;
+  }
+
+  /** GPS反映を再開する。停止中の古い平滑化バッファは捨てて取り直す。 */
+  resumeGpsInjection(): void {
+    this.gpsInjectionPaused = false;
+    this.gpsSamples = [];
+    this.lastInjectedGps = null;
+  }
+
+  get isGpsInjectionPaused(): boolean {
+    return this.gpsInjectionPaused;
+  }
+
+  /** ヨー補正込みの現在カメラ姿勢(コピー)を返す。 */
+  getCameraQuaternion(out: THREE.Quaternion = new THREE.Quaternion()): THREE.Quaternion {
+    out.copy(this.lastRawQuaternion);
+    if (!this.relativeControls && this.yawCorrectionQuat) {
+      out.premultiply(this.yawCorrectionQuat);
+    }
+    return out;
+  }
+
+  /** カメラのワールド座標(コピー)を返す。 */
+  getCameraWorldPosition(out: THREE.Vector3 = new THREE.Vector3()): THREE.Vector3 {
+    return out.copy(this.camera.position);
+  }
+
+  /**
+   * シルエット合わせで求めたヨー補正を設定する。以後毎フレーム、orientation
+   * 更新の後にカメラへ premultiply される(sensor/touch/pending 全モードで有効)。
+   */
+  setYawCorrectionDeg(deg: number): void {
+    this.yawCorrectionDeg = deg;
+    this.yawCorrectionQuat = deg === 0 ? null : yawCorrectionQuaternion(deg);
+  }
+
+  getYawCorrectionDeg(): number {
+    return this.yawCorrectionDeg;
+  }
+
+  /**
+   * コンパス非依存追従(RelativeOrientationControls)への切り替え。
+   * 有効化時は現在の補正込み姿勢へ alignTo して視界の連続性を保ち、
+   * ヨー補正は relative 側のオフセットへ引き継ぐ。
+   * setYawCorrectionDeg() を呼んだ後に有効化すること。
+   */
+  useRelativeOrientation(enabled: boolean): void {
+    if (enabled) {
+      if (this.relativeControls) return;
+      const target = this.getCameraQuaternion();
+      const controls = new RelativeOrientationControls();
+      controls.connect();
+      controls.alignTo(target);
+      this.relativeControls = controls;
+      this.yawCorrectionQuat = null;
+      try { this.deviceControls?.disconnect(); } catch (_e) { /* ignore */ }
+    } else {
+      if (!this.relativeControls) return;
+      this.relativeControls.disconnect();
+      this.relativeControls = null;
+      try { this.deviceControls?.connect(); } catch (_e) { /* ignore */ }
+    }
+  }
+
+  /** 毎フレーム描画前に呼ばれるフックを登録する(AnimationMixer 駆動などに使う)。 */
+  onBeforeRender(callback: (deltaSeconds: number) => void): void {
+    this.beforeRenderCallbacks.push(callback);
+  }
+
+  /** 地理座標に紐づかないオブジェクトをシーンへ追加する(位置合わせリグ用)。 */
+  addSceneObject(object: THREE.Object3D): void {
+    this.scene.add(object);
+  }
+
+  removeSceneObject(object: THREE.Object3D): void {
+    this.scene.remove(object);
+  }
+
+  get isOriginReady(): boolean {
+    return this.originReady;
+  }
+
+  get orientationStatus(): OrientationStatus {
+    return this._orientationStatus;
+  }
+
+  onOrientationStatus(callback: (status: OrientationStatus) => void): void {
+    this.orientationStatusCallbacks.push(callback);
+    if (this._orientationStatus !== 'pending') {
+      try { callback(this._orientationStatus); } catch (_e) { /* ignore */ }
+    }
+  }
+
+  reconnectOrientation(): void {
+    if (!this.deviceControls) return;
+    try { this.deviceControls.disconnect(); } catch (_e) { /* ignore */ }
+    this.deviceControls.connect();
+    this.restartOrientationDetection();
+  }
+
+  // --- Resize / Dispose ---
+
+  private onResize(): void {
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  dispose(): void {
+    if (this.isDisposed) return;
+    this.isDisposed = true;
+    cancelAnimationFrame(this.animationFrameId);
+    if (this.watchdogTimer) {
+      clearTimeout(this.watchdogTimer);
+      this.watchdogTimer = null;
+    }
+    window.removeEventListener('resize', this.handleResize);
+    window.removeEventListener('beforeunload', this.handleBeforeUnload);
+
+    if (this.geolocationWatchId !== null && typeof navigator !== 'undefined' && navigator.geolocation) {
+      try { navigator.geolocation.clearWatch(this.geolocationWatchId); } catch (error) {
+        console.warn('[LocationScene] clearWatch 実行中にエラー', error);
+      }
+      this.geolocationWatchId = null;
+    }
+
+    try {
+      this.relativeControls?.disconnect();
+      this.relativeControls = null;
+    } catch (_error) { /* ignore */ }
+
+    try {
+      this.deviceControls?.disconnect();
+      this.deviceControls?.dispose?.();
+    } catch (error) {
+      console.warn('[LocationScene] DeviceOrientationControls の破棄に失敗しました', error);
+    }
+
+    try {
+      this.webcam?.dispose();
+    } catch (error) {
+      console.warn('[LocationScene] Webcam の破棄に失敗しました', error);
+    }
+
+    this.pendingAdds = [];
+    this.gpsSamples = [];
+    this.lastInjectedGps = null;
+    this.smoothedElevation = null;
+    this.renderer.dispose();
+    if (this.renderer.domElement.parentElement) {
+      this.renderer.domElement.parentElement.removeChild(this.renderer.domElement);
+    }
+    if (this.videoElement && this.videoElement.parentElement) {
+      this.videoElement.parentElement.removeChild(this.videoElement);
+    }
+    this.videoElement = null;
+  }
+}

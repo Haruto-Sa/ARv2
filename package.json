@@ -3,17 +3,30 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "config 駆動で水門 3D モデルを現実空間に固定表示する LocAR + three.js ビューア",
+  "description": "config 駆動で水門 3D モデルを現実空間に固定表示する Astro + AR ビューア(複数AR方式比較)",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "vitest run",
+    "validate-config": "tsx scripts/validate-config.ts",
+    "codex-review": "tsx scripts/codex-review.ts"
   },
   "dependencies": {
     "locar": "^0.1.4",
     "three": "^0.175.0"
   },
   "devDependencies": {
-    "vite": "^5.4.0"
+    "@astrojs/check": "^0.9.10",
+    "@types/node": "^26.4.1",
+    "@types/three": "^0.175.0",
+    "astro": "^7.0.0",
+    "tsx": "^4.23.13",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.0"
   }
 }
