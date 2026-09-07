@@ -54,6 +54,18 @@ const experiences = [
     status: 'soon' as const,
   },
   {
+    icon: '🎮',
+    title: '閉伊川3D世界',
+    description: 'Unityで構築した閉伊川流域の3D空間を、WebGLでブラウザから探索できます。',
+    status: 'soon' as const,
+  },
+  {
+    icon: '🪵',
+    title: '流木コンテンツ',
+    description: '拾い上げた流木を使ったコンテンツ。ネイティブアプリからWebGLへ移植中です。',
+    status: 'soon' as const,
+  },
+  {
     icon: '🧪',
     title: '開発者実験',
     description: '3つのAR方式を素早く切り替えて実機比較するための開発者向けページ。',
@@ -101,6 +113,7 @@ const steps = [
                 <div class="menu-icon">{item.icon}</div>
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
+                <span class="menu-arrow">→</span>
               </a>
             ) : (
               <div class="menu-card soon">
@@ -230,10 +243,76 @@ const steps = [
     script.crossOrigin = '';
     script.onload = () => initLocationsMap();
     document.head.appendChild(script);
+
+    // ヘッダーの背景をスクロール量に応じて濃くする(視認性のための機能的な変化)。
+    const header = document.querySelector('.site-header');
+    window.addEventListener(
+      'scroll',
+      () => {
+        header?.classList.toggle('scrolled', window.scrollY > 8);
+      },
+      { passive: true }
+    );
+
+    // ナビの現在地ハイライト: 表示中のセクションに対応するリンクへ .active を付ける。
+    const navLinks = new Map<string, HTMLAnchorElement>();
+    document.querySelectorAll<HTMLAnchorElement>('.site-nav a[href^="#"]').forEach((a) => {
+      navLinks.set(a.getAttribute('href')!.slice(1), a);
+    });
+    const sectionObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const link = navLinks.get(entry.target.id);
+          if (link) link.classList.toggle('active', entry.isIntersecting);
+        }
+      },
+      { rootMargin: '-30% 0px -60% 0px' }
+    );
+    navLinks.forEach((_, id) => {
+      const el = document.getElementById(id);
+      if (el) sectionObserver.observe(el);
+    });
+
+    // 体験メニューのカードを、初回表示時だけ軽くフェードイン+スライドさせる。
+    const cardObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            cardObserver.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.15 }
+    );
+    document.querySelectorAll('.menu-card').forEach((card) => {
+      // pre-reveal はJSがここで付与したときだけ効く(CSS側の既定は常に表示)。
+      // JSが動かない/エラーで止まった場合でもカードが消えたままにはならない。
+      card.classList.add('pre-reveal');
+      cardObserver.observe(card);
+    });
   </script>
 </BaseLayout>
 
 <style>
+  :global(html) {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(html) {
+      scroll-behavior: auto;
+    }
+    .menu-card,
+    .menu-card.pre-reveal,
+    .menu-arrow,
+    .btn-primary,
+    .site-header {
+      transition: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+
   .site-header {
     position: sticky;
     top: 0;
@@ -247,7 +326,12 @@ const steps = [
     margin: 0 auto;
     padding: 16px;
     background: #0b0e14;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.25s ease, background-color 0.25s ease;
+  }
+  .site-header.scrolled {
+    background: #0b0e14f2;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
   }
   .site-title {
     font-size: 14px;
@@ -260,12 +344,17 @@ const steps = [
   }
   .site-nav a {
     color: inherit;
-    opacity: 0.75;
+    opacity: 0.6;
     text-decoration: none;
     font-size: 13px;
+    transition: opacity 0.2s ease;
   }
   .site-nav a:hover {
     opacity: 1;
+  }
+  .site-nav a.active {
+    opacity: 1;
+    font-weight: 700;
   }
 
   .wrap {
@@ -297,9 +386,12 @@ const steps = [
     text-decoration: none;
     font-size: 14px;
     font-weight: 700;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
   }
   .btn-primary:hover {
     background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
   }
 
   section {
@@ -334,13 +426,27 @@ const steps = [
     color: inherit;
     text-decoration: none;
     position: relative;
+    transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.2s ease, background-color 0.2s ease;
+  }
+  /* pre-reveal はJSが付与したときだけ効く。JS未実行時は常に表示された状態が既定。 */
+  .menu-card.pre-reveal {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  .menu-card.pre-reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+  .menu-card.soon {
+    opacity: 0.55;
+  }
+  .menu-card.soon.pre-reveal:not(.visible) {
+    opacity: 0;
   }
   a.menu-card:hover {
     border-color: rgba(255, 255, 255, 0.3);
     background: rgba(255, 255, 255, 0.06);
-  }
-  .menu-card.soon {
-    opacity: 0.55;
+    transform: translateY(-2px);
   }
   .menu-icon {
     font-size: 24px;
@@ -354,6 +460,18 @@ const steps = [
     font-size: 13px;
     opacity: 0.8;
     line-height: 1.5;
+  }
+  .menu-arrow {
+    position: absolute;
+    right: 14px;
+    bottom: 12px;
+    opacity: 0.5;
+    font-size: 14px;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  a.menu-card:hover .menu-arrow {
+    opacity: 1;
+    transform: translateX(3px);
   }
   .badge {
     align-self: flex-start;
