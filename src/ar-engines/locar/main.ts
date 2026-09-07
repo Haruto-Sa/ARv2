@@ -15,7 +15,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { LocationScene } from './engine';
-import { loadLocationConfig, type LocationConfig } from '../../lib/config/locationConfig';
+import { loadLocationConfig, applyLatLonOverride, type LocationConfig } from '../../lib/config/locationConfig';
 import { normalizeIntoOrigin, type BoundingBox } from '../../lib/model/normalizeModel';
 import { withBase } from '../../lib/paths';
 import {
@@ -86,7 +86,7 @@ export async function bootLocAR(): Promise<void> {
 
   try {
     const result = await loadLocationConfig(withBase(`/config/locations/${locationId}.json`));
-    state.config = result.config;
+    state.config = applyLatLonOverride(result.config, new URLSearchParams(window.location.search));
     state.issues = result.issues;
   } catch (err) {
     console.error(err);

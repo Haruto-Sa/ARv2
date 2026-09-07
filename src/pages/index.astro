@@ -1,27 +1,28 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/paths';
+
+const DEFAULT_LAT = 39.80249663004133;
+const DEFAULT_LON = 141.13550877979688;
 
 const patterns = [
   {
     id: 'locar',
-    icon: '🧭',
     title: 'Pattern A: LocAR',
-    description: 'LocAR.js + three.js。GPSスムージングと高度安定化を備えた実績のある実装。',
-    href: '/ar/locar',
+    description: 'LocAR.js + three.js。GPSスムージングと高度安定化を備えた実装。',
+    href: withBase('/ar/locar'),
   },
   {
     id: 'deviceorientation',
-    icon: '🎯',
     title: 'Pattern C: DeviceOrientation',
     description: 'コンパス絶対値に依存しない、シルエット位置合わせによる独自実装。',
-    href: '/ar/deviceorientation',
+    href: withBase('/ar/deviceorientation'),
   },
   {
     id: 'arjs',
-    icon: '🅰️',
     title: 'Pattern B: AR.js',
     description: 'A-Frame + AR.js の位置情報AR機能(gps-new-entity-place)を使用。',
-    href: '/ar/arjs',
+    href: withBase('/ar/arjs'),
   },
 ];
 ---
@@ -29,38 +30,79 @@ const patterns = [
 <BaseLayout title="閉伊川水門 AR">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
 
-  <div class="wrap">
-    <h1>閉伊川水門 AR</h1>
-    <p class="lead">
-      指定した地点に水門の3Dモデルを実物大で重ねて表示する位置情報ARです。3つの実装方式を比較しながら開発しています。
-      スマートフォンで開き、いずれかの方式を選んで「ARを開始」してください。
-    </p>
+  <header class="site-header">
+    <span class="site-title">閉伊川水門 AR</span>
+  </header>
 
-    <div class="grid">
-      {
-        patterns.map((p) => (
-          <a class="card" href={p.href}>
-            <div class="card-icon">{p.icon}</div>
-            <h2>{p.title}</h2>
-            <p>{p.description}</p>
-            <span class="btn">開く →</span>
-          </a>
-        ))
-      }
-    </div>
+  <main class="wrap">
+    <section class="hero">
+      <h1>指定地点に水門を実寸で重ねる位置情報AR</h1>
+      <p class="lead">
+        閉伊川水門の3Dモデルを実物大でその場に重ねて表示します。GPS→ワールド座標変換の異なる3つの実装方式(LocAR /
+        DeviceOrientation / AR.js)を比較検証中です。
+      </p>
+    </section>
 
-    <div class="map-section">
+    <section class="quick-start">
+      <h2>ARを開始</h2>
+      <p class="section-note">
+        緯度経度を指定するとその地点にモデルが表示されます。実機がある場所と離れた地点でも配置を確認できます。
+      </p>
+      <form id="quick-start-form" method="get">
+        <div class="field-row">
+          <label>
+            緯度
+            <input type="number" step="any" name="lat" id="lat-input" value={DEFAULT_LAT} required />
+          </label>
+          <label>
+            経度
+            <input type="number" step="any" name="lon" id="lon-input" value={DEFAULT_LON} required />
+          </label>
+          <button type="button" id="use-my-location" class="btn-plain">現在地を使う</button>
+        </div>
+        <div class="pattern-buttons">
+          {
+            patterns.map((p) => (
+              <button type="submit" formaction={p.href} class="pattern-button">
+                <span class="pattern-title">{p.title}</span>
+                <span class="pattern-desc">{p.description}</span>
+              </button>
+            ))
+          }
+        </div>
+      </form>
+    </section>
+
+    <section class="map-section">
       <h2>水門地点マップ</h2>
-      <p>OpenStreetMap 上に対象地点をプロットしています。ピンをタップすると各方式を開けます。</p>
+      <p class="section-note">ピンをクリックすると上のフォームに緯度経度が入力されます。</p>
       <div id="locations-map"></div>
-    </div>
+    </section>
 
-    <div class="note">カメラ・位置情報・モーションセンサーの許可が必要です。屋外の見通しの良い場所でご利用ください。</div>
-  </div>
+    <p class="note">カメラ・位置情報・モーションセンサーの許可が必要です。屋外の見通しの良い場所でご利用ください。</p>
+  </main>
+
+  <footer class="site-footer">
+    <a href="https://github.com/Haruto-Sa/ARv2" target="_blank" rel="noopener">GitHub</a>
+  </footer>
 
   <script>
     import { loadLocationCatalog } from '../lib/config/locationConfig';
     import { withBase } from '../lib/paths';
+
+    const latInput = document.getElementById('lat-input') as HTMLInputElement | null;
+    const lonInput = document.getElementById('lon-input') as HTMLInputElement | null;
+
+    document.getElementById('use-my-location')?.addEventListener('click', () => {
+      if (!navigator.geolocation || !latInput || !lonInput) return;
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          latInput.value = String(pos.coords.latitude);
+          lonInput.value = String(pos.coords.longitude);
+        },
+        (err) => console.warn('現在地の取得に失敗しました', err)
+      );
+    });
 
     async function initLocationsMap() {
       const L = (window as any).L;
@@ -79,13 +121,11 @@ const patterns = [
         for (const loc of catalog) {
           latlngs.push([loc.latitude, loc.longitude]);
           const icon = loc.icon || '📍';
-          const popup = `
-            <strong>${icon} ${loc.name}</strong><br/>
-            <a href="${withBase(`/ar/locar?loc=${loc.id}`)}">Pattern A</a> ·
-            <a href="${withBase(`/ar/deviceorientation?loc=${loc.id}`)}">Pattern C</a> ·
-            <a href="${withBase(`/ar/arjs?loc=${loc.id}`)}">Pattern B</a>
-          `;
-          L.marker([loc.latitude, loc.longitude]).addTo(map).bindPopup(popup);
+          const marker = L.marker([loc.latitude, loc.longitude]).addTo(map).bindPopup(`${icon} ${loc.name}`);
+          marker.on('click', () => {
+            if (latInput) latInput.value = String(loc.latitude);
+            if (lonInput) lonInput.value = String(loc.longitude);
+          });
         }
         if (latlngs.length) {
           map.fitBounds(latlngs, { padding: [20, 20] });
@@ -107,84 +147,147 @@ const patterns = [
 </BaseLayout>
 
 <style>
+  .site-header {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px 16px 0;
+  }
+  .site-title {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    opacity: 0.8;
+  }
   .wrap {
     max-width: 960px;
     margin: 0 auto;
-    padding: 32px 16px 64px;
+    padding: 24px 16px 48px;
+  }
+  .hero {
+    padding: 24px 0 32px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
   h1 {
-    margin: 0 0 6px;
-    font-size: 28px;
-  }
-  p.lead {
-    margin: 0 0 24px;
-    opacity: 0.8;
-    line-height: 1.6;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 16px;
-  }
-  .card {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 14px;
-    padding: 20px 20px 16px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
-    display: flex;
-    flex-direction: column;
-    text-decoration: none;
-    color: inherit;
-  }
-  .card-icon {
-    font-size: 32px;
-    margin-bottom: 8px;
-  }
-  .card h2 {
-    margin: 0 0 8px;
-    font-size: 18px;
-  }
-  .card p {
-    margin: 0 0 14px;
-    line-height: 1.6;
-    opacity: 0.9;
-    flex: 1;
-  }
-  .btn {
-    display: inline-block;
-    align-self: flex-start;
-    padding: 10px 14px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #4e9bff, #6ad0ff);
-    color: #0c1018;
-    font-weight: 700;
-    text-decoration: none;
-    font-size: 14px;
-  }
-  .map-section {
-    margin-top: 32px;
-  }
-  .map-section h2 {
-    margin: 0 0 8px;
-    font-size: 18px;
-  }
-  .map-section p {
     margin: 0 0 12px;
-    font-size: 14px;
+    font-size: 28px;
+    line-height: 1.35;
+  }
+  .lead {
+    margin: 0;
+    max-width: 40em;
     opacity: 0.8;
+    line-height: 1.7;
   }
-  #locations-map {
-    width: 100%;
-    height: 360px;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  section {
+    margin-top: 40px;
   }
-  .note {
-    margin-top: 24px;
+  section h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+  }
+  .section-note {
+    margin: 0 0 16px;
     font-size: 14px;
     opacity: 0.75;
     line-height: 1.6;
+  }
+
+  .field-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .field-row label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    opacity: 0.85;
+  }
+  .field-row input {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.04);
+    color: inherit;
+    font-size: 14px;
+    width: 14em;
+  }
+  .btn-plain {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: transparent;
+    color: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .btn-plain:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .pattern-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .pattern-button {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.03);
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+  }
+  .pattern-button:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .pattern-title {
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .pattern-desc {
+    font-size: 13px;
+    opacity: 0.75;
+    line-height: 1.5;
+  }
+
+  #locations-map {
+    width: 100%;
+    height: 320px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .note {
+    margin-top: 40px;
+    font-size: 13px;
+    opacity: 0.65;
+    line-height: 1.6;
+  }
+
+  .site-footer {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 16px 16px 48px;
+    font-size: 13px;
+  }
+  .site-footer a {
+    color: inherit;
+    opacity: 0.6;
+    text-decoration: none;
+  }
+  .site-footer a:hover {
+    opacity: 1;
   }
 </style>
