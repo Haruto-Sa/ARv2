@@ -11,13 +11,15 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check",
+    "check": "astro check && svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
     "validate-config": "tsx scripts/validate-config.ts",
     "codex-review": "tsx scripts/codex-review.ts"
   },
   "dependencies": {
+    "@astrojs/svelte": "^9.0.1",
     "locar": "^0.1.4",
+    "svelte": "^5.57.0",
     "three": "^0.175.0"
   },
   "devDependencies": {
@@ -25,6 +27,7 @@
     "@types/node": "^26.4.1",
     "@types/three": "^0.175.0",
     "astro": "^7.0.0",
+    "svelte-check": "^4.7.6",
     "tsx": "^4.23.13",
     "typescript": "^6.0.3",
     "vitest": "^5.0.0"

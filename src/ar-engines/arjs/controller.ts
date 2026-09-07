@@ -1,8 +1,8 @@
-// main.ts (Pattern B: AR.js 位置情報AR)
+// controller.ts (Pattern B: AR.js)
 //
-// A-Frame + AR.js(`gps-new-camera`/`gps-new-entity-place`)による位置情報AR。
-// AR.js/LocAR は現在同じ AR-js-org 傘下だが、GPS→ワールド座標の変換実装が
-// LocAR(Pattern A)とは別物のため、比較対象として意味がある。
+// AR計算ロジック(座標変換・スケール計算)は一切ここに書かない。config読み込みと
+// A-Frame/AR.jsシーンの起動シーケンスのみを扱う「コントローラ」層。
+// UI(IntroPanel.svelte)はこのモジュールが公開する関数を呼ぶだけの薄いラッパーにする。
 //
 // 既知の制約(実機検証で要確認 — 詳細は Issue #1 参照):
 //   - AR.js 公式ドキュメントは iOS の deviceorientation 絶対値取得の弱さを理由に
@@ -27,6 +27,16 @@ const ARJS_VERSION = '3.4.7';
 function resolveLocationId(): string {
   const params = new URLSearchParams(window.location.search);
   return params.get('loc') || 'heigawa-suimon';
+}
+
+/** 起動前に呼ぶ。config読み込みに失敗した場合は例外を投げる(UI側でcatchする)。 */
+export async function loadInitialConfig(): Promise<LocationConfig> {
+  const locationId = resolveLocationId();
+  const result = await loadLocationConfig(withBase(`/config/locations/${locationId}.json`));
+  if (result.issues.length) {
+    console.warn('[arjs] 設定の不足:\n - ' + result.issues.join('\n - '));
+  }
+  return applyLatLonOverride(result.config, new URLSearchParams(window.location.search));
 }
 
 function loadScript(src: string): Promise<void> {
@@ -73,14 +83,6 @@ async function requestSensorPermissions(): Promise<boolean> {
   return ok;
 }
 
-function showFatal(msg: string): void {
-  const el = document.createElement('div');
-  el.style.cssText =
-    'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:#200;color:#fdd;font:14px/1.5 system-ui;text-align:center';
-  el.textContent = msg;
-  document.body.appendChild(el);
-}
-
 function mountScene(config: LocationConfig): void {
   const scene = document.createElement('a-scene') as any;
   scene.setAttribute('vr-mode-ui', 'enabled: false');
@@ -116,49 +118,22 @@ function mountScene(config: LocationConfig): void {
   document.body.appendChild(scene);
 }
 
-export async function bootArjsAR(): Promise<void> {
-  const locationId = resolveLocationId();
-  let config: LocationConfig;
-  try {
-    const result = await loadLocationConfig(withBase(`/config/locations/${locationId}.json`));
-    config = applyLatLonOverride(result.config, new URLSearchParams(window.location.search));
-    if (result.issues.length) {
-      console.warn('[arjs] 設定の不足:\n - ' + result.issues.join('\n - '));
-    }
-  } catch (err) {
-    console.error(err);
-    showFatal(String((err as Error).message || err));
-    return;
+/**
+ * 「ARを開始」タップ後の起動シーケンス。失敗時は例外を投げる(UI側でcatchしてエラー表示する)。
+ * 成功した場合、呼び出し側(IntroPanel.svelte)はイントロ画面を非表示にする。
+ */
+export async function startExperience(config: LocationConfig): Promise<void> {
+  if (!window.isSecureContext) {
+    throw new Error('このURLは安全な接続(HTTPS)ではないため、カメラと方位センサーを使えません。');
   }
 
-  const btn = document.getElementById('start-ar');
-  if (!btn) return;
+  await requestSensorPermissions();
+  try {
+    await loadAframeAndArjs();
+  } catch (err) {
+    console.error(err);
+    throw new Error('A-Frame / AR.js の読み込みに失敗しました。通信環境を確認してください。');
+  }
 
-  btn.addEventListener(
-    'click',
-    async () => {
-      const starting = document.getElementById('starting');
-      if (starting) starting.hidden = false;
-
-      if (!window.isSecureContext) {
-        showFatal('このURLは安全な接続(HTTPS)ではないため、カメラと方位センサーを使えません。');
-        return;
-      }
-
-      await requestSensorPermissions();
-      try {
-        await loadAframeAndArjs();
-      } catch (err) {
-        console.error(err);
-        showFatal('A-Frame / AR.js の読み込みに失敗しました。通信環境を確認してください。');
-        return;
-      }
-
-      const intro = document.getElementById('intro');
-      if (intro) intro.style.display = 'none';
-
-      mountScene(config);
-    },
-    { once: true }
-  );
+  mountScene(config);
 }
