@@ -25,26 +25,98 @@ const patterns = [
     href: withBase('/ar/arjs'),
   },
 ];
+
+// 体験メニュー。active なものだけリンクを持つ。soon はプレースホルダー(クリック不可)。
+const experiences = [
+  {
+    icon: '📍',
+    title: 'ロケーションAR',
+    description: '水門の3Dモデルを実物大でその場に重ねて表示します。',
+    status: 'active' as const,
+    href: '#start',
+  },
+  {
+    icon: '✋',
+    title: '手のひらAR',
+    description: 'マーカーを使って手のひらサイズで表示します。',
+    status: 'soon' as const,
+  },
+  {
+    icon: '🏠',
+    title: '点群3D空間(Matterport)',
+    description: '現地の点群スキャンをブラウザ上で歩き回れます。',
+    status: 'soon' as const,
+  },
+  {
+    icon: '🎥',
+    title: '360度動画',
+    description: '現地で撮影した360度映像を見られます。',
+    status: 'soon' as const,
+  },
+  {
+    icon: '🧪',
+    title: '開発者実験',
+    description: '3つのAR方式を素早く切り替えて実機比較するための開発者向けページ。',
+    status: 'active' as const,
+    href: withBase('/lab/compare'),
+  },
+];
+
+const steps = [
+  { title: 'カメラ・位置情報・モーションセンサーを許可する', description: '開始時にブラウザが確認を求めます。すべて許可してください。' },
+  { title: '体験したい方式と地点を選ぶ', description: '下の「体験メニュー」から選び、必要なら緯度経度を指定します。' },
+  { title: 'スマートフォンをかざす', description: '屋外の見通しの良い場所で、画面越しに水門が重なって表示されます。' },
+];
 ---
 
-<BaseLayout title="閉伊川水門 AR">
+<BaseLayout title="閉伊川水門プロジェクト">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
 
   <header class="site-header">
-    <span class="site-title">閉伊川水門 AR</span>
+    <span class="site-title">閉伊川水門プロジェクト</span>
+    <nav class="site-nav">
+      <a href="#menu">体験メニュー</a>
+      <a href="#map">地図</a>
+      <a href="#usage">使い方</a>
+    </nav>
   </header>
 
   <main class="wrap">
     <section class="hero">
-      <h1>指定地点に水門を実寸で重ねる位置情報AR</h1>
+      <h1>閉伊川水門を、AR・3Dスキャン・映像で体験する</h1>
       <p class="lead">
-        閉伊川水門の3Dモデルを実物大でその場に重ねて表示します。GPS→ワールド座標変換の異なる3つの実装方式(LocAR /
-        DeviceOrientation / AR.js)を比較検証中です。
+        岩手県宮古市・閉伊川水門を、現地に行かなくても様々な方法で体験できるプロジェクトです。
+        位置情報ARでは、水門の3Dモデルを実物大でその場に重ねて表示します。
       </p>
+      <a class="btn-primary" href="#menu">体験メニューを見る</a>
     </section>
 
-    <section class="quick-start">
-      <h2>ARを開始</h2>
+    <section id="menu" class="menu-section">
+      <h2>体験メニュー</h2>
+      <div class="menu-grid">
+        {
+          experiences.map((item) =>
+            item.status === 'active' ? (
+              <a class="menu-card" href={item.href}>
+                <div class="menu-icon">{item.icon}</div>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+              </a>
+            ) : (
+              <div class="menu-card soon">
+                <div class="menu-icon">{item.icon}</div>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+                <span class="badge">近日公開</span>
+              </div>
+            )
+          )
+        }
+      </div>
+    </section>
+
+    <section id="start" class="quick-start">
+      <h2>ロケーションARを始める</h2>
       <p class="section-note">
         緯度経度を指定するとその地点にモデルが表示されます。実機がある場所と離れた地点でも配置を確認できます。
       </p>
@@ -73,13 +145,28 @@ const patterns = [
       </form>
     </section>
 
-    <section class="map-section">
+    <section id="map" class="map-section">
       <h2>水門地点マップ</h2>
       <p class="section-note">ピンをクリックすると上のフォームに緯度経度が入力されます。</p>
       <div id="locations-map"></div>
     </section>
 
-    <p class="note">カメラ・位置情報・モーションセンサーの許可が必要です。屋外の見通しの良い場所でご利用ください。</p>
+    <section id="usage" class="usage-section">
+      <h2>使い方</h2>
+      <ol class="steps">
+        {
+          steps.map((s, i) => (
+            <li>
+              <span class="step-number">{i + 1}</span>
+              <div>
+                <h3>{s.title}</h3>
+                <p>{s.description}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
   </main>
 
   <footer class="site-footer">
@@ -148,16 +235,39 @@ const patterns = [
 
 <style>
   .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     max-width: 960px;
     margin: 0 auto;
-    padding: 20px 16px 0;
+    padding: 16px;
+    background: #0b0e14;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
   .site-title {
     font-size: 14px;
     font-weight: 700;
-    letter-spacing: 0.04em;
-    opacity: 0.8;
+    letter-spacing: 0.02em;
   }
+  .site-nav {
+    display: flex;
+    gap: 18px;
+  }
+  .site-nav a {
+    color: inherit;
+    opacity: 0.75;
+    text-decoration: none;
+    font-size: 13px;
+  }
+  .site-nav a:hover {
+    opacity: 1;
+  }
+
   .wrap {
     max-width: 960px;
     margin: 0 auto;
@@ -169,17 +279,32 @@ const patterns = [
   }
   h1 {
     margin: 0 0 12px;
-    font-size: 28px;
-    line-height: 1.35;
+    font-size: 26px;
+    line-height: 1.4;
   }
   .lead {
-    margin: 0;
+    margin: 0 0 20px;
     max-width: 40em;
     opacity: 0.8;
     line-height: 1.7;
   }
+  .btn-primary {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: inherit;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .btn-primary:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
   section {
     margin-top: 40px;
+    scroll-margin-top: 72px;
   }
   section h2 {
     margin: 0 0 6px;
@@ -190,6 +315,53 @@ const patterns = [
     font-size: 14px;
     opacity: 0.75;
     line-height: 1.6;
+  }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .menu-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.03);
+    color: inherit;
+    text-decoration: none;
+    position: relative;
+  }
+  a.menu-card:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .menu-card.soon {
+    opacity: 0.55;
+  }
+  .menu-icon {
+    font-size: 24px;
+  }
+  .menu-card h3 {
+    margin: 0;
+    font-size: 15px;
+  }
+  .menu-card p {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.8;
+    line-height: 1.5;
+  }
+  .badge {
+    align-self: flex-start;
+    margin-top: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 11px;
   }
 
   .field-row {
@@ -269,10 +441,39 @@ const patterns = [
     border: 1px solid rgba(255, 255, 255, 0.12);
   }
 
-  .note {
-    margin-top: 40px;
+  .steps {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .steps li {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .step-number {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 13px;
-    opacity: 0.65;
+    font-weight: 700;
+  }
+  .steps h3 {
+    margin: 0 0 4px;
+    font-size: 15px;
+  }
+  .steps p {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.8;
     line-height: 1.6;
   }
 
