@@ -46,7 +46,8 @@ export async function loadInitialConfig(): Promise<void> {
   try {
     const result = await loadLocationConfig(withBase(`/config/locations/${locationId}.json`));
     const config = applyLatLonOverride(result.config, new URLSearchParams(window.location.search));
-    arState.update((s) => ({ ...s, config, issues: result.issues, delta: loadCorrectionDelta() }));
+    const delta = loadCorrectionDelta();
+    arState.update((s) => ({ ...s, config, issues: result.issues, delta, effectiveScale: s.finalScale * (delta.scaleMul || 1) }));
   } catch (err) {
     arState.update((s) => ({ ...s, configError: String((err as Error).message || err) }));
   }
@@ -223,7 +224,13 @@ function onModelLoaded(config: LocationConfig, gltf: { scene: THREE.Object3D; an
       : `config.scale=${config.scale}`
   );
 
-  arState.update((s) => ({ ...s, bbox, finalScale, scaleMode }));
+  arState.update((s) => ({
+    ...s,
+    bbox,
+    finalScale,
+    effectiveScale: finalScale * (s.delta.scaleMul || 1),
+    scaleMode,
+  }));
 
   // wrapper(base transform) ← inner(正規化済みモデル)。
   wrapper = new THREE.Group();
@@ -309,7 +316,7 @@ export function applyCorrectionDelta(delta: CorrectionDelta): void {
   const config = get(arState).config;
   if (!config) return;
   saveCorrectionDelta(delta);
-  arState.update((s) => ({ ...s, delta }));
+  arState.update((s) => ({ ...s, delta, effectiveScale: s.finalScale * (delta.scaleMul || 1) }));
   applyTransform(config);
 }
 

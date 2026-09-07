@@ -24,6 +24,8 @@ export type ArUiState = {
   sensor: { originReady: boolean; gpsAccuracy: number | null; orientation: string };
   bbox: BoundingBox | null;
   finalScale: number;
+  /** finalScale * delta.scaleMul。表示用に事前計算した値(コンポーネント側では乗算しない)。 */
+  effectiveScale: number;
   scaleMode: ScaleMode;
   media: { animations: string[]; audio: string };
   delta: CorrectionDelta;
@@ -40,6 +42,7 @@ function initialState(): ArUiState {
     sensor: { originReady: false, gpsAccuracy: null, orientation: 'pending' },
     bbox: null,
     finalScale: 1,
+    effectiveScale: 1,
     scaleMode: 'scale',
     media: { animations: [], audio: 'none' },
     delta: { ...ZERO_DELTA },

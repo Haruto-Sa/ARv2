@@ -8,7 +8,7 @@
     return formatInfoPanelText({
       config: s.config,
       bbox: s.bbox,
-      finalScale: s.finalScale * (s.delta.scaleMul || 1),
+      finalScale: s.effectiveScale,
       scaleMode: s.scaleMode,
       issues: s.issues,
       sensor: s.sensor,
