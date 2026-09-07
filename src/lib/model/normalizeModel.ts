@@ -55,7 +55,7 @@ export type ScaleResult = {
 };
 
 /** targetHeightMeters が非 null なら高さ基準で自動スケール、null なら scale を使う。 */
-export function computeFinalScale(config: ScaleConfig, bbox: BoundingBox): ScaleResult {
+export function computeFinalScale(config: ScaleConfig, bbox: { height: number }): ScaleResult {
   if (config.targetHeightMeters != null && bbox.height > 1e-6) {
     return { finalScale: config.targetHeightMeters / bbox.height, mode: 'targetHeight' };
   }

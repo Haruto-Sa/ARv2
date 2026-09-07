@@ -26,28 +26,19 @@ describe('measureModel', () => {
 
 describe('computeFinalScale', () => {
   it('targetHeightMeters が指定されていれば実寸に合わせたスケールを返す', () => {
-    const result = computeFinalScale(
-      { targetHeightMeters: 8.5, scale: 999 },
-      { width: 1, height: 17, depth: 1, center: { x: 0, y: 0, z: 0 }, min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } }
-    );
+    const result = computeFinalScale({ targetHeightMeters: 8.5, scale: 999 }, { height: 17 });
     expect(result.mode).toBe('targetHeight');
     expect(result.finalScale).toBeCloseTo(0.5, 6);
   });
 
   it('targetHeightMeters が null なら scale をそのまま使う(併用しない)', () => {
-    const result = computeFinalScale(
-      { targetHeightMeters: null, scale: 2 },
-      { width: 1, height: 17, depth: 1, center: { x: 0, y: 0, z: 0 }, min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } }
-    );
+    const result = computeFinalScale({ targetHeightMeters: null, scale: 2 }, { height: 17 });
     expect(result.mode).toBe('scale');
     expect(result.finalScale).toBe(2);
   });
 
   it('bboxHeight がほぼ0のときは targetHeightMeters を無視して scale を使う(0除算回避)', () => {
-    const result = computeFinalScale(
-      { targetHeightMeters: 8.5, scale: 3 },
-      { width: 1, height: 0, depth: 1, center: { x: 0, y: 0, z: 0 }, min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } }
-    );
+    const result = computeFinalScale({ targetHeightMeters: 8.5, scale: 3 }, { height: 0 });
     expect(result.mode).toBe('scale');
     expect(result.finalScale).toBe(3);
   });
