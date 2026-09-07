@@ -24,6 +24,12 @@ jobs:
       - name: Type check
         run: npm run check
 
+      - name: Unit tests
+        run: npm run test
+
+      - name: Validate location configs
+        run: npm run validate-config
+
       - name: Build (GitHub Pages base)
         run: npm run build
         env:

@@ -1,4 +1,6 @@
 {
+  "id": "heigawa-suimon",
+  "name": "閉伊川水門",
   "modelPath": "/models/suimon-kousin.glb",
   "latitude": 39.80249663004133,
   "longitude": 141.13550877979688,
@@ -6,8 +8,8 @@
   "yawDeg": 30,
   "pitchDeg": 0,
   "rollDeg": 0,
-  "scale": 10.0,
   "targetHeightMeters": 5.0,
+  "scale": 1.0,
   "anchorMode": "gps",
   "originMode": "bottom-center",
   "positionOffsetMeters": { "x": 0, "y": 0, "z": 0 },

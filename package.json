@@ -11,7 +11,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "test": "vitest run",
+    "validate-config": "tsx scripts/validate-config.ts"
   },
   "dependencies": {
     "locar": "^0.1.4",
@@ -19,7 +21,11 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@types/node": "^26.4.1",
+    "@types/three": "^0.185.4",
     "astro": "^7.0.0",
-    "typescript": "^6.0.3"
+    "tsx": "^4.23.13",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.0"
   }
 }
