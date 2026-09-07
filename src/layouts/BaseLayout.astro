@@ -22,13 +22,23 @@ const { title, noindex = false } = Astro.props;
 
 <style is:global>
   :root {
-    color-scheme: dark;
+    color-scheme: light;
+    --bg: #fbf3e7;
+    --bg-soft: #f6e9d8;
+    --text: #3a2e28;
+    --text-soft: #6b5d54;
+    --accent: #e2725b;
+    --accent-soft: #f4a896;
+    --accent2: #5fa987;
+    --surface: #fffaf2;
+    --border-soft: rgba(58, 46, 40, 0.12);
+    --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   body {
     margin: 0;
     font-family: system-ui, sans-serif;
-    background: #0b0e14;
-    color: #e6e8ee;
+    background: var(--bg);
+    color: var(--text);
   }
 </style>
