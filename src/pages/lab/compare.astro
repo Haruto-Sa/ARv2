@@ -1,0 +1,85 @@
+---
+// 開発者専用の比較ランチャー。nav・index.astro からはリンクしない(直URLのみ)。
+//
+// 3方式を同一ページ内に同時マウントする「本当の並列比較」は意図的に採用していない:
+// スマホ1台での複数 getUserMedia カメラストリーム + 複数 WebGL コンテキストの
+// 同時実行は実機で不安定になりやすく、各パターンの main.ts も「ページごとに
+// 一度だけ起動する」設計(パターン間 import 禁止の独立性とも矛盾する)。
+// 代わりに、同じ地点で3方式のページを素早く切り替えて実機比較するための
+// ランチャーとする。
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const patterns = [
+  { id: 'locar', title: 'Pattern A: LocAR', href: '/ar/locar', debugNote: 'デバッグ表示は locations/<id>.json の debug:true で有効化' },
+  {
+    id: 'deviceorientation',
+    title: 'Pattern C: DeviceOrientation',
+    href: '/ar/deviceorientation',
+    debugNote: 'URLに ?debug=1 を付けるとオーバーレイ表示',
+  },
+  { id: 'arjs', title: 'Pattern B: AR.js', href: '/ar/arjs', debugNote: 'デバッグオーバーレイ未実装' },
+];
+---
+
+<BaseLayout title="AR方式比較ランチャー(dev)" noindex>
+  <div class="wrap">
+    <h1>AR方式 比較ランチャー(開発者用)</h1>
+    <p class="lead">
+      同じ場所に立ったまま、下のリンクで各パターンのページへ素早く切り替えて実機比較してください。
+      3方式を1ページに同時マウントする方式は、スマホ1台での複数カメラストリーム/WebGLコンテキストの
+      同時実行が不安定なため採用していません。
+    </p>
+
+    <ul class="list">
+      {
+        patterns.map((p) => (
+          <li>
+            <a href={p.href}>{p.title}</a>
+            <span class="note">{p.debugNote}</span>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="note"><a href="/">← ホームへ戻る</a></p>
+  </div>
+</BaseLayout>
+
+<style>
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 32px 16px 64px;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 12px;
+  }
+  .lead {
+    opacity: 0.8;
+    line-height: 1.7;
+    font-size: 14px;
+  }
+  .list {
+    list-style: none;
+    padding: 0;
+    margin: 24px 0;
+  }
+  .list li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .list a {
+    color: #6ad0ff;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 16px;
+  }
+  .note {
+    font-size: 12px;
+    opacity: 0.65;
+  }
+</style>
