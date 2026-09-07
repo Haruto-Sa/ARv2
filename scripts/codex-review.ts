@@ -57,6 +57,7 @@ function main(): void {
   }
 
   const checks = [
+    run('typecheck (astro check + svelte-check)', 'npm', ['run', 'check']),
     run('vitest', 'npm', ['run', 'test']),
     run('build (gh-pages base)', 'npm', ['run', 'build'], { ...process.env, DEPLOY_TARGET: 'gh-pages' }),
     run('build (cloudflare base)', 'npm', ['run', 'build'], { ...process.env, DEPLOY_TARGET: '' }),

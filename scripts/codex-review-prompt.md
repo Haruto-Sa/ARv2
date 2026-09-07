@@ -6,9 +6,19 @@ Stage2レビュアーです。標準入力に、対象ブランチとの差分(`
 
 ## チェック項目
 
+0. **(最優先) Svelteコンポーネント内へのAR計算ロジックの漏れ出し**: `*.svelte`
+   ファイル(`src/ar-engines/*/components/`)の `<script>` 内に、座標変換・
+   スケール計算・ヘディング補正・アライメント処理などのAR計算ロジックが
+   直接書かれていないか。Svelteコンポーネントは `controller.ts` が公開する
+   関数を呼び、`state.ts` の store を購読して描画するだけの薄いラッパーで
+   あるべきで、three.js/GPS/座標変換のロジック(`src/lib/`, `engine.ts`,
+   `modelTransform.ts` 相当の処理)を独自に再実装していないか確認する。
+   controller.ts 側にも、DOM操作(`document.getElementById` 等)が残っていない
+   か(Svelte化の趣旨に反する)を確認する。
 1. **パターン間の独立性**: `src/ar-engines/locar/`, `src/ar-engines/arjs/`,
    `src/ar-engines/deviceorientation/` の間で相互 import が発生していないか。
-   (`src/lib/` からの共有 import は問題ない。)
+   (`src/lib/` からの共有 import は問題ない。Svelteコンポーネントも同様に
+   他パターンの `components/`/`controller.ts`/`state.ts` を import しない。)
 2. **座標変換・ヘディング補正ロジックの変更にテストが伴っているか**:
    `src/lib/geo/geodesy.ts`, `src/lib/alignment/heading.ts`,
    `src/lib/alignment/orientationMath.ts` に変更がある場合、対応する `.test.ts` の
