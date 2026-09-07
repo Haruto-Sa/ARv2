@@ -203,3 +203,20 @@ export async function loadLocationCatalog(url = '/config/locations/index.json'):
   const raw = await res.json();
   return Array.isArray(raw) ? raw : [];
 }
+
+/**
+ * URLクエリパラメータ(`?lat=..&lon=..`)で緯度経度を上書きする。
+ * 実機に行かなくても任意地点でモデル配置を試せるようにする、実験用のオーバーライド。
+ * 両方とも有効な数値のときだけ上書きする(片方だけの指定は無視)。
+ */
+export function applyLatLonOverride(config: LocationConfig, params: URLSearchParams): LocationConfig {
+  const latRaw = params.get('lat');
+  const lonRaw = params.get('lon');
+  if (latRaw === null || lonRaw === null) return config;
+
+  const lat = Number(latRaw);
+  const lon = Number(lonRaw);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return config;
+
+  return { ...config, latitude: lat, longitude: lon };
+}

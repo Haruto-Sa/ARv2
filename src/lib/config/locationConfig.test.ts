@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeConfig, validateConfig } from './locationConfig';
+import { normalizeConfig, validateConfig, applyLatLonOverride } from './locationConfig';
 
 describe('normalizeConfig', () => {
   it('欠損キーを既定値で補完する', () => {
@@ -52,5 +52,35 @@ describe('validateConfig', () => {
   it('targetHeightMeters が null で scale が不正なら検出する', () => {
     const config = { ...base, targetHeightMeters: null, scale: 0 };
     expect(validateConfig(config).some((i) => i.includes('scale が不正'))).toBe(true);
+  });
+});
+
+describe('applyLatLonOverride', () => {
+  const base = normalizeConfig({
+    id: 'heigawa-suimon',
+    latitude: 39.6395435045501,
+    longitude: 141.96414846972124,
+  });
+
+  it('lat/lon 両方が有効な数値なら上書きする', () => {
+    const params = new URLSearchParams('lat=35.6895&lon=139.6917');
+    const result = applyLatLonOverride(base, params);
+    expect(result.latitude).toBe(35.6895);
+    expect(result.longitude).toBe(139.6917);
+  });
+
+  it('lat/lon が指定されていなければそのまま返す', () => {
+    const result = applyLatLonOverride(base, new URLSearchParams());
+    expect(result).toBe(base);
+  });
+
+  it('片方だけの指定は無視する', () => {
+    const result = applyLatLonOverride(base, new URLSearchParams('lat=35.6895'));
+    expect(result).toBe(base);
+  });
+
+  it('数値でない値は無視する', () => {
+    const result = applyLatLonOverride(base, new URLSearchParams('lat=abc&lon=139.6917'));
+    expect(result).toBe(base);
   });
 });

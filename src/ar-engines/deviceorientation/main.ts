@@ -20,7 +20,7 @@ import * as THREE from 'three';
 import { LocationScene } from './engine';
 import { applyModelTransform, prepareModelInstance } from './modelTransform';
 import { calcBearing, calcDistanceMeters, normalizeDeg180 } from '../../lib/geo/geodesy';
-import { loadLocationConfig, type LocationConfig } from '../../lib/config/locationConfig';
+import { loadLocationConfig, applyLatLonOverride, type LocationConfig } from '../../lib/config/locationConfig';
 import { computeFinalScale, type LoadedModel } from '../../lib/model/normalizeModel';
 import { loadModel } from '../../lib/loaders/loadModel';
 import { withBase } from '../../lib/paths';
@@ -160,7 +160,7 @@ async function loadTarget(): Promise<void> {
   if (result.issues.length) {
     console.warn('[deviceorientation] 設定の不足:\n - ' + result.issues.join('\n - '));
   }
-  const cfg = result.config;
+  const cfg = applyLatLonOverride(result.config, new URLSearchParams(window.location.search));
   state.target = cfg;
   metrics.targetId = cfg.id;
 

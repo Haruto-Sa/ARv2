@@ -17,7 +17,7 @@
 // 得た後)に動的生成する。他パターンと同じく、カメラ起動はユーザー操作の中で行う。
 
 import * as THREE from 'three';
-import { loadLocationConfig, type LocationConfig } from '../../lib/config/locationConfig';
+import { loadLocationConfig, applyLatLonOverride, type LocationConfig } from '../../lib/config/locationConfig';
 import { normalizeIntoOrigin } from '../../lib/model/normalizeModel';
 import { withBase } from '../../lib/paths';
 
@@ -84,7 +84,12 @@ function showFatal(msg: string): void {
 function mountScene(config: LocationConfig): void {
   const scene = document.createElement('a-scene') as any;
   scene.setAttribute('vr-mode-ui', 'enabled: false');
-  scene.setAttribute('arjs', 'sourceType: webcam; videoTexture: true; debugUIEnabled: false;');
+  // videoTexture: true にすると AR.js が videoTexture 用のテクスチャ平面を
+  // 追加でレンダリングし、classic な video 背景と重なって「カメラ映像が二重に
+  // 見える」不具合が出る(AR.js公式ドキュメントによれば videoTexture は
+  // 主に1km以上離れた対象向けのオプション)。水門までの距離はその範囲外なので
+  // 無効のままにする(既定値 false)。
+  scene.setAttribute('arjs', 'sourceType: webcam; debugUIEnabled: false;');
   scene.setAttribute('renderer', 'antialias: true; alpha: true');
   scene.setAttribute('embedded', '');
 
@@ -116,7 +121,7 @@ export async function bootArjsAR(): Promise<void> {
   let config: LocationConfig;
   try {
     const result = await loadLocationConfig(withBase(`/config/locations/${locationId}.json`));
-    config = result.config;
+    config = applyLatLonOverride(result.config, new URLSearchParams(window.location.search));
     if (result.issues.length) {
       console.warn('[arjs] 設定の不足:\n - ' + result.issues.join('\n - '));
     }
