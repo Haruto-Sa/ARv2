@@ -24,7 +24,7 @@ import { loadLocationConfig, applyLatLonOverride, type LocationConfig } from '..
 import { normalizeIntoOrigin } from '../../lib/model/normalizeModel';
 import { withBase } from '../../lib/paths';
 import { addModelDebugVisuals, addGroundGrid, logConfigSnapshot } from './debugHelpers';
-import { loadCorrectionDelta, saveCorrectionDelta, type CorrectionDelta } from './correctionUI';
+import { loadCorrectionDelta, saveCorrectionDelta, ZERO_DELTA, type CorrectionDelta } from './correctionUI';
 import { arState } from './state';
 
 // three.js/エンジンのインスタンスはリアクティブ store に乗せず、モジュール
@@ -311,4 +311,24 @@ export function applyCorrectionDelta(delta: CorrectionDelta): void {
   saveCorrectionDelta(delta);
   arState.update((s) => ({ ...s, delta }));
   applyTransform(config);
+}
+
+/**
+ * CorrectionControls.svelte の ±ボタンから呼ばれる。次のデルタ値の計算(ステップ加算/
+ * 乗算)もここで行い、コンポーネント側は key/step の受け渡しだけにする。
+ */
+export function bumpCorrectionDelta(key: keyof CorrectionDelta, step: number, isMul: boolean): void {
+  const current = get(arState).delta;
+  const next = { ...current };
+  if (isMul) {
+    next[key] = Math.max(0.01, +(current[key] * (1 + step)).toFixed(4));
+  } else {
+    next[key] = +(current[key] + step).toFixed(3);
+  }
+  applyCorrectionDelta(next);
+}
+
+/** CorrectionControls.svelte のリセットボタンから呼ばれる。 */
+export function resetCorrectionDelta(): void {
+  applyCorrectionDelta({ ...ZERO_DELTA });
 }

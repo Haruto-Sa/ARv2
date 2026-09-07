@@ -1,7 +1,7 @@
 <script lang="ts">
   import { arState } from '../state';
-  import { applyCorrectionDelta } from '../controller';
-  import { ZERO_DELTA, type CorrectionDelta } from '../correctionUI';
+  import { bumpCorrectionDelta, resetCorrectionDelta } from '../controller';
+  import type { CorrectionDelta } from '../correctionUI';
 
   const rows: Array<{ label: string; key: keyof CorrectionDelta; step: number; isMul?: boolean }> = [
     { label: '左右 dx (m)', key: 'dx', step: 0.1 },
@@ -10,21 +10,6 @@
     { label: '回転 yaw (°)', key: 'dYawDeg', step: 1 },
     { label: 'scale ×', key: 'scaleMul', step: 0.05, isMul: true },
   ];
-
-  function bump(key: keyof CorrectionDelta, step: number, isMul: boolean): void {
-    const current = $arState.delta;
-    const next = { ...current };
-    if (isMul) {
-      next[key] = Math.max(0.01, +(current[key] * (1 + step)).toFixed(4));
-    } else {
-      next[key] = +(current[key] + step).toFixed(3);
-    }
-    applyCorrectionDelta(next);
-  }
-
-  function reset(): void {
-    applyCorrectionDelta({ ...ZERO_DELTA });
-  }
 </script>
 
 {#if $arState.config?.debug}
@@ -33,11 +18,11 @@
     {#each rows as row (row.key)}
       <div class="row">
         <span class="label">{row.label}</span>
-        <button type="button" onclick={() => bump(row.key, -row.step, !!row.isMul)}>−</button>
-        <button type="button" onclick={() => bump(row.key, row.step, !!row.isMul)}>＋</button>
+        <button type="button" onclick={() => bumpCorrectionDelta(row.key, -row.step, !!row.isMul)}>−</button>
+        <button type="button" onclick={() => bumpCorrectionDelta(row.key, row.step, !!row.isMul)}>＋</button>
       </div>
     {/each}
-    <button type="button" class="reset" onclick={reset}>リセット</button>
+    <button type="button" class="reset" onclick={resetCorrectionDelta}>リセット</button>
     <pre class="readout">{JSON.stringify($arState.delta, null, 1)}</pre>
   </div>
 {/if}
