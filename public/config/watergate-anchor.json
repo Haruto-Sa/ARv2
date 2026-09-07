@@ -1,0 +1,32 @@
+{
+  "modelPath": "/models/suimon-kousin.glb",
+  "latitude": 39.80249663004133,
+  "longitude": 141.13550877979688,
+  "altitude": 10,
+  "yawDeg": 30,
+  "pitchDeg": 0,
+  "rollDeg": 0,
+  "scale": 10.0,
+  "targetHeightMeters": 5.0,
+  "anchorMode": "gps",
+  "originMode": "bottom-center",
+  "positionOffsetMeters": { "x": 0, "y": 0, "z": 0 },
+  "smoothing": {
+    "ignoreSmallGpsMovementMeters": 0.5,
+    "gpsMinAccuracy": 60
+  },
+  "animation": {
+    "enabled": true,
+    "loop": true,
+    "clips": null,
+    "timeScale": 1.0
+  },
+  "audio": {
+    "path": null,
+    "loop": true,
+    "volume": 1.0,
+    "autoplay": true
+  },
+  "rendering": { "depthTest": true, "depthWrite": true },
+  "debug": true
+}
