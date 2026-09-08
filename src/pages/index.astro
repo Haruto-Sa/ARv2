@@ -74,6 +74,10 @@ const experiences = [
   },
 ];
 
+// マーケー(横流れ)表示用に2セット連続で並べる。後半セットは aria-hidden でスクリーンリーダー・
+// キーボードフォーカスから隠し、シームレスループ用の見た目だけの複製として扱う。
+const experiencesLoop = [...experiences, ...experiences];
+
 const steps = [
   { title: 'カメラ・位置情報・モーションセンサーを許可する', description: '開始時にブラウザが確認を求めます。すべて許可してください。' },
   { title: '体験したい方式と地点を選ぶ', description: '下の「体験メニュー」から選び、必要なら緯度経度を指定します。' },
@@ -85,7 +89,22 @@ const steps = [
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
 
   <header class="site-header">
-    <span class="site-title">閉伊川水門プロジェクト</span>
+    <span class="site-brand">
+      <svg class="site-mark" viewBox="0 0 24 24" aria-hidden="true">
+        <clipPath id="site-mark-clip">
+          <circle cx="12" cy="12" r="12" />
+        </clipPath>
+        <g clip-path="url(#site-mark-clip)">
+          <rect width="24" height="24" fill="var(--water-soft)" />
+          <path d="M-2 15 L6 6 L11 12 L15 5 L26 15 L26 26 L-2 26 Z" fill="var(--accent2)" />
+          <path
+            d="M-2 20 C5 15 9 23 15 18 C19 15 21 20 26 17 L26 26 L-2 26 Z"
+            fill="var(--water)"
+          />
+        </g>
+      </svg>
+      <span class="site-title">閉伊川水門プロジェクト</span>
+    </span>
     <nav class="site-nav">
       <a href="#menu">体験メニュー</a>
       <a href="#map">地図</a>
@@ -97,6 +116,9 @@ const steps = [
     <section class="hero">
       <span class="hero-icon" aria-hidden="true">🌊</span>
       <h1>閉伊川水門を、AR・3Dスキャン・映像で体験する</h1>
+      <svg class="hero-underline" viewBox="0 0 160 12" aria-hidden="true">
+        <path d="M2 8 C 30 2, 55 2, 80 7 S 130 12, 158 5" />
+      </svg>
       <p class="lead">
         岩手県宮古市・閉伊川水門を、現地に行かなくても様々な方法で体験できるプロジェクトです。
         位置情報ARでは、水門の3Dモデルを実物大でその場に重ねて表示します。
@@ -110,26 +132,41 @@ const steps = [
 
     <section id="menu" class="menu-section">
       <h2>体験メニュー</h2>
-      <div class="menu-grid">
-        {
-          experiences.map((item) =>
-            item.status === 'active' ? (
-              <a class="menu-card" href={item.href}>
-                <div class="menu-icon">{item.icon}</div>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-                <span class="menu-arrow">→</span>
-              </a>
-            ) : (
-              <div class="menu-card soon">
-                <div class="menu-icon">{item.icon}</div>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-                <span class="badge">近日公開</span>
-              </div>
-            )
-          )
-        }
+      <p class="section-note">流木のように、体験メニューが川を流れていきます。カードにカーソルを合わせる(またはタップ)と止まります。</p>
+      <div class="menu-flow">
+        <div class="menu-flow-bg" aria-hidden="true">
+          <span class="drift drift-1">🪵</span>
+          <span class="drift drift-2">🍃</span>
+          <span class="drift drift-3">🪵</span>
+          <span class="drift drift-4">🍃</span>
+        </div>
+        <div class="menu-track">
+          {
+            experiencesLoop.map((item, i) => {
+              const dup = i >= experiences.length;
+              return item.status === 'active' ? (
+                <a
+                  class="menu-card"
+                  href={item.href}
+                  aria-hidden={dup ? 'true' : undefined}
+                  tabindex={dup ? -1 : undefined}
+                >
+                  <div class="menu-icon">{item.icon}</div>
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                  <span class="menu-arrow">→</span>
+                </a>
+              ) : (
+                <div class="menu-card soon" aria-hidden={dup ? 'true' : undefined}>
+                  <div class="menu-icon">{item.icon}</div>
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                  <span class="badge">近日公開</span>
+                </div>
+              );
+            })
+          }
+        </div>
       </div>
     </section>
 
@@ -278,24 +315,29 @@ const steps = [
       if (el) sectionObserver.observe(el);
     });
 
-    // 体験メニューのカードを、初回表示時だけ軽くフェードイン+スライドさせる。
-    const cardObserver = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            cardObserver.unobserve(entry.target);
+    // 体験メニュー(横流れ帯)全体を、初回表示時だけ軽くフェードイン+スライドさせる。
+    const menuFlow = document.querySelector('.menu-flow');
+    if (menuFlow) {
+      const flowObserver = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              flowObserver.unobserve(entry.target);
+            }
           }
-        }
-      },
-      { threshold: 0.15 }
-    );
-    document.querySelectorAll('.menu-card').forEach((card) => {
+        },
+        { threshold: 0.15 }
+      );
       // pre-reveal はJSがここで付与したときだけ効く(CSS側の既定は常に表示)。
-      // JSが動かない/エラーで止まった場合でもカードが消えたままにはならない。
-      card.classList.add('pre-reveal');
-      cardObserver.observe(card);
-    });
+      menuFlow.classList.add('pre-reveal');
+      flowObserver.observe(menuFlow);
+    }
+
+    // タッチ端末では :hover が効かないため、タッチ中は横流れを一時停止してタップしやすくする。
+    const menuTrack = document.querySelector('.menu-track');
+    menuFlow?.addEventListener('touchstart', () => menuTrack?.classList.add('paused'), { passive: true });
+    menuFlow?.addEventListener('touchend', () => menuTrack?.classList.remove('paused'), { passive: true });
   </script>
 </BaseLayout>
 
@@ -307,8 +349,8 @@ const steps = [
     :global(html) {
       scroll-behavior: auto;
     }
-    .menu-card,
-    .menu-card.pre-reveal,
+    .menu-flow,
+    .menu-flow.pre-reveal,
     .menu-arrow,
     .btn-primary,
     .site-header,
@@ -317,6 +359,18 @@ const steps = [
       animation: none !important;
       opacity: 1 !important;
       transform: none !important;
+    }
+    .menu-flow-bg,
+    .drift,
+    .menu-track {
+      animation: none !important;
+      transform: none !important;
+    }
+    .menu-flow {
+      overflow-x: auto;
+    }
+    .menu-card[aria-hidden='true'] {
+      display: none;
     }
   }
 
@@ -340,6 +394,16 @@ const steps = [
     background: color-mix(in srgb, var(--bg) 88%, transparent);
     backdrop-filter: blur(6px);
     border-bottom-color: var(--border-soft);
+  }
+  .site-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .site-mark {
+    width: 22px;
+    height: 22px;
+    flex: none;
   }
   .site-title {
     font-size: 14px;
@@ -410,6 +474,19 @@ const steps = [
     color: var(--text);
     max-width: 16em;
   }
+  .hero-underline {
+    display: block;
+    width: 130px;
+    height: 10px;
+    margin: 0 0 16px;
+  }
+  .hero-underline path {
+    fill: none;
+    stroke: var(--water);
+    stroke-width: 3;
+    stroke-linecap: round;
+    opacity: 0.55;
+  }
   .lead {
     margin: 0 0 24px;
     max-width: 40em;
@@ -451,16 +528,106 @@ const steps = [
     line-height: 1.6;
   }
 
-  .menu-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 14px;
+  .menu-flow {
+    position: relative;
     margin-top: 18px;
+    padding: 8px 0;
+    border-radius: 18px;
+    overflow: hidden;
+    transition: opacity 0.6s var(--ease-soft), transform 0.6s var(--ease-soft);
+  }
+  /* pre-reveal はJSが付与したときだけ効く。JS未実行時は常に表示された状態が既定。 */
+  .menu-flow.pre-reveal {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  .menu-flow.pre-reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+  .menu-flow-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      100deg,
+      var(--water-soft) 0px,
+      var(--water-soft) 2px,
+      transparent 2px,
+      transparent 60px
+    );
+    opacity: 0.4;
+    animation: water-stripes 14s linear infinite;
+  }
+  @keyframes water-stripes {
+    from {
+      background-position-x: 0;
+    }
+    to {
+      background-position-x: -240px;
+    }
+  }
+  .drift {
+    position: absolute;
+    font-size: 20px;
+    opacity: 0.5;
+    animation-name: drift-x;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+  .drift-1 {
+    top: 6%;
+    animation-duration: 22s;
+    animation-delay: 0s;
+  }
+  .drift-2 {
+    top: 40%;
+    animation-duration: 28s;
+    animation-delay: -8s;
+  }
+  .drift-3 {
+    top: 68%;
+    animation-duration: 25s;
+    animation-delay: -14s;
+  }
+  .drift-4 {
+    top: 85%;
+    animation-duration: 30s;
+    animation-delay: -3s;
+  }
+  @keyframes drift-x {
+    from {
+      transform: translateX(110%);
+    }
+    to {
+      transform: translateX(-110%);
+    }
+  }
+  .menu-track {
+    position: relative;
+    display: flex;
+    gap: 14px;
+    width: max-content;
+    animation: menu-flow 48s linear infinite;
+  }
+  @keyframes menu-flow {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  .menu-track:hover,
+  .menu-track:focus-within,
+  .menu-track.paused {
+    animation-play-state: paused;
   }
   .menu-card {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    flex: 0 0 240px;
     padding: 18px;
     border-radius: 18px;
     border: none;
@@ -469,22 +636,10 @@ const steps = [
     color: inherit;
     text-decoration: none;
     position: relative;
-    transition: opacity 0.6s var(--ease-soft), transform 0.6s var(--ease-soft), box-shadow 0.3s var(--ease-soft);
-  }
-  /* pre-reveal はJSが付与したときだけ効く。JS未実行時は常に表示された状態が既定。 */
-  .menu-card.pre-reveal {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  .menu-card.pre-reveal.visible {
-    opacity: 1;
-    transform: none;
+    transition: box-shadow 0.3s var(--ease-soft), transform 0.3s var(--ease-soft);
   }
   .menu-card.soon {
     opacity: 0.6;
-  }
-  .menu-card.soon.pre-reveal:not(.visible) {
-    opacity: 0;
   }
   a.menu-card:hover {
     box-shadow: 0 14px 28px -12px rgba(58, 46, 40, 0.32);
