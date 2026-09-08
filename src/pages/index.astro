@@ -95,12 +95,17 @@ const steps = [
 
   <main class="wrap">
     <section class="hero">
+      <span class="hero-icon" aria-hidden="true">🌊</span>
       <h1>閉伊川水門を、AR・3Dスキャン・映像で体験する</h1>
       <p class="lead">
         岩手県宮古市・閉伊川水門を、現地に行かなくても様々な方法で体験できるプロジェクトです。
         位置情報ARでは、水門の3Dモデルを実物大でその場に重ねて表示します。
       </p>
       <a class="btn-primary" href="#menu">体験メニューを見る</a>
+
+      <svg class="wave-divider" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0,20 C300,60 900,-10 1200,30 L1200,60 L0,60 Z" />
+      </svg>
     </section>
 
     <section id="menu" class="menu-section">
@@ -306,8 +311,10 @@ const steps = [
     .menu-card.pre-reveal,
     .menu-arrow,
     .btn-primary,
-    .site-header {
+    .site-header,
+    .hero-icon {
       transition: none !important;
+      animation: none !important;
       opacity: 1 !important;
       transform: none !important;
     }
@@ -325,149 +332,186 @@ const steps = [
     max-width: 960px;
     margin: 0 auto;
     padding: 16px;
-    background: #0b0e14;
+    background: transparent;
     border-bottom: 1px solid transparent;
-    transition: border-color 0.25s ease, background-color 0.25s ease;
+    transition: border-color 0.3s var(--ease-soft), background-color 0.3s var(--ease-soft);
   }
   .site-header.scrolled {
-    background: #0b0e14f2;
-    border-bottom-color: rgba(255, 255, 255, 0.1);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(6px);
+    border-bottom-color: var(--border-soft);
   }
   .site-title {
     font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.02em;
+    color: var(--text);
   }
   .site-nav {
     display: flex;
     gap: 18px;
   }
   .site-nav a {
-    color: inherit;
-    opacity: 0.6;
+    color: var(--text-soft);
     text-decoration: none;
     font-size: 13px;
-    transition: opacity 0.2s ease;
+    transition: color 0.25s var(--ease-soft);
   }
   .site-nav a:hover {
-    opacity: 1;
+    color: var(--accent);
   }
   .site-nav a.active {
-    opacity: 1;
+    color: var(--accent);
     font-weight: 700;
   }
 
   .wrap {
     max-width: 960px;
     margin: 0 auto;
-    padding: 24px 16px 48px;
+    padding: 0 16px 48px;
   }
   .hero {
-    padding: 24px 0 32px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    margin: 0 -16px 56px;
+    padding: 40px 16px 72px;
+    background: var(--bg-soft);
+  }
+  .hero-icon {
+    display: inline-block;
+    font-size: 40px;
+    margin-bottom: 8px;
+    animation: float 5s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+  .wave-divider {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    width: 100%;
+    height: 40px;
+    display: block;
+  }
+  .wave-divider path {
+    fill: var(--bg);
   }
   h1 {
     margin: 0 0 12px;
-    font-size: 26px;
-    line-height: 1.4;
+    font-size: 28px;
+    line-height: 1.45;
+    color: var(--text);
+    max-width: 16em;
   }
   .lead {
-    margin: 0 0 20px;
+    margin: 0 0 24px;
     max-width: 40em;
-    opacity: 0.8;
-    line-height: 1.7;
+    color: var(--text-soft);
+    line-height: 1.8;
   }
   .btn-primary {
     display: inline-block;
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: inherit;
+    padding: 13px 28px;
+    border-radius: 999px;
+    border: none;
+    background: var(--accent);
+    color: #fff8f3;
     text-decoration: none;
     font-size: 14px;
     font-weight: 700;
-    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+    box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--accent) 70%, transparent);
+    transition: background-color 0.3s var(--ease-soft), transform 0.3s var(--ease-soft), box-shadow 0.3s var(--ease-soft);
   }
   .btn-primary:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.4);
-    transform: translateY(-1px);
+    background: color-mix(in srgb, var(--accent) 88%, black);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -8px color-mix(in srgb, var(--accent) 75%, transparent);
   }
 
   section {
-    margin-top: 40px;
+    margin-top: 48px;
     scroll-margin-top: 72px;
   }
   section h2 {
     margin: 0 0 6px;
-    font-size: 18px;
+    font-size: 19px;
+    color: var(--text);
   }
   .section-note {
     margin: 0 0 16px;
     font-size: 14px;
-    opacity: 0.75;
+    color: var(--text-soft);
     line-height: 1.6;
   }
 
   .menu-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-    margin-top: 16px;
+    gap: 14px;
+    margin-top: 18px;
   }
   .menu-card {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    padding: 16px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.03);
+    padding: 18px;
+    border-radius: 18px;
+    border: none;
+    background: var(--surface);
+    box-shadow: 0 6px 18px -10px rgba(58, 46, 40, 0.25);
     color: inherit;
     text-decoration: none;
     position: relative;
-    transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.2s ease, background-color 0.2s ease;
+    transition: opacity 0.6s var(--ease-soft), transform 0.6s var(--ease-soft), box-shadow 0.3s var(--ease-soft);
   }
   /* pre-reveal はJSが付与したときだけ効く。JS未実行時は常に表示された状態が既定。 */
   .menu-card.pre-reveal {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(14px);
   }
   .menu-card.pre-reveal.visible {
     opacity: 1;
     transform: none;
   }
   .menu-card.soon {
-    opacity: 0.55;
+    opacity: 0.6;
   }
   .menu-card.soon.pre-reveal:not(.visible) {
     opacity: 0;
   }
   a.menu-card:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.06);
-    transform: translateY(-2px);
+    box-shadow: 0 14px 28px -12px rgba(58, 46, 40, 0.32);
+    transform: translateY(-3px);
   }
   .menu-icon {
-    font-size: 24px;
+    font-size: 26px;
   }
   .menu-card h3 {
     margin: 0;
     font-size: 15px;
+    color: var(--text);
   }
   .menu-card p {
     margin: 0;
     font-size: 13px;
-    opacity: 0.8;
+    color: var(--text-soft);
     line-height: 1.5;
   }
   .menu-arrow {
     position: absolute;
-    right: 14px;
-    bottom: 12px;
-    opacity: 0.5;
+    right: 16px;
+    bottom: 14px;
+    color: var(--accent);
+    opacity: 0.6;
     font-size: 14px;
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.25s var(--ease-soft), transform 0.25s var(--ease-soft);
   }
   a.menu-card:hover .menu-arrow {
     opacity: 1;
@@ -476,10 +520,12 @@ const steps = [
   .badge {
     align-self: flex-start;
     margin-top: 4px;
-    padding: 2px 8px;
+    padding: 3px 10px;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: color-mix(in srgb, var(--accent2) 18%, var(--surface));
+    color: color-mix(in srgb, var(--accent2) 70%, var(--text));
     font-size: 11px;
+    font-weight: 700;
   }
 
   .field-row {
@@ -487,85 +533,95 @@ const steps = [
     flex-wrap: wrap;
     align-items: end;
     gap: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
   }
   .field-row label {
     display: flex;
     flex-direction: column;
     gap: 4px;
     font-size: 13px;
-    opacity: 0.85;
+    color: var(--text-soft);
   }
   .field-row input {
-    padding: 8px 10px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.04);
-    color: inherit;
+    padding: 9px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border-soft);
+    background: var(--surface);
+    color: var(--text);
     font-size: 14px;
     width: 14em;
+    transition: border-color 0.25s var(--ease-soft);
+  }
+  .field-row input:focus {
+    outline: none;
+    border-color: var(--accent);
   }
   .btn-plain {
-    padding: 8px 14px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: transparent;
-    color: inherit;
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--border-soft);
+    background: var(--surface);
+    color: var(--text);
     font-size: 13px;
     cursor: pointer;
+    transition: border-color 0.25s var(--ease-soft), background-color 0.25s var(--ease-soft);
   }
   .btn-plain:hover {
-    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, var(--surface));
   }
 
   .pattern-buttons {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 12px;
+    gap: 14px;
   }
   .pattern-button {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 6px;
-    padding: 16px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.03);
+    padding: 18px;
+    border-radius: 18px;
+    border: none;
+    background: var(--surface);
+    box-shadow: 0 6px 18px -10px rgba(58, 46, 40, 0.25);
     color: inherit;
     text-align: left;
     cursor: pointer;
     font: inherit;
+    transition: box-shadow 0.3s var(--ease-soft), transform 0.3s var(--ease-soft);
   }
   .pattern-button:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 14px 28px -12px rgba(58, 46, 40, 0.32);
+    transform: translateY(-3px);
   }
   .pattern-title {
     font-weight: 700;
     font-size: 15px;
+    color: var(--text);
   }
   .pattern-desc {
     font-size: 13px;
-    opacity: 0.75;
+    color: var(--text-soft);
     line-height: 1.5;
   }
 
   #locations-map {
     width: 100%;
     height: 320px;
-    border-radius: 10px;
+    border-radius: 18px;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 6px 18px -10px rgba(58, 46, 40, 0.25);
   }
 
   .steps {
     list-style: none;
-    margin: 16px 0 0;
+    margin: 18px 0 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 18px;
   }
   .steps li {
     display: flex;
@@ -574,10 +630,11 @@ const steps = [
   }
   .step-number {
     flex: none;
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: var(--accent2);
+    color: #fff8f3;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -587,11 +644,12 @@ const steps = [
   .steps h3 {
     margin: 0 0 4px;
     font-size: 15px;
+    color: var(--text);
   }
   .steps p {
     margin: 0;
     font-size: 13px;
-    opacity: 0.8;
+    color: var(--text-soft);
     line-height: 1.6;
   }
 
@@ -602,11 +660,11 @@ const steps = [
     font-size: 13px;
   }
   .site-footer a {
-    color: inherit;
-    opacity: 0.6;
+    color: var(--text-soft);
     text-decoration: none;
+    transition: color 0.25s var(--ease-soft);
   }
   .site-footer a:hover {
-    opacity: 1;
+    color: var(--accent);
   }
 </style>
