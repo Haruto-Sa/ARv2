@@ -1,0 +1,119 @@
+---
+import { withBase } from '../../lib/paths';
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>Hiroマーカー印刷</title>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>Hiroマーカー印刷</h1>
+      <p>A4で印刷して、手のひらARで読み取ってください。画面に表示したまま読み取らせることもできます。</p>
+
+      <div class="actions">
+        <button type="button" id="print-btn">印刷する</button>
+        <a href={withBase('/ar/marker')}>手のひらARへ戻る</a>
+      </div>
+
+      <section class="paper">
+        <img src={withBase('/assets/markers/hiro.png')} alt="Hiroマーカー" />
+      </section>
+    </main>
+
+    <script>
+      document.getElementById('print-btn')?.addEventListener('click', () => window.print());
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: #f2f4f8;
+    color: #1b2430;
+  }
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 16px 32px;
+    text-align: center;
+  }
+  h1 {
+    margin: 0 0 8px;
+    font-size: 24px;
+  }
+  p {
+    margin: 0 0 16px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  #print-btn,
+  .actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid #b2bdd0;
+    background: #ffffff;
+    color: #1b2430;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .paper {
+    margin: 0 auto;
+    width: min(100%, 794px);
+    min-height: 1123px;
+    background: #ffffff;
+    border: 1px solid #dde3ee;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .paper img {
+    width: min(80%, 620px);
+    display: block;
+  }
+  @media print {
+    @page {
+      size: A4 portrait;
+      margin: 10mm;
+    }
+    body {
+      background: #fff;
+    }
+    .actions,
+    h1,
+    p {
+      display: none !important;
+    }
+    .wrap {
+      padding: 0;
+      max-width: none;
+    }
+    .paper {
+      width: 100%;
+      min-height: auto;
+      border: none;
+      box-shadow: none;
+    }
+    .paper img {
+      width: 180mm;
+    }
+  }
+</style>
