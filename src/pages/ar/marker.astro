@@ -1,0 +1,10 @@
+---
+import ArPageLayout from '../../layouts/ArPageLayout.astro';
+import IntroPanel from '../../ar-engines/markerar/components/IntroPanel.svelte';
+import MarkerPanel from '../../ar-engines/markerar/components/MarkerPanel.svelte';
+---
+
+<ArPageLayout title="水門 AR(手のひらAR: マーカー)">
+  <IntroPanel client:only="svelte" />
+  <MarkerPanel client:only="svelte" />
+</ArPageLayout>
