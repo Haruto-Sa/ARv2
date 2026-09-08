@@ -13,16 +13,16 @@ const patterns = [
     href: withBase('/ar/locar'),
   },
   {
-    id: 'deviceorientation',
-    title: 'Pattern C: DeviceOrientation',
-    description: 'コンパス絶対値に依存しない、シルエット位置合わせによる独自実装。',
-    href: withBase('/ar/deviceorientation'),
-  },
-  {
     id: 'arjs',
     title: 'Pattern B: AR.js',
     description: 'A-Frame + AR.js の位置情報AR機能(gps-new-entity-place)を使用。',
     href: withBase('/ar/arjs'),
+  },
+  {
+    id: 'deviceorientation',
+    title: 'Pattern C: DeviceOrientation',
+    description: 'コンパス絶対値に依存しない、シルエット位置合わせによる独自実装。',
+    href: withBase('/ar/deviceorientation'),
   },
 ];
 
@@ -132,14 +132,8 @@ const steps = [
 
     <section id="menu" class="menu-section">
       <h2>体験メニュー</h2>
-      <p class="section-note">流木のように、体験メニューが川を流れていきます。カードにカーソルを合わせる(またはタップ)と止まります。</p>
+      <p class="section-note">ドラッグ・スクロールで他のメニューをすぐに見られます。</p>
       <div class="menu-flow">
-        <div class="menu-flow-bg" aria-hidden="true">
-          <span class="drift drift-1">🪵</span>
-          <span class="drift drift-2">🍃</span>
-          <span class="drift drift-3">🪵</span>
-          <span class="drift drift-4">🍃</span>
-        </div>
         <div class="menu-track">
           {
             experiencesLoop.map((item, i) => {
@@ -225,7 +219,9 @@ const steps = [
   </main>
 
   <footer class="site-footer">
-    <a href="https://github.com/Haruto-Sa/ARv2" target="_blank" rel="noopener">GitHub</a>
+    <div class="site-footer-inner">
+      <a href="https://github.com/Haruto-Sa/ARv2" target="_blank" rel="noopener">GitHub</a>
+    </div>
   </footer>
 
   <script>
@@ -246,6 +242,21 @@ const steps = [
       );
     });
 
+    const DEFAULT_PIN_COLOR = '#e0341f';
+
+    function pinIcon(L: any, color: string) {
+      return L.divIcon({
+        className: 'ar-map-pin',
+        html: `<svg width="26" height="34" viewBox="0 0 26 34" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 0C5.8 0 0 5.8 0 13c0 9.5 13 21 13 21s13-11.5 13-21C26 5.8 20.2 0 13 0z" fill="${color}"/>
+          <circle cx="13" cy="13" r="5" fill="#fff"/>
+        </svg>`,
+        iconSize: [26, 34],
+        iconAnchor: [13, 34],
+        popupAnchor: [0, -30],
+      });
+    }
+
     async function initLocationsMap() {
       const L = (window as any).L;
       const mapEl = document.getElementById('locations-map');
@@ -263,7 +274,9 @@ const steps = [
         for (const loc of catalog) {
           latlngs.push([loc.latitude, loc.longitude]);
           const icon = loc.icon || '📍';
-          const marker = L.marker([loc.latitude, loc.longitude]).addTo(map).bindPopup(`${icon} ${loc.name}`);
+          const marker = L.marker([loc.latitude, loc.longitude], { icon: pinIcon(L, loc.color || DEFAULT_PIN_COLOR) })
+            .addTo(map)
+            .bindPopup(`${icon} ${loc.name}`);
           marker.on('click', () => {
             if (latInput) latInput.value = String(loc.latitude);
             if (lonInput) lonInput.value = String(loc.longitude);
@@ -334,10 +347,77 @@ const steps = [
       flowObserver.observe(menuFlow);
     }
 
-    // タッチ端末では :hover が効かないため、タッチ中は横流れを一時停止してタップしやすくする。
-    const menuTrack = document.querySelector('.menu-track');
-    menuFlow?.addEventListener('touchstart', () => menuTrack?.classList.add('paused'), { passive: true });
-    menuFlow?.addEventListener('touchend', () => menuTrack?.classList.remove('paused'), { passive: true });
+    // 体験メニューのオート横流れ。ネイティブの scrollLeft を直接動かすため、ユーザーの
+    // ドラッグ/スクロール操作(同じ scrollLeft を操作する)といつでも共存できる。
+    setupMenuFlow(menuFlow as HTMLElement | null);
+
+    function setupMenuFlow(flow: HTMLElement | null): void {
+      const track = flow?.querySelector<HTMLElement>('.menu-track');
+      if (!flow || !track) return;
+
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const AUTO_SPEED = 0.4; // px/frame
+      const RESUME_DELAY_MS = 2500;
+      let paused = false;
+      let resumeTimer: ReturnType<typeof setTimeout> | undefined;
+
+      function loopWidth(): number {
+        return track!.scrollWidth / 2;
+      }
+
+      function wrapScroll(): void {
+        const half = loopWidth();
+        if (half <= 0) return;
+        if (flow!.scrollLeft >= half) flow!.scrollLeft -= half;
+        else if (flow!.scrollLeft < 0) flow!.scrollLeft += half;
+      }
+
+      function pauseThenResume(): void {
+        paused = true;
+        clearTimeout(resumeTimer);
+        resumeTimer = setTimeout(() => {
+          paused = false;
+        }, RESUME_DELAY_MS);
+      }
+
+      flow.addEventListener('scroll', wrapScroll, { passive: true });
+      ['pointerdown', 'wheel', 'touchstart'].forEach((evt) =>
+        flow.addEventListener(evt, pauseThenResume, { passive: true })
+      );
+
+      // マウスでの掴んでドラッグ操作(タッチ端末はネイティブのスクロールジェスチャーで足りる)。
+      let dragging = false;
+      let dragStartX = 0;
+      let dragStartScrollLeft = 0;
+      flow.addEventListener('pointerdown', (e) => {
+        if (e.pointerType !== 'mouse') return;
+        dragging = true;
+        dragStartX = e.clientX;
+        dragStartScrollLeft = flow!.scrollLeft;
+        flow!.setPointerCapture(e.pointerId);
+      });
+      flow.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        flow!.scrollLeft = dragStartScrollLeft - (e.clientX - dragStartX);
+      });
+      flow.addEventListener('pointerup', () => {
+        dragging = false;
+      });
+      flow.addEventListener('pointercancel', () => {
+        dragging = false;
+      });
+
+      if (!prefersReducedMotion) {
+        const tick = () => {
+          if (!paused && !dragging) {
+            flow!.scrollLeft += AUTO_SPEED;
+            wrapScroll();
+          }
+          requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+    }
   </script>
 </BaseLayout>
 
@@ -359,15 +439,6 @@ const steps = [
       animation: none !important;
       opacity: 1 !important;
       transform: none !important;
-    }
-    .menu-flow-bg,
-    .drift,
-    .menu-track {
-      animation: none !important;
-      transform: none !important;
-    }
-    .menu-flow {
-      overflow-x: auto;
     }
     .menu-card[aria-hidden='true'] {
       display: none;
@@ -499,7 +570,7 @@ const steps = [
     border-radius: 999px;
     border: none;
     background: var(--accent);
-    color: #fff8f3;
+    color: #ffffff;
     text-decoration: none;
     font-size: 14px;
     font-weight: 700;
@@ -533,8 +604,17 @@ const steps = [
     margin-top: 18px;
     padding: 8px 0;
     border-radius: 18px;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    cursor: grab;
+    scrollbar-width: none;
     transition: opacity 0.6s var(--ease-soft), transform 0.6s var(--ease-soft);
+  }
+  .menu-flow::-webkit-scrollbar {
+    display: none;
+  }
+  .menu-flow:active {
+    cursor: grabbing;
   }
   /* pre-reveal はJSが付与したときだけ効く。JS未実行時は常に表示された状態が既定。 */
   .menu-flow.pre-reveal {
@@ -545,83 +625,10 @@ const steps = [
     opacity: 1;
     transform: none;
   }
-  .menu-flow-bg {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: repeating-linear-gradient(
-      100deg,
-      var(--water-soft) 0px,
-      var(--water-soft) 2px,
-      transparent 2px,
-      transparent 60px
-    );
-    opacity: 0.4;
-    animation: water-stripes 14s linear infinite;
-  }
-  @keyframes water-stripes {
-    from {
-      background-position-x: 0;
-    }
-    to {
-      background-position-x: -240px;
-    }
-  }
-  .drift {
-    position: absolute;
-    font-size: 20px;
-    opacity: 0.5;
-    animation-name: drift-x;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-  }
-  .drift-1 {
-    top: 6%;
-    animation-duration: 22s;
-    animation-delay: 0s;
-  }
-  .drift-2 {
-    top: 40%;
-    animation-duration: 28s;
-    animation-delay: -8s;
-  }
-  .drift-3 {
-    top: 68%;
-    animation-duration: 25s;
-    animation-delay: -14s;
-  }
-  .drift-4 {
-    top: 85%;
-    animation-duration: 30s;
-    animation-delay: -3s;
-  }
-  @keyframes drift-x {
-    from {
-      transform: translateX(110%);
-    }
-    to {
-      transform: translateX(-110%);
-    }
-  }
   .menu-track {
-    position: relative;
     display: flex;
     gap: 14px;
     width: max-content;
-    animation: menu-flow 48s linear infinite;
-  }
-  @keyframes menu-flow {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
-  }
-  .menu-track:hover,
-  .menu-track:focus-within,
-  .menu-track.paused {
-    animation-play-state: paused;
   }
   .menu-card {
     display: flex;
@@ -632,7 +639,7 @@ const steps = [
     border-radius: 18px;
     border: none;
     background: var(--surface);
-    box-shadow: 0 6px 18px -10px rgba(58, 46, 40, 0.25);
+    box-shadow: 0 6px 18px -10px rgba(22, 50, 74, 0.16);
     color: inherit;
     text-decoration: none;
     position: relative;
@@ -642,7 +649,7 @@ const steps = [
     opacity: 0.6;
   }
   a.menu-card:hover {
-    box-shadow: 0 14px 28px -12px rgba(58, 46, 40, 0.32);
+    box-shadow: 0 14px 28px -12px rgba(22, 50, 74, 0.22);
     transform: translateY(-3px);
   }
   .menu-icon {
@@ -740,7 +747,7 @@ const steps = [
     border-radius: 18px;
     border: none;
     background: var(--surface);
-    box-shadow: 0 6px 18px -10px rgba(58, 46, 40, 0.25);
+    box-shadow: 0 6px 18px -10px rgba(22, 50, 74, 0.16);
     color: inherit;
     text-align: left;
     cursor: pointer;
@@ -748,7 +755,7 @@ const steps = [
     transition: box-shadow 0.3s var(--ease-soft), transform 0.3s var(--ease-soft);
   }
   .pattern-button:hover {
-    box-shadow: 0 14px 28px -12px rgba(58, 46, 40, 0.32);
+    box-shadow: 0 14px 28px -12px rgba(22, 50, 74, 0.22);
     transform: translateY(-3px);
   }
   .pattern-title {
@@ -767,7 +774,7 @@ const steps = [
     height: 320px;
     border-radius: 18px;
     overflow: hidden;
-    box-shadow: 0 6px 18px -10px rgba(58, 46, 40, 0.25);
+    box-shadow: 0 6px 18px -10px rgba(22, 50, 74, 0.16);
   }
 
   .steps {
@@ -789,7 +796,7 @@ const steps = [
     height: 28px;
     border-radius: 50%;
     background: var(--accent2);
-    color: #fff8f3;
+    color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -809,17 +816,22 @@ const steps = [
   }
 
   .site-footer {
+    margin-top: 48px;
+    padding: 24px 16px;
+    background: var(--text);
+  }
+  .site-footer-inner {
     max-width: 960px;
     margin: 0 auto;
-    padding: 16px 16px 48px;
     font-size: 13px;
   }
   .site-footer a {
-    color: var(--text-soft);
+    color: var(--bg);
     text-decoration: none;
-    transition: color 0.25s var(--ease-soft);
+    opacity: 0.85;
+    transition: opacity 0.25s var(--ease-soft);
   }
   .site-footer a:hover {
-    color: var(--accent);
+    opacity: 1;
   }
 </style>
