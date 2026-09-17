@@ -115,16 +115,19 @@ const steps = [
 
   <main class="wrap">
     <section class="hero">
-      <span class="hero-icon" aria-hidden="true">🌊</span>
-      <h1>閉伊川水門を、AR・3Dスキャン・映像で体験する</h1>
-      <svg class="hero-underline" viewBox="0 0 160 12" aria-hidden="true">
-        <path d="M2 8 C 30 2, 55 2, 80 7 S 130 12, 158 5" />
-      </svg>
-      <p class="lead">
-        岩手県宮古市・閉伊川水門を、現地に行かなくても様々な方法で体験できるプロジェクトです。
-        位置情報ARでは、水門の3Dモデルを実物大でその場に重ねて表示します。
-      </p>
-      <a class="btn-primary" href="#menu">体験メニューを見る</a>
+      <canvas class="hero-canvas" aria-hidden="true"></canvas>
+      <div class="hero-content">
+        <span class="hero-icon" aria-hidden="true">🌊</span>
+        <h1>閉伊川水門を、AR・3Dスキャン・映像で体験する</h1>
+        <svg class="hero-underline" viewBox="0 0 160 12" aria-hidden="true">
+          <path d="M2 8 C 30 2, 55 2, 80 7 S 130 12, 158 5" />
+        </svg>
+        <p class="lead">
+          岩手県宮古市・閉伊川水門を、現地に行かなくても様々な方法で体験できるプロジェクトです。
+          位置情報ARでは、水門の3Dモデルを実物大でその場に重ねて表示します。
+        </p>
+        <a class="btn-primary" href="#menu">体験メニューを見る</a>
+      </div>
 
       <svg class="wave-divider" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
         <path d="M0,20 C300,60 900,-10 1200,30 L1200,60 L0,60 Z" />
@@ -228,6 +231,10 @@ const steps = [
   <script>
     import { loadLocationCatalog } from '../lib/config/locationConfig';
     import { withBase } from '../lib/paths';
+    import { initWaterCanvas } from '../lib/water-shader';
+
+    const heroCanvas = document.querySelector<HTMLCanvasElement>('.hero-canvas');
+    if (heroCanvas) initWaterCanvas(heroCanvas);
 
     const latInput = document.getElementById('lat-input') as HTMLInputElement | null;
     const lonInput = document.getElementById('lon-input') as HTMLInputElement | null;
@@ -357,10 +364,14 @@ const steps = [
       if (!flow || !track) return;
 
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const AUTO_SPEED = 0.4; // px/frame
-      const RESUME_DELAY_MS = 2500;
+      const AUTO_SPEED = 24; // px/秒
       let paused = false;
-      let resumeTimer: ReturnType<typeof setTimeout> | undefined;
+      let dragging = false;
+      let moved = false;
+      let suppressClick = false;
+      let dragStartX = 0;
+      let dragStartScrollLeft = 0;
+      let last = performance.now();
 
       function loopWidth(): number {
         return track!.scrollWidth / 2;
@@ -373,45 +384,66 @@ const steps = [
         else if (flow!.scrollLeft < 0) flow!.scrollLeft += half;
       }
 
-      function pauseThenResume(): void {
-        paused = true;
-        clearTimeout(resumeTimer);
-        resumeTimer = setTimeout(() => {
-          paused = false;
-        }, RESUME_DELAY_MS);
-      }
-
       flow.addEventListener('scroll', wrapScroll, { passive: true });
-      ['pointerdown', 'wheel', 'touchstart'].forEach((evt) =>
-        flow.addEventListener(evt, pauseThenResume, { passive: true })
-      );
 
-      // マウスでの掴んでドラッグ操作(タッチ端末はネイティブのスクロールジェスチャーで足りる)。
-      let dragging = false;
-      let dragStartX = 0;
-      let dragStartScrollLeft = 0;
+      // ホバー中・ドラッグ中は即座に止まり、外れた瞬間に再び流れ出す(遅延なし)。
+      flow.addEventListener('pointerenter', () => {
+        paused = true;
+      });
+      flow.addEventListener('pointerleave', () => {
+        paused = false;
+        dragging = false;
+        flow!.style.cursor = 'grab';
+      });
+
       flow.addEventListener('pointerdown', (e) => {
-        if (e.pointerType !== 'mouse') return;
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
         dragging = true;
+        moved = false;
         dragStartX = e.clientX;
         dragStartScrollLeft = flow!.scrollLeft;
+        flow!.style.cursor = 'grabbing';
         flow!.setPointerCapture(e.pointerId);
       });
       flow.addEventListener('pointermove', (e) => {
         if (!dragging) return;
-        flow!.scrollLeft = dragStartScrollLeft - (e.clientX - dragStartX);
+        const dx = e.clientX - dragStartX;
+        if (Math.abs(dx) > 4) moved = true;
+        flow!.scrollLeft = dragStartScrollLeft - dx;
+        e.preventDefault();
       });
-      flow.addEventListener('pointerup', () => {
+      const endDrag = () => {
+        if (!dragging) return;
         dragging = false;
-      });
-      flow.addEventListener('pointercancel', () => {
-        dragging = false;
-      });
+        flow!.style.cursor = 'grab';
+        if (moved) {
+          // ドラッグ後に指/マウスを離した位置でカードへの誤クリック(意図しない遷移)を防ぐ。
+          suppressClick = true;
+          setTimeout(() => {
+            suppressClick = false;
+          }, 60);
+        }
+      };
+      flow.addEventListener('pointerup', endDrag);
+      flow.addEventListener('pointercancel', endDrag);
+      flow.addEventListener(
+        'click',
+        (e) => {
+          if (suppressClick) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        },
+        true
+      );
+      flow.addEventListener('dragstart', (e) => e.preventDefault());
 
       if (!prefersReducedMotion) {
-        const tick = () => {
+        const tick = (now: number) => {
+          const dt = Math.min(80, now - last);
+          last = now;
           if (!paused && !dragging) {
-            flow!.scrollLeft += AUTO_SPEED;
+            flow!.scrollLeft += (AUTO_SPEED * dt) / 1000;
             wrapScroll();
           }
           requestAnimationFrame(tick);
@@ -511,6 +543,20 @@ const steps = [
     margin: 0 -16px 56px;
     padding: 40px 16px 72px;
     background: var(--bg-soft);
+    overflow: hidden;
+  }
+  .hero-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 0;
+    touch-action: pan-y;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
   }
   .hero-icon {
     display: inline-block;
@@ -535,6 +581,7 @@ const steps = [
     width: 100%;
     height: 40px;
     display: block;
+    z-index: 1;
   }
   .wave-divider path {
     fill: var(--bg);
@@ -613,9 +660,6 @@ const steps = [
   }
   .menu-flow::-webkit-scrollbar {
     display: none;
-  }
-  .menu-flow:active {
-    cursor: grabbing;
   }
   /* pre-reveal はJSが付与したときだけ効く。JS未実行時は常に表示された状態が既定。 */
   .menu-flow.pre-reveal {
