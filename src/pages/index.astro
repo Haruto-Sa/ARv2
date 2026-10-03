@@ -58,7 +58,8 @@ const experiences = [
     icon: '🎮',
     title: '閉伊川3D世界',
     description: 'Unityで構築した閉伊川流域の3D空間を、WebGLでブラウザから探索できます。',
-    status: 'soon' as const,
+    status: 'active' as const,
+    href: withBase('/unity/'),
   },
   {
     icon: '🪵',
@@ -863,7 +864,8 @@ const steps = [
   .site-footer {
     margin-top: 48px;
     padding: 24px 16px;
-    background: var(--text);
+    background: var(--bg-soft);
+    border-top: 1px solid var(--border-soft);
   }
   .site-footer-inner {
     max-width: 960px;
@@ -871,7 +873,7 @@ const steps = [
     font-size: 13px;
   }
   .site-footer a {
-    color: var(--bg);
+    color: var(--text-soft);
     text-decoration: none;
     opacity: 0.85;
     transition: opacity 0.25s var(--ease-soft);
