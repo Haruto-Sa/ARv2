@@ -83,27 +83,41 @@ const steps = [
 ---
 
 <BaseLayout title="閉伊川水門プロジェクト">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600;700&display=swap"
+  />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
 
-  <header class="site-header">
-    <span class="site-title">閉伊川水門プロジェクト</span>
-    <nav class="site-nav">
-      <a href="#menu">体験メニュー</a>
-      <a href="#map">地図</a>
-      <a href="#usage">使い方</a>
-    </nav>
-  </header>
+  <div class="page">
+    <header class="site-header">
+      <span class="site-title">閉伊川水門プロジェクト</span>
+      <nav class="site-nav">
+        <a href="#menu">体験メニュー</a>
+        <a href="#map">地図</a>
+        <a href="#usage">使い方</a>
+      </nav>
+    </header>
 
-  <main class="wrap">
     <section class="hero">
-      <h1>閉伊川水門を、AR・3Dスキャン・映像で体験する</h1>
-      <p class="lead">
-        岩手県宮古市・閉伊川水門を、現地に行かなくても様々な方法で体験できるプロジェクトです。
-        位置情報ARでは、水門の3Dモデルを実物大でその場に重ねて表示します。
-      </p>
-      <a class="btn-primary" href="#menu">体験メニューを見る</a>
+      <canvas id="hero-canvas" aria-hidden="true"></canvas>
+      <div class="hero-inner">
+        <p class="hero-eyebrow">岩手県宮古市 — 閉伊川</p>
+        <h1>閉伊川水門を、<br />AR・3Dスキャン・映像で体験する</h1>
+        <p class="lead">
+          現地に行かなくても、水門の3Dモデルを実物大でその場に重ねて体験できるプロジェクトです。
+        </p>
+        <a class="btn-primary" href="#menu">体験メニューを見る</a>
+      </div>
+      <div class="hero-scroll-cue" aria-hidden="true">
+        <span>Scroll</span>
+        <svg width="14" height="22" viewBox="0 0 14 22" fill="none"><path d="M7 1v20M1 15l6 6 6-6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
     </section>
 
+    <main class="wrap">
     <section id="menu" class="menu-section">
       <h2>体験メニュー</h2>
       <div class="menu-grid">
@@ -181,15 +195,25 @@ const steps = [
         }
       </ol>
     </section>
-  </main>
+    </main>
 
-  <footer class="site-footer">
-    <a href="https://github.com/Haruto-Sa/ARv2" target="_blank" rel="noopener">GitHub</a>
-  </footer>
+    <footer class="site-footer">
+      <a href="https://github.com/Haruto-Sa/ARv2" target="_blank" rel="noopener">GitHub</a>
+    </footer>
+  </div>
 
   <script>
     import { loadLocationCatalog } from '../lib/config/locationConfig';
     import { withBase } from '../lib/paths';
+    import { mountWaterHero } from '../lib/hero/waterHero';
+
+    const heroCanvas = document.getElementById('hero-canvas');
+    if (heroCanvas instanceof HTMLCanvasElement) {
+      const handle = mountWaterHero(heroCanvas);
+      if (!handle) {
+        document.querySelector('.hero')?.classList.add('no-webgl');
+      }
+    }
 
     const latInput = document.getElementById('lat-input') as HTMLInputElement | null;
     const lonInput = document.getElementById('lon-input') as HTMLInputElement | null;
@@ -296,6 +320,35 @@ const steps = [
 </BaseLayout>
 
 <style>
+  .page {
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --color-bg: #0b0e14;
+    --color-hero-bg: #081219;
+    --color-surface: rgba(255, 255, 255, 0.03);
+    --color-surface-hover: rgba(255, 255, 255, 0.06);
+    --color-border: rgba(255, 255, 255, 0.14);
+    --color-border-strong: rgba(255, 255, 255, 0.32);
+    --color-text: #e6e8ee;
+    --color-text-muted: rgba(230, 232, 238, 0.74);
+    --color-text-faint: rgba(230, 232, 238, 0.5);
+    --color-accent: #6fd8e8;
+    --color-accent-dim: rgba(111, 216, 232, 0.45);
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 64px;
+    --space-9: 96px;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+    font-family: var(--font-body);
+    color: var(--color-text);
+  }
+
   :global(html) {
     scroll-behavior: smooth;
   }
@@ -307,11 +360,22 @@ const steps = [
     .menu-card.pre-reveal,
     .menu-arrow,
     .btn-primary,
-    .site-header {
+    .site-header,
+    .hero-scroll-cue svg {
       transition: none !important;
+      animation: none !important;
       opacity: 1 !important;
       transform: none !important;
     }
+  }
+
+  /* -- focus states: キーボード操作時だけアクセントのリングを出す -- */
+  .page a:focus-visible,
+  .page button:focus-visible,
+  .page input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 
   .site-header {
@@ -322,32 +386,36 @@ const steps = [
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: var(--space-2);
     max-width: 960px;
     margin: 0 auto;
-    padding: 16px;
-    background: #0b0e14;
+    padding: var(--space-4);
+    background: var(--color-bg);
     border-bottom: 1px solid transparent;
     transition: border-color 0.25s ease, background-color 0.25s ease;
   }
   .site-header.scrolled {
     background: #0b0e14f2;
-    border-bottom-color: rgba(255, 255, 255, 0.1);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border-bottom-color: var(--color-border);
   }
   .site-title {
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
   }
   .site-nav {
     display: flex;
-    gap: 18px;
+    gap: 22px;
   }
   .site-nav a {
     color: inherit;
     opacity: 0.6;
     text-decoration: none;
     font-size: 13px;
+    letter-spacing: 0.01em;
     transition: opacity 0.2s ease;
   }
   .site-nav a:hover {
@@ -355,131 +423,227 @@ const steps = [
   }
   .site-nav a.active {
     opacity: 1;
-    font-weight: 700;
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+
+  /* ---------- hero: フルブリードのWebGL水面背景 ---------- */
+  .hero {
+    position: relative;
+    min-height: min(88vh, 760px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--color-hero-bg);
+  }
+  #hero-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 var(--space-5);
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .hero-eyebrow {
+    margin: 0 0 var(--space-4);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    text-shadow: 0 1px 20px rgba(4, 10, 14, 0.8);
+  }
+  .hero h1 {
+    margin: 0 0 var(--space-5);
+    max-width: 16ch;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2.1rem, 1.5rem + 3vw, 4.4rem);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    text-shadow: 0 2px 30px rgba(4, 10, 14, 0.7);
+  }
+  .hero .lead {
+    margin: 0 0 var(--space-6);
+    max-width: 38em;
+    font-size: clamp(1rem, 0.93rem + 0.3vw, 1.15rem);
+    color: var(--color-text-muted);
+    line-height: 1.75;
+    text-shadow: 0 1px 20px rgba(4, 10, 14, 0.8);
+  }
+  .hero-scroll-cue {
+    position: absolute;
+    left: 50%;
+    bottom: var(--space-6);
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    transform: translateX(-50%);
+    color: var(--color-text-faint);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+  .hero-scroll-cue svg {
+    animation: scroll-cue-bounce 2.2s var(--ease-out) infinite;
+  }
+  @keyframes scroll-cue-bounce {
+    0%, 100% { transform: translateY(0); opacity: 0.5; }
+    50% { transform: translateY(6px); opacity: 1; }
   }
 
   .wrap {
     max-width: 960px;
     margin: 0 auto;
-    padding: 24px 16px 48px;
+    padding: var(--space-8) var(--space-4) var(--space-8);
   }
-  .hero {
-    padding: 24px 0 32px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  h1 {
-    margin: 0 0 12px;
-    font-size: 26px;
-    line-height: 1.4;
-  }
-  .lead {
-    margin: 0 0 20px;
-    max-width: 40em;
-    opacity: 0.8;
-    line-height: 1.7;
-  }
+
   .btn-primary {
-    display: inline-block;
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 13px 24px;
+    border-radius: 999px;
+    border: 1px solid var(--color-border-strong);
     color: inherit;
     text-decoration: none;
     font-size: 14px;
-    font-weight: 700;
-    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    background: rgba(8, 14, 19, 0.35);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s var(--ease-out);
   }
   .btn-primary:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--color-accent);
     transform: translateY(-1px);
   }
 
   section {
-    margin-top: 40px;
-    scroll-margin-top: 72px;
+    margin-top: var(--space-9);
+    scroll-margin-top: 80px;
+  }
+  .wrap > section:first-child {
+    margin-top: 0;
   }
   section h2 {
-    margin: 0 0 6px;
-    font-size: 18px;
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.3rem, 1.15rem + 0.6vw, 1.75rem);
+    letter-spacing: -0.005em;
   }
   .section-note {
-    margin: 0 0 16px;
+    margin: 0 0 var(--space-5);
     font-size: 14px;
-    opacity: 0.75;
-    line-height: 1.6;
+    color: var(--color-text-muted);
+    line-height: 1.65;
   }
 
   .menu-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-    margin-top: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-5);
   }
   .menu-card {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 16px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.03);
+    gap: var(--space-2);
+    padding: var(--space-5);
+    border-radius: 14px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
     color: inherit;
     text-decoration: none;
     position: relative;
-    transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.2s ease, background-color 0.2s ease;
+    transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out), border-color 0.2s ease,
+      background-color 0.2s ease;
   }
   /* pre-reveal はJSが付与したときだけ効く。JS未実行時は常に表示された状態が既定。 */
   .menu-card.pre-reveal {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
   .menu-card.pre-reveal.visible {
     opacity: 1;
     transform: none;
   }
   .menu-card.soon {
-    opacity: 0.55;
+    opacity: 0.5;
   }
   .menu-card.soon.pre-reveal:not(.visible) {
     opacity: 0;
   }
-  a.menu-card:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.06);
-    transform: translateY(-2px);
+  /* .pre-reveal.visible (opacity:1) はクラス数で .soon より詳細度が高く、
+     そのままだと「近日公開」カードがスクロール出現後に通常カードと
+     同じ不透明度に戻ってしまう。明示的に上書きして暗さを保つ。 */
+  .menu-card.soon.pre-reveal.visible {
+    opacity: 0.5;
+  }
+  a.menu-card:hover,
+  a.menu-card:focus-visible {
+    border-color: var(--color-accent-dim);
+    background: var(--color-surface-hover);
+    transform: translateY(-3px);
   }
   .menu-icon {
-    font-size: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-bottom: var(--space-1);
+    border-radius: 10px;
+    background: rgba(111, 216, 232, 0.08);
+    font-size: 19px;
   }
   .menu-card h3 {
     margin: 0;
     font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.002em;
   }
   .menu-card p {
     margin: 0;
     font-size: 13px;
-    opacity: 0.8;
-    line-height: 1.5;
+    color: var(--color-text-muted);
+    line-height: 1.55;
   }
   .menu-arrow {
     position: absolute;
-    right: 14px;
-    bottom: 12px;
-    opacity: 0.5;
+    right: var(--space-4);
+    bottom: var(--space-4);
+    opacity: 0.45;
     font-size: 14px;
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    color: var(--color-accent);
+    transition: opacity 0.2s ease, transform 0.2s var(--ease-out);
   }
-  a.menu-card:hover .menu-arrow {
+  a.menu-card:hover .menu-arrow,
+  a.menu-card:focus-visible .menu-arrow {
     opacity: 1;
     transform: translateX(3px);
   }
   .badge {
     align-self: flex-start;
-    margin-top: 4px;
-    padding: 2px 8px;
+    margin-top: var(--space-1);
+    padding: 2px 9px;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--color-border);
     font-size: 11px;
   }
 
@@ -487,119 +651,132 @@ const steps = [
     display: flex;
     flex-wrap: wrap;
     align-items: end;
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
   }
   .field-row label {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
     font-size: 13px;
-    opacity: 0.85;
+    color: var(--color-text-muted);
   }
   .field-row input {
-    padding: 8px 10px;
+    padding: 9px 11px;
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--color-border);
     background: rgba(255, 255, 255, 0.04);
     color: inherit;
+    font: inherit;
     font-size: 14px;
     width: 14em;
+    transition: border-color 0.2s ease;
+  }
+  .field-row input:focus-visible {
+    border-color: var(--color-accent);
   }
   .btn-plain {
-    padding: 8px 14px;
+    padding: 9px 15px;
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--color-border);
     background: transparent;
     color: inherit;
+    font: inherit;
     font-size: 13px;
     cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
   }
   .btn-plain:hover {
-    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--color-border-strong);
+    background: var(--color-surface-hover);
   }
 
   .pattern-buttons {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 12px;
+    gap: var(--space-4);
   }
   .pattern-button {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 6px;
-    padding: 16px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.03);
+    gap: var(--space-2);
+    padding: var(--space-5);
+    border-radius: 14px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
     color: inherit;
     text-align: left;
     cursor: pointer;
     font: inherit;
+    transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s var(--ease-out);
   }
-  .pattern-button:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.06);
+  .pattern-button:hover,
+  .pattern-button:focus-visible {
+    border-color: var(--color-accent-dim);
+    background: var(--color-surface-hover);
+    transform: translateY(-2px);
   }
   .pattern-title {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 15px;
   }
   .pattern-desc {
     font-size: 13px;
-    opacity: 0.75;
-    line-height: 1.5;
+    color: var(--color-text-muted);
+    line-height: 1.55;
   }
 
   #locations-map {
     width: 100%;
     height: 320px;
-    border-radius: 10px;
+    border-radius: 14px;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--color-border);
   }
 
   .steps {
     list-style: none;
-    margin: 16px 0 0;
+    margin: var(--space-5) 0 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--space-5);
   }
   .steps li {
     display: flex;
-    gap: 14px;
+    gap: var(--space-4);
     align-items: flex-start;
   }
   .step-number {
     flex: none;
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    border: 1px solid var(--color-accent-dim);
+    color: var(--color-accent);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 600;
   }
   .steps h3 {
-    margin: 0 0 4px;
+    margin: 0 0 var(--space-1);
     font-size: 15px;
+    font-weight: 600;
   }
   .steps p {
     margin: 0;
     font-size: 13px;
-    opacity: 0.8;
+    color: var(--color-text-muted);
     line-height: 1.6;
   }
 
   .site-footer {
     max-width: 960px;
     margin: 0 auto;
-    padding: 16px 16px 48px;
+    padding: var(--space-4) var(--space-4) var(--space-8);
     font-size: 13px;
   }
   .site-footer a {
