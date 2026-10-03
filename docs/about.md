@@ -10,5 +10,5 @@
 
 ## デプロイについて
 
-- デプロイはgithub pagesを想定して行うこと
+- デプロイはgithub pages, cloudflare workers/pagesを想定して行うこと
 - 
