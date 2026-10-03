@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Miyako3D</title>
+  <link rel="icon" href="data:,">
+  <style>
+    html, body { margin: 0; min-height: 100%; background: #151b1d; color: #fff; font-family: system-ui, sans-serif; }
+    #unity-container { position: relative; width: min(100vw, 1200px); margin: auto; aspect-ratio: 960 / 600; overflow: hidden; }
+    #unity-container:fullscreen { width: 100vw; height: 100vh; aspect-ratio: auto; }
+    #unity-canvas { display: block; width: 100%; height: 100%; background: #20292a; }
+    #controls { position: absolute; top: 10px; left: 10px; width: min(190px, 44vw); padding: 10px; box-sizing: border-box; background: #142022dc; border: 1px solid #ffffff55; border-radius: 9px; font-size: 13px; box-shadow: 0 2px 10px #0007; }
+    #controls button, #controls input { font: inherit; }
+    #controls button { width: 100%; min-height: 34px; margin-top: 5px; border: 0; border-radius: 5px; background: #f4f5ef; color: #182428; cursor: pointer; }
+    #controls button:disabled { opacity: .5; cursor: default; }
+    #zone-drag { background: #dfaa30 !important; touch-action: none; cursor: grab !important; }
+    #zone-drag:active { cursor: grabbing !important; }
+    #readout { display: flex; flex-wrap: wrap; gap: 3px 9px; margin: 0 0 5px; font-variant-numeric: tabular-nums; }
+    #speed-row { display: flex; align-items: center; gap: 4px; margin-top: 6px; }
+    #speed-row label { white-space: nowrap; }
+    #speed { flex: 1; min-width: 0; }
+    #speed-value { min-width: 2.8em; text-align: right; }
+    #unity-loading { position: absolute; inset: 0; display: grid; place-items: center; background: #142022bb; pointer-events: none; font-size: 16px; }
+    #unity-warning { position: absolute; right: 10px; bottom: 10px; max-width: 50%; color: #fff; background: #a42b23; }
+    #fullscreen { position: absolute; right: 10px; bottom: 10px; width: 34px; height: 34px; border: 0; border-radius: 5px; background: #142022dc; color: #fff; cursor: pointer; }
+    @media (max-width: 600px) { #controls { top: 6px; left: 6px; padding: 7px; font-size: 11px; } #controls button { min-height: 31px; } }
+
+    #home-link { position: fixed; top: 10px; right: 10px; z-index: 30; padding: 7px 12px; background: #142022dc; border: 1px solid #ffffff55; border-radius: 5px; color: #fff; text-decoration: none; font-size: 13px; }
+    #onboarding { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: #0f1417e6; padding: 16px; box-sizing: border-box; }
+    #onboarding.hidden { display: none; }
+    #onboarding-card { max-width: 420px; width: 100%; background: #142022; border: 1px solid #ffffff33; border-radius: 12px; padding: 20px; box-sizing: border-box; box-shadow: 0 8px 30px #0009; }
+    #onboarding-card h2 { margin: 0 0 12px; font-size: 18px; }
+    #onboarding-card ul { margin: 0 0 18px; padding-left: 1.2em; line-height: 1.8; font-size: 14px; }
+    #onboarding-card button { width: 100%; min-height: 42px; border: 0; border-radius: 6px; background: #f4f5ef; color: #182428; font-size: 15px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <a id="home-link" href="../">← ARv2トップへ戻る</a>
+  <main id="unity-container">
+    <canvas id="unity-canvas" width=960 height=600 tabindex="0" aria-label="流木シミュレーション"></canvas>
+    <div id="unity-loading" hidden>読み込み中… <span id="progress">0%</span></div>
+    <section id="controls" aria-label="操作" hidden>
+      <div id="readout"><span id="flood">氾濫度 0%</span><span id="height">水位 0.0m</span></div>
+      <button id="zone-drag" type="button">捕捉工をドラッグ</button>
+      <button id="place-default" type="button">正規位置に配置</button>
+      <button id="start" type="button">開始</button>
+      <button id="reset-placement" type="button">配置リセット</button>
+      <button id="end" type="button">終了</button>
+      <button id="camera" type="button">カメラ切替</button>
+      <div id="speed-row"><label for="speed">速度</label><input id="speed" type="range" min="0.1" max="5" step="0.1" value="1"><output id="speed-value" for="speed">x1.0</output></div>
+      <button id="help" type="button">操作説明</button>
+    </section>
+    <button id="fullscreen" type="button" aria-label="全画面表示">⛶</button>
+    <div id="unity-warning" role="alert"></div>
+  </main>
+
+  <div id="onboarding">
+    <div id="onboarding-card">
+      <h2>操作説明</h2>
+      <ul>
+        <li><strong>捕捉工をドラッグ</strong>：ボタンを押したまま動かして捕捉工の位置を変更します</li>
+        <li><strong>正規位置に配置</strong>：捕捉工を初期位置に戻します</li>
+        <li><strong>開始・終了</strong>：シミュレーションを開始、または終了してリセットします</li>
+        <li><strong>カメラ切替</strong>：視点を切り替えます</li>
+        <li><strong>速度変更</strong>：スライダーでシミュレーションの速度を変えます</li>
+      </ul>
+      <button id="start-experience" type="button">体験を始める</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.querySelector('#unity-canvas');
+    const container = document.querySelector('#unity-container');
+    const controls = document.querySelector('#controls');
+    const onboarding = document.querySelector('#onboarding');
+    const onboardingButton = document.querySelector('#start-experience');
+    const unityLoading = document.querySelector('#unity-loading');
+    let unityInstance = null;
+    let dragging = false;
+    let unityLoadStarted = false;
+
+    const ONBOARDING_KEY = 'unity-onboarding-seen';
+    function hasSeenOnboarding() {
+      try { return localStorage.getItem(ONBOARDING_KEY) === '1'; } catch { return false; }
+    }
+    function markOnboardingSeen() {
+      try { localStorage.setItem(ONBOARDING_KEY, '1'); } catch {}
+    }
+
+    function send(method, value) {
+      if (!unityInstance) return;
+      if (value === undefined) unityInstance.SendMessage('GameController', method);
+      else unityInstance.SendMessage('GameController', method, value);
+    }
+    function screenPosition(event) {
+      const rect = canvas.getBoundingClientRect();
+      return JSON.stringify({
+        x: (event.clientX - rect.left) * canvas.width / rect.width,
+        y: (rect.bottom - event.clientY) * canvas.height / rect.height
+      });
+    }
+    function setIdle(isIdle) {
+      for (const id of ['zone-drag', 'place-default', 'reset-placement'])
+        document.getElementById(id).disabled = !isIdle;
+    }
+    window.addEventListener('unity-state', event => {
+      const state = event.detail;
+      if (state.type !== 'state') return;
+      document.getElementById('flood').textContent = `氾濫度 ${Math.round(state.B * 100)}%`;
+      document.getElementById('height').textContent = `水位 ${state.h.toFixed(1)}m`;
+      setIdle(state.state === 'Idle');
+    });
+    document.getElementById('place-default').onclick = () => send('PlaceAtDefaultPosition');
+    document.getElementById('start').onclick = () => send('StartGame', '');
+    document.getElementById('reset-placement').onclick = () => send('ResetPlacements');
+    document.getElementById('end').onclick = () => send('ResetGame', '');
+    document.getElementById('camera').onclick = () => send('NextCamera', '');
+    const speed = document.getElementById('speed');
+    speed.oninput = () => {
+      document.getElementById('speed-value').textContent = `x${Number(speed.value).toFixed(1)}`;
+      send('SetSpeed', speed.value);
+    };
+    const dragHandle = document.getElementById('zone-drag');
+    dragHandle.addEventListener('pointerdown', event => {
+      if (!unityInstance || dragHandle.disabled) return;
+      event.preventDefault();
+      dragging = true;
+      dragHandle.setPointerCapture(event.pointerId);
+      send('BeginWebDrag', screenPosition(event));
+    });
+    dragHandle.addEventListener('pointermove', event => {
+      if (dragging) send('UpdateWebDrag', screenPosition(event));
+    });
+    function endDrag(event) {
+      if (!dragging) return;
+      dragging = false;
+      send('EndWebDrag', screenPosition(event));
+    }
+    dragHandle.addEventListener('pointerup', endDrag);
+    dragHandle.addEventListener('pointercancel', endDrag);
+    document.getElementById('fullscreen').onclick = () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else container.requestFullscreen?.();
+    };
+    function showBanner(message, type) {
+      const warning = document.getElementById('unity-warning');
+      warning.textContent = message;
+      if (type !== 'error') setTimeout(() => { warning.textContent = ''; }, 5000);
+    }
+    const buildUrl = 'Build';
+    const config = {
+      dataUrl: buildUrl + '/webgl-unity6-verify.data.unityweb',
+      frameworkUrl: buildUrl + '/webgl-unity6-verify.framework.js.unityweb',
+      codeUrl: buildUrl + '/webgl-unity6-verify.wasm.unityweb',
+      streamingAssetsUrl: 'StreamingAssets',
+      companyName: "PrimaLab",
+      productName: "Miyako3D",
+      productVersion: "0.1.0",
+      showBanner: showBanner
+    };
+    function startUnityLoad() {
+      if (unityLoadStarted) return;
+      unityLoadStarted = true;
+      unityLoading.hidden = false;
+      const loader = document.createElement('script');
+      loader.src = buildUrl + '/webgl-unity6-verify.loader.js';
+      loader.onload = () => createUnityInstance(canvas, config, progress => {
+        document.getElementById('progress').textContent = `${Math.round(progress * 100)}%`;
+      }).then(instance => {
+        unityInstance = instance;
+        unityLoading.remove();
+        controls.hidden = false;
+        setIdle(true);
+      }).catch(error => showBanner(String(error), 'error'));
+      document.body.appendChild(loader);
+    }
+
+    function updateOnboardingButton() {
+      onboardingButton.textContent = unityLoadStarted ? '閉じる' : '体験を始める';
+    }
+    onboardingButton.onclick = () => {
+      onboarding.classList.add('hidden');
+      markOnboardingSeen();
+      startUnityLoad();
+    };
+    document.getElementById('help').onclick = () => {
+      updateOnboardingButton();
+      onboarding.classList.remove('hidden');
+    };
+
+    updateOnboardingButton();
+    if (hasSeenOnboarding()) {
+      onboarding.classList.add('hidden');
+      startUnityLoad();
+    }
+  </script>
+</body>
+</html>
