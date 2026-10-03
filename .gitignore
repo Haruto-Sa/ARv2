@@ -6,3 +6,6 @@ dist/
 .DS_Store
 project-schedule.xlsx
 docs/images/
+test-results/
+playwright-report/
+blob-report/
