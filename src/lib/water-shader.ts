@@ -89,22 +89,22 @@ const FRAGMENT_SRC = `
 
     vec3 pale = vec3(0.933, 0.965, 0.984);
     vec3 mid = vec3(0.663, 0.847, 0.941);
-    vec3 deep = vec3(0.110, 0.435, 0.659);
+    vec3 deep = vec3(0.243, 0.557, 0.741);
     vec3 green = vec3(0.247, 0.682, 0.478);
 
     float depth = smoothstep(0.18, 1.05, 1.0 - uv.y + distortion);
     vec3 col = mix(pale, mid, depth);
-    col = mix(col, deep, smoothstep(0.62, 1.08, depth + broad * 0.22));
+    col = mix(col, deep, smoothstep(0.78, 1.18, depth + broad * 0.22));
     col = mix(col, green, smoothstep(0.72, 1.0, detail) * 0.11);
 
     float ridge1 = abs(sin((p.x * 8.0 + p.y * 5.0) + detail * 5.2 + t * 2.2));
     float ridge2 = abs(sin((p.x * -5.0 + p.y * 9.0) + broad * 4.0 - t * 1.7));
-    float caustic = pow(1.0 - min(ridge1, ridge2), 5.5);
-    caustic *= 0.08 + 0.16 * smoothstep(0.15, 0.85, depth);
+    float caustic = pow(1.0 - min(ridge1, ridge2), 6.5);
+    caustic *= 0.012 + 0.022 * smoothstep(0.15, 0.85, depth);
 
     vec2 readP = vec2(p.x / max(aspect, 1.0), p.y + 0.02);
     float readMask = 1.0 - smoothstep(0.05, 0.56, length(readP * vec2(1.05, 1.25)));
-    col = mix(col, vec3(1.0, 1.0, 1.0), readMask * 0.34);
+    col = mix(col, vec3(1.0, 1.0, 1.0), readMask * 0.46);
 
     col += caustic;
     col += (pointerRipple + pulseRipple) * vec3(0.55, 0.85, 1.0);
