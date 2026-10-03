@@ -1,0 +1,33 @@
+name: 機能追加・改善
+description: 新機能や改善提案を作成します
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: どのような機能を実装・改善するか簡潔に書いてください。
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: 対象範囲
+      description: 今回の作業で変更・追加する具体的な範囲（AIへの指示範囲）。
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: 対象外
+      description: 今回はあえてやらないこと（AIの暴走・オーバーエンジニアリング防止）。
+    validations:
+      required: true
+  - type: textarea
+    id: definition-of-done
+    attributes:
+      label: 完了条件 (Definition of Done)
+      description: どうなったらこのIssueが完了したとみなすか。
+    validations:
+      required: true
