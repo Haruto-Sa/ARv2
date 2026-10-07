@@ -19,13 +19,16 @@
   },
   "dependencies": {
     "@astrojs/svelte": "^9.0.1",
+    "leaflet": "^1.9.4",
     "locar": "^0.1.4",
     "svelte": "^5.57.0",
     "three": "^0.175.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@gltf-transform/cli": "^4.5.1",
     "@playwright/test": "^1.63.0",
+    "@types/leaflet": "^1.9.22",
     "@types/node": "^26.4.1",
     "@types/three": "^0.175.0",
     "astro": "^7.0.0",
