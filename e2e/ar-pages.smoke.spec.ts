@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test';
  * エラーなくマウントされるか」だけを軽く検証する。開始ボタンの文言はエンジンごとに
  * 異なる(「ARを開始」「開始する」等、多段階フローもある)ため、文言には依存しない。
  */
-const arPages = ['/ar/locar', '/ar/arjs', '/ar/deviceorientation', '/ar/marker'];
+const arPages = ['/lab/ar/locar', '/lab/ar/arjs', '/lab/ar/deviceorientation', '/lab/ar/marker'];
 
 for (const path of arPages) {
   test(`${path} loads its intro UI with no console errors`, async ({ page }) => {
@@ -24,7 +24,7 @@ for (const path of arPages) {
 
 test('/lab/compare links to all three location-AR patterns', async ({ page }) => {
   await page.goto('/lab/compare');
-  await expect(page.locator('a[href="/ar/locar"]')).toBeVisible();
-  await expect(page.locator('a[href="/ar/arjs"]')).toBeVisible();
-  await expect(page.locator('a[href="/ar/deviceorientation"]')).toBeVisible();
+  await expect(page.locator('a[href="/lab/ar/locar"]')).toBeVisible();
+  await expect(page.locator('a[href="/lab/ar/arjs"]')).toBeVisible();
+  await expect(page.locator('a[href="/lab/ar/deviceorientation"]')).toBeVisible();
 });

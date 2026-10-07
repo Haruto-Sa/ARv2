@@ -9,7 +9,7 @@
 <aside id="marker-panel">
   <p class="title">このマーカーにカメラを向けてください</p>
   <img src={withBase('/assets/markers/hiro.png')} alt="Hiroマーカー" />
-  <a href={withBase('/ar/marker-print')} target="_blank" rel="noopener">印刷ページを開く →</a>
+  <a href={withBase('/lab/ar/marker-print')} target="_blank" rel="noopener">印刷ページを開く →</a>
 </aside>
 
 <style>
