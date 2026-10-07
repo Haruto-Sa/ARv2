@@ -35,10 +35,16 @@ jobs:
         env:
           DEPLOY_TARGET: gh-pages
 
+      - name: Assert /lab is excluded from the production build
+        run: scripts/assert-no-lab.sh
+
       - name: Build (Cloudflare Pages base)
         run: npm run build
         env:
           DEPLOY_TARGET: cloudflare
+
+      - name: Assert /lab is excluded from the production build
+        run: scripts/assert-no-lab.sh
 
   e2e:
     runs-on: ubuntu-latest

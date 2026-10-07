@@ -29,6 +29,8 @@ export default defineConfig({
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
-    env: { ASTRO_PREVIEW_BACKGROUND: '0' },
+    // INCLUDE_LAB=1: E2Eスイートは /lab/* ページ(比較ランチャー等)も検証するため、
+    // 本番ビルドの既定(除外)ではなくプレビュー/検証ビルド相当にする。
+    env: { ASTRO_PREVIEW_BACKGROUND: '0', INCLUDE_LAB: '1' },
   },
 });
