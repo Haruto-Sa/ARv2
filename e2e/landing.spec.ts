@@ -73,8 +73,11 @@ test.describe('landing page', () => {
     // aria-hidden="true" でスクリーンリーダー・ロケータから隠された複製。
     const visibleCards = page.locator('.menu-card:not([aria-hidden="true"])');
 
-    const unityCard = visibleCards.filter({ hasText: '閉伊川3D世界' });
-    await expect(unityCard).toHaveAttribute('href', '/unity/');
+    const heigawaCard = visibleCards.filter({ hasText: '閉伊川3D世界' });
+    await expect(heigawaCard).toHaveAttribute('href', '/heigawa/');
+
+    const driftwoodCard = visibleCards.filter({ hasText: '流木コンテンツ' });
+    await expect(driftwoodCard).toHaveAttribute('href', '/unity/');
 
     const locationCard = visibleCards.filter({ hasText: 'ロケーションAR' });
     await expect(locationCard).toHaveAttribute('href', '#start');
