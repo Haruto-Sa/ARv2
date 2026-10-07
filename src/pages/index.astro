@@ -2,45 +2,28 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { withBase } from '../lib/paths';
 
-const DEFAULT_LAT = 39.80249663004133;
-const DEFAULT_LON = 141.13550877979688;
-
-const patterns = [
-  {
-    id: 'locar',
-    title: 'Pattern A: LocAR',
-    description: 'LocAR.js + three.js。GPSスムージングと高度安定化を備えた実装。',
-    href: withBase('/ar/locar'),
-  },
-  {
-    id: 'arjs',
-    title: 'Pattern B: AR.js',
-    description: 'A-Frame + AR.js の位置情報AR機能(gps-new-entity-place)を使用。',
-    href: withBase('/ar/arjs'),
-  },
-  {
-    id: 'deviceorientation',
-    title: 'Pattern C: DeviceOrientation',
-    description: 'コンパス絶対値に依存しない、シルエット位置合わせによる独自実装。',
-    href: withBase('/ar/deviceorientation'),
-  },
-];
-
 // 体験メニュー。active なものだけリンクを持つ。soon はプレースホルダー(クリック不可)。
+// 開発者向けの比較ページ・検証用地点・デバッグUIは公開版に出さない(docs/ar-spec.md §6)。
+// 現地AR・床置きAR・3Dビューアは、仕様書の採用方式がまだ /ar/onsite・/ar/place・/viewer に
+// 組み込まれるまで「準備中」として出す。
 const experiences = [
   {
     icon: '📍',
-    title: 'ロケーションAR',
+    title: '現地AR',
     description: '水門の3Dモデルを実物大でその場に重ねて表示します。',
-    status: 'active' as const,
-    href: '#start',
+    status: 'soon' as const,
   },
   {
-    icon: '✋',
-    title: '手のひらAR',
-    description: 'マーカーを使って手のひらサイズで表示します。',
-    status: 'active' as const,
-    href: withBase('/ar/marker'),
+    icon: '🧩',
+    title: '床置きAR',
+    description: '床や机に縮小した3Dモデルを置いて、回したり拡大縮小したりできます。',
+    status: 'soon' as const,
+  },
+  {
+    icon: '🖥️',
+    title: '3Dビューア',
+    description: 'ARに対応していない端末でも、水門の3Dモデルを見られます。',
+    status: 'soon' as const,
   },
   {
     icon: '🏠',
@@ -67,13 +50,6 @@ const experiences = [
     description: '拾い上げた流木を使ったコンテンツ。ネイティブアプリからWebGLへ移植中です。',
     status: 'soon' as const,
   },
-  {
-    icon: '🧪',
-    title: '開発者実験',
-    description: '3つのAR方式を素早く切り替えて実機比較するための開発者向けページ。',
-    status: 'active' as const,
-    href: withBase('/lab/compare'),
-  },
 ];
 
 // マーケー(横流れ)表示用に2セット連続で並べる。後半セットは aria-hidden でスクリーンリーダー・
@@ -82,14 +58,12 @@ const experiencesLoop = [...experiences, ...experiences];
 
 const steps = [
   { title: 'カメラ・位置情報・モーションセンサーを許可する', description: '開始時にブラウザが確認を求めます。すべて許可してください。' },
-  { title: '体験したい方式と地点を選ぶ', description: '下の「体験メニュー」から選び、必要なら緯度経度を指定します。' },
+  { title: '体験したい機能を選ぶ', description: '下の「体験メニュー」から選びます。' },
   { title: 'スマートフォンをかざす', description: '屋外の見通しの良い場所で、画面越しに水門が重なって表示されます。' },
 ];
 ---
 
 <BaseLayout title="閉伊川水門プロジェクト">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-
   <header class="site-header">
     <span class="site-brand">
       <svg class="site-mark" viewBox="0 0 24 24" aria-hidden="true">
@@ -169,39 +143,9 @@ const steps = [
       </div>
     </section>
 
-    <section id="start" class="quick-start">
-      <h2>ロケーションARを始める</h2>
-      <p class="section-note">
-        緯度経度を指定するとその地点にモデルが表示されます。実機がある場所と離れた地点でも配置を確認できます。
-      </p>
-      <form id="quick-start-form" method="get">
-        <div class="field-row">
-          <label>
-            緯度
-            <input type="number" step="any" name="lat" id="lat-input" value={DEFAULT_LAT} required />
-          </label>
-          <label>
-            経度
-            <input type="number" step="any" name="lon" id="lon-input" value={DEFAULT_LON} required />
-          </label>
-          <button type="button" id="use-my-location" class="btn-plain">現在地を使う</button>
-        </div>
-        <div class="pattern-buttons">
-          {
-            patterns.map((p) => (
-              <button type="submit" formaction={p.href} class="pattern-button">
-                <span class="pattern-title">{p.title}</span>
-                <span class="pattern-desc">{p.description}</span>
-              </button>
-            ))
-          }
-        </div>
-      </form>
-    </section>
-
     <section id="map" class="map-section">
       <h2>水門地点マップ</h2>
-      <p class="section-note">ピンをクリックすると上のフォームに緯度経度が入力されます。</p>
+      <p class="section-note">現地AR・床置きARの対象地点です。</p>
       <div id="locations-map"></div>
     </section>
 
@@ -233,27 +177,15 @@ const steps = [
     import { loadLocationCatalog } from '../lib/config/locationConfig';
     import { withBase } from '../lib/paths';
     import { initWaterCanvas } from '../lib/water-shader';
+    import * as L from 'leaflet';
+    import 'leaflet/dist/leaflet.css';
 
     const heroCanvas = document.querySelector<HTMLCanvasElement>('.hero-canvas');
     if (heroCanvas) initWaterCanvas(heroCanvas);
 
-    const latInput = document.getElementById('lat-input') as HTMLInputElement | null;
-    const lonInput = document.getElementById('lon-input') as HTMLInputElement | null;
-
-    document.getElementById('use-my-location')?.addEventListener('click', () => {
-      if (!navigator.geolocation || !latInput || !lonInput) return;
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          latInput.value = String(pos.coords.latitude);
-          lonInput.value = String(pos.coords.longitude);
-        },
-        (err) => console.warn('現在地の取得に失敗しました', err)
-      );
-    });
-
     const DEFAULT_PIN_COLOR = '#e0341f';
 
-    function pinIcon(L: any, color: string) {
+    function pinIcon(color: string) {
       return L.divIcon({
         className: 'ar-map-pin',
         html: `<svg width="26" height="34" viewBox="0 0 26 34" xmlns="http://www.w3.org/2000/svg">
@@ -267,9 +199,8 @@ const steps = [
     }
 
     async function initLocationsMap() {
-      const L = (window as any).L;
       const mapEl = document.getElementById('locations-map');
-      if (!mapEl || !L) return;
+      if (!mapEl) return;
 
       const map = L.map('locations-map', { zoomControl: true });
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -283,13 +214,9 @@ const steps = [
         for (const loc of catalog) {
           latlngs.push([loc.latitude, loc.longitude]);
           const icon = loc.icon || '📍';
-          const marker = L.marker([loc.latitude, loc.longitude], { icon: pinIcon(L, loc.color || DEFAULT_PIN_COLOR) })
+          L.marker([loc.latitude, loc.longitude], { icon: pinIcon(loc.color || DEFAULT_PIN_COLOR) })
             .addTo(map)
             .bindPopup(`${icon} ${loc.name}`);
-          marker.on('click', () => {
-            if (latInput) latInput.value = String(loc.latitude);
-            if (lonInput) lonInput.value = String(loc.longitude);
-          });
         }
         if (latlngs.length) {
           map.fitBounds(latlngs, { padding: [20, 20] });
@@ -302,11 +229,7 @@ const steps = [
       }
     }
 
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-    script.crossOrigin = '';
-    script.onload = () => initLocationsMap();
-    document.head.appendChild(script);
+    initLocationsMap();
 
     // ヘッダーの背景をスクロール量に応じて濃くする(視認性のための機能的な変化)。
     const header = document.querySelector('.site-header');
@@ -734,85 +657,6 @@ const steps = [
     color: color-mix(in srgb, var(--accent2) 70%, var(--text));
     font-size: 11px;
     font-weight: 700;
-  }
-
-  .field-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: end;
-    gap: 12px;
-    margin-bottom: 18px;
-  }
-  .field-row label {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: 13px;
-    color: var(--text-soft);
-  }
-  .field-row input {
-    padding: 9px 12px;
-    border-radius: 12px;
-    border: 1px solid var(--border-soft);
-    background: var(--surface);
-    color: var(--text);
-    font-size: 14px;
-    width: 14em;
-    transition: border-color 0.25s var(--ease-soft);
-  }
-  .field-row input:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
-  .btn-plain {
-    padding: 9px 16px;
-    border-radius: 999px;
-    border: 1px solid var(--border-soft);
-    background: var(--surface);
-    color: var(--text);
-    font-size: 13px;
-    cursor: pointer;
-    transition: border-color 0.25s var(--ease-soft), background-color 0.25s var(--ease-soft);
-  }
-  .btn-plain:hover {
-    border-color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 8%, var(--surface));
-  }
-
-  .pattern-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 14px;
-  }
-  .pattern-button {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-    padding: 18px;
-    border-radius: 18px;
-    border: none;
-    background: var(--surface);
-    box-shadow: 0 6px 18px -10px rgba(22, 50, 74, 0.16);
-    color: inherit;
-    text-align: left;
-    cursor: pointer;
-    font: inherit;
-    transition: box-shadow 0.3s var(--ease-soft), transform 0.3s var(--ease-soft);
-  }
-  .pattern-button:hover {
-    box-shadow: 0 14px 28px -12px rgba(22, 50, 74, 0.22);
-    transform: translateY(-3px);
-  }
-  .pattern-title {
-    font-weight: 700;
-    font-size: 15px;
-    color: var(--text);
-  }
-  .pattern-desc {
-    font-size: 13px;
-    color: var(--text-soft);
-    line-height: 1.5;
   }
 
   #locations-map {

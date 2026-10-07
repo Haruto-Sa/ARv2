@@ -67,7 +67,7 @@ test.describe('landing page', () => {
     expect(await scrollLeft()).toBe(start);
   });
 
-  test('menu links route to the right experiences, including Unity', async ({ page }) => {
+  test('menu links to Unity, and shows 現地AR/床置きAR/3Dビューア as not-yet-available', async ({ page }) => {
     await page.goto('/');
     // メニューはマーキー(横流れ)用に2セット連続で描画される。後半セットは
     // aria-hidden="true" でスクリーンリーダー・ロケータから隠された複製。
@@ -76,14 +76,18 @@ test.describe('landing page', () => {
     const unityCard = visibleCards.filter({ hasText: '閉伊川3D世界' });
     await expect(unityCard).toHaveAttribute('href', '/unity/');
 
-    const locationCard = visibleCards.filter({ hasText: 'ロケーションAR' });
-    await expect(locationCard).toHaveAttribute('href', '#start');
+    // docs/ar-spec.md: /ar/onsite・/ar/place・/viewer はまだ実装されていないため、
+    // 公開版のトップページでは soon(クリックできないプレースホルダー)として出す。
+    for (const title of ['現地AR', '床置きAR', '3Dビューア']) {
+      const card = visibleCards.filter({ hasText: title });
+      await expect(card).toHaveClass(/soon/);
+      await expect(card).not.toHaveAttribute('href', /.+/);
+    }
   });
 
-  test('quick-start pattern buttons point at the three location-AR engines', async ({ page }) => {
+  test('production build has no /lab or dev-only links on the top page', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('button.pattern-button[formaction="/ar/locar"]')).toBeVisible();
-    await expect(page.locator('button.pattern-button[formaction="/ar/arjs"]')).toBeVisible();
-    await expect(page.locator('button.pattern-button[formaction="/ar/deviceorientation"]')).toBeVisible();
+    await expect(page.locator('a[href*="/lab/"]')).toHaveCount(0);
+    await expect(page.getByText('開発者実験')).toHaveCount(0);
   });
 });
