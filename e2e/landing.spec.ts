@@ -78,6 +78,9 @@ test.describe('landing page', () => {
     // 以前、ドラッグ終了直後のclickがカードへの意図しない遷移を起こしたことがある
     // (pointerdown時点で無条件にpointer captureしていたのが原因)。しきい値を
     // 超える移動を伴う本物のドラッグをシミュレートし、遷移が起きないことを確かめる。
+    // オートスクロールは常に動いているため切っておく(scrollIntoViewIfNeededの
+    // 「要素位置が安定するまで待つ」判定が、動き続ける要素では終わらずタイムアウトしうる)。
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
     const card = visibleCard(page, '閉伊川3D世界');
     await card.scrollIntoViewIfNeeded();
@@ -110,6 +113,11 @@ function visibleCard(page: import('@playwright/test').Page, title: string) {
 }
 
 test.describe('menu card navigation (every visible active card)', () => {
+  // オートスクロールは常に動いているため切っておく(scrollIntoViewIfNeededの
+  // 「要素位置が安定するまで待つ」判定が、動き続ける要素では終わらずタイムアウトしうる)。
+  // 検証したいのはクリック/タップでの遷移であって、オートスクロール自体は別テストで扱う。
+  test.use({ reducedMotion: 'reduce' });
+
   for (const { title, href, expectedUrl } of MENU_CARDS) {
     test(`${title}: href attribute is correct`, async ({ page }) => {
       await page.goto('/');
@@ -136,7 +144,7 @@ test.describe('menu card navigation (every visible active card)', () => {
 });
 
 test.describe('menu card navigation via touch tap', () => {
-  test.use({ hasTouch: true });
+  test.use({ hasTouch: true, reducedMotion: 'reduce' });
 
   for (const { title, expectedUrl } of MENU_CARDS) {
     test(`${title}: tap navigates @touch`, async ({ page }) => {
