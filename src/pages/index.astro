@@ -370,7 +370,6 @@ const steps = [
       let paused = false;
       let dragging = false;
       let moved = false;
-      let suppressClick = false;
       let dragStartX = 0;
       let dragStartScrollLeft = 0;
       let last = performance.now();
@@ -424,22 +423,19 @@ const steps = [
         if (!dragging) return;
         dragging = false;
         flow!.style.cursor = 'grab';
-        if (moved) {
-          // ドラッグ後に指/マウスを離した位置でカードへの誤クリック(意図しない遷移)を防ぐ。
-          suppressClick = true;
-          setTimeout(() => {
-            suppressClick = false;
-          }, 60);
-        }
       };
       flow.addEventListener('pointerup', endDrag);
       flow.addEventListener('pointercancel', endDrag);
       flow.addEventListener(
         'click',
         (e) => {
-          if (suppressClick) {
+          // ドラッグ(しきい値を超えた移動)の直後に発生したclickは、指・マウスを
+          // 離した位置にあるカードへの意図しない遷移を起こすため、明示的に止める。
+          // タイマーではなく moved フラグ自体を見るため、clickが来るタイミングに依らない。
+          if (moved) {
             e.preventDefault();
             e.stopPropagation();
+            moved = false;
           }
         },
         true
