@@ -404,13 +404,19 @@ const steps = [
         moved = false;
         dragStartX = e.clientX;
         dragStartScrollLeft = flow!.scrollLeft;
-        flow!.style.cursor = 'grabbing';
-        flow!.setPointerCapture(e.pointerId);
       });
       flow.addEventListener('pointermove', (e) => {
         if (!dragging) return;
         const dx = e.clientX - dragStartX;
-        if (Math.abs(dx) > 4) moved = true;
+        if (!moved && Math.abs(dx) > 4) {
+          // ここで初めて capture する: pointerdown 時点で無条件に capture すると、
+          // 単純なクリックの click イベントまでこの要素に取られてしまい、
+          // カード(<a>)へのクリックがナビゲーションを起こせなくなる。
+          moved = true;
+          flow!.style.cursor = 'grabbing';
+          flow!.setPointerCapture(e.pointerId);
+        }
+        if (!moved) return;
         flow!.scrollLeft = dragStartScrollLeft - dx;
         e.preventDefault();
       });
