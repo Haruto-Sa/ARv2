@@ -18,7 +18,13 @@ export default defineConfig({
     baseURL: `http://localhost:${PORT}`,
     trace: 'on-first-retry',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    // タッチ操作の遷移テスト(@touch)だけ、可能な範囲でWebKitでも確かめる。
+    // 既存の大半のテスト(hero canvasのWebGL判定、Leafletマップ等)はWebKit固有の
+    // 差異で揺れやすく、このプロジェクトの対象外にする。
+    { name: 'webkit-touch', use: { ...devices['Desktop Safari'], hasTouch: true }, grep: /@touch/ },
+  ],
   webServer: {
     // ASTRO_PREVIEW_BACKGROUND: astroはAIエージェント実行を検知すると自動で
     // バックグラウンドサーバーとして起動し、ビルドを更新しても古いプロセスが
