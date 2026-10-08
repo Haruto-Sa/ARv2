@@ -379,6 +379,11 @@ const steps = [
       }
 
       function wrapScroll(): void {
+        // prefers-reduced-motionでは複製セット(aria-hidden="true")がCSSで
+        // display:noneになり、track.scrollWidthは1セット分しかない。
+        // loopWidth()の「トラック幅は2セット分」という前提が崩れるため、
+        // この補正自体を無効にする(ラップ先の複製が存在しないので不要でもある)。
+        if (prefersReducedMotion) return;
         const half = loopWidth();
         if (half <= 0) return;
         if (flow!.scrollLeft >= half) flow!.scrollLeft -= half;
