@@ -83,6 +83,23 @@ test.describe('landing page', () => {
     await expect(locationCard).toHaveAttribute('href', '#start');
   });
 
+  test('a real mouse click on a menu card actually navigates', async ({ page }) => {
+    // href属性のチェックだけでは、クリックがドラッグ用の pointerdown/pointermove
+    // ハンドラに奪われて実際には遷移しない不具合を検出できない(過去に発生)。
+    // ここでは page.locator().click() ではなく、実ユーザーと同じ
+    // mouse.down()/up() のシーケンスを発生させて確かめる。
+    await page.goto('/');
+    const card = page.locator('.menu-card:not([aria-hidden="true"])').filter({ hasText: '閉伊川3D世界' });
+    await card.scrollIntoViewIfNeeded();
+    const box = await card.boundingBox();
+    if (!box) throw new Error('menu card has no bounding box');
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(50);
+    await page.mouse.up();
+    await expect(page).toHaveURL(/\/heigawa\/$/);
+  });
+
   test('quick-start pattern buttons point at the three location-AR engines', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('button.pattern-button[formaction="/ar/locar"]')).toBeVisible();
