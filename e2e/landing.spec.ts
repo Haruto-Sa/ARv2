@@ -67,7 +67,7 @@ test.describe('landing page', () => {
     expect(await scrollLeft()).toBe(start);
   });
 
-  test('menu links to Unity, and shows 現地AR/床置きAR/3Dビューア as not-yet-available', async ({ page }) => {
+  test('menu links to Unity, plane AR and viewer; onsite AR remains unavailable', async ({ page }) => {
     await page.goto('/');
     // メニューはマーキー(横流れ)用に2セット連続で描画される。後半セットは
     // aria-hidden="true" でスクリーンリーダー・ロケータから隠された複製。
@@ -76,9 +76,9 @@ test.describe('landing page', () => {
     const unityCard = visibleCards.filter({ hasText: '閉伊川3D世界' });
     await expect(unityCard).toHaveAttribute('href', '/unity/');
 
-    // docs/ar-spec.md: /ar/onsite・/ar/place・/viewer はまだ実装されていないため、
-    // 公開版のトップページでは soon(クリックできないプレースホルダー)として出す。
-    for (const title of ['現地AR', '床置きAR', '3Dビューア']) {
+    await expect(visibleCards.filter({ hasText: '手のひら・平面AR' })).toHaveAttribute('href', '/ar/place');
+    await expect(visibleCards.filter({ hasText: '3Dビューア' })).toHaveAttribute('href', '/viewer');
+    for (const title of ['現地AR']) {
       const card = visibleCards.filter({ hasText: title });
       await expect(card).toHaveClass(/soon/);
       await expect(card).not.toHaveAttribute('href', /.+/);

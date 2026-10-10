@@ -8,19 +8,23 @@
   - 水門の3Dモデルを、GPSアンカーで現実空間に実物大で重ねて表示します。
   - スマホを動かしてもモデルはカメラに追従せず、位置・サイズ・高さ・向きが大きくずれないように設計しています。
   - 3方式とも同じ設定ファイルの地点情報を使い、同じ場所での実機比較ができます。
-- **手のひらAR**：印刷したマーカーを使い、手のひらサイズで3Dモデルを表示します。
+- **手のひら・平面AR**（`/ar/place`）：机や床の平面を検出し、全幅20cmの水門を配置します。WebXR対応端末はWeb内で操作、Quick Look対応端末はOSのARで静止モデルを配置できます。
+- **3Dビューア**（`/viewer`）：非対応端末でも水門を回転・拡縮し、扉の動きを再生できます。
+- 既存の印刷マーカーARは開発者向け `/lab/ar/marker` にあります。
 - **閉伊川3D世界**：Unity製WebGLビルドによる3D空間体験。
 - **開発者向け比較ランチャー**：3方式のロケーションARページを素早く切り替えて確認するための内部ページ。
 
-## いちばん大事なこと
+## ロケーションARの調整
 
-**位置・サイズ・高さ・向きの調整は、すべて `public/config/locations/<id>.json` だけで行います。**
+**ロケーションARの位置・サイズ・高さ・向きの調整は、すべて `public/config/locations/<id>.json` だけで行います。** 平面ARは検出した平面に配置し、サイズの基準値を `public/config/placement.json` で管理します。
 
 - コード内に scale / position / rotation をハードコードしていません。transform のベース値の供給元はこのファイルだけです。
 - 本番では UI で値を変更しません。`debug: false` にすると、デバッグ表示も補正UIも完全に消えます。
 - `debug: true` のときだけ「補正さがし用」の開発 UI が出ます。これは**値を探すための一時ツール**で、確定したらその数値を JSON に手で書き写し `debug: false` に戻す運用です（補正UIの値は localStorage に一時保存されるだけで、設定ファイルのベース値を上書きしません）。
 
 ## 技術構成（概要）
+
+エンジニア向けの[HTML技術解説・スライド](public/docs/ar-engineering-guide.html)で、今回の平面ARと既存の位置情報AR・マーカー・Unity・配信構成を説明しています。配信URLは `/docs/ar-engineering-guide.html` です。ファイル単体でも開けます。
 
 リポジトリの詳細な依存ライブラリ・バージョンは `package.json` を参照してください。ここでは概要のみ記載します。
 
@@ -45,10 +49,12 @@ npm run dev
 # ターミナル1
 npm run dev
 # ターミナル2（--url は npm run dev が表示したポートに合わせる）
-cloudflared tunnel --url http://localhost:<port>
+cloudflared tunnel --url http://localhost:<port> --http-host-header localhost
 ```
 
 表示された `https://<ランダム>.trycloudflare.com` をスマホで開く → 証明書警告なし → 体験メニューから方式を選択 → カメラ・位置情報・モーション/画面の向きを許可。
+
+平面ARの検証は `https://<ランダム>.trycloudflare.com/ar/place` を直接開きます。対応スマホはカメラ起動案内を表示し、モデルの準備完了後に「カメラを起動」を1回押してARへ進みます。iPhoneではSafariのQuick Lookを開き、OSの画面でARを選択します。WebXR対応端末では許可後、平面の円が出たらタップして配置します。PC・非対応スマホは自動的に `/viewer` へ進みます。カメラの許可確認はOS・ブラウザが行い、許可済みの場合は省略されることがあります。左上のホームボタンはWebXR中も使えますが、Quick Look標準の「×」は置き換えられません。`--http-host-header localhost` は開発サーバーのホスト制限による403を避けるために指定します。検証中はPCとトンネルを起動したままにしてください。
 
 > カメラ起動はタップ後に行われます（モバイルでは `getUserMedia` と方位センサー許可がユーザー操作を必要とするため）。
 
@@ -64,6 +70,8 @@ cloudflared tunnel --url http://localhost:<port>
 | `npm run validate-config` | `public/config/locations/*.json` の整合性検証 |
 
 ## 設定ファイル `public/config/locations/`
+
+平面ARのサイズ設定は `public/config/placement.json` を使います。方式の分析・動作・実機確認項目は [平面ARの実装メモ](docs/plane-ar.md) を参照してください。以下のGPS設定・調整原則はロケーションAR向けです。
 
 - `index.json`：体験できる地点の一覧（地図ピン表示などに使用）。
 - `<id>.json`：地点ごとの詳細設定。
@@ -93,7 +101,7 @@ cloudflared tunnel --url http://localhost:<port>
 - `targetHeightMeters` が非 null：`finalScale = targetHeightMeters / modelHeight` を自動計算。
 - `targetHeightMeters` が null：`scale` の値をそのまま使う。
 
-距離に応じてサイズを変える処理も、UI でサイズを変える処理もありません。
+ロケーションARには、距離に応じてサイズを変える処理も、UI でサイズを変える処理もありません。平面ARは利用者がサイズを変更できます。
 
 ## 現地での調整手順（この順番で）
 
@@ -117,7 +125,7 @@ public/unity/           Unity製WebGLビルドの静的ファイル
 legacy/                 以前の実装の参照用アーカイブ（現行ビルドには含まれない）
 ```
 
-## 設計上やっていないこと
+## ロケーションARで設計上やっていないこと
 
 - 本番でモデルをドラッグ移動・拡大縮小・回転する UI は作っていない。
 - localStorage が設定ファイルのベース値を上書きしない（補正UIの一時デルタのみ保存）。

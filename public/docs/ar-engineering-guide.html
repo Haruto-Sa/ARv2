@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="閉伊川水門ARの技術スタック、平面配置、WebXR、USDZとQuick Lookをエンジニア向けに解説する資料。">
+<title>閉伊川水門AR — エンジニア向け技術解説</title>
+<style>
+:root{color-scheme:light;--ink:#17364a;--muted:#557183;--paper:#f2f6f7;--line:#d5e2e6;--accent:#007e87;--navy:#102f43;--gold:#a36a13}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.8 system-ui,-apple-system,"Hiragino Kaku Gothic ProN",sans-serif}a{color:#006b8c;text-underline-offset:3px}button,select,input{font:inherit}button,select{border:1px solid var(--line);border-radius:8px;padding:7px 12px;background:white;color:var(--ink)}button{cursor:pointer}button:disabled{opacity:.4;cursor:default}button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #e49b20;outline-offset:3px}.top{position:sticky;top:0;z-index:3;background:#102f43f5;color:white;display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px clamp(16px,4vw,60px);box-shadow:0 4px 12px #102f4315}.brand{font-weight:700;margin-right:auto}.top a{color:#b8f2ed}.progress{height:3px;background:var(--accent);position:fixed;top:0;left:0;z-index:4;width:0;transition:width .2s}.wrap{max-width:1200px;margin:auto;padding:28px 24px 80px}.chapter{background:white;border:1px solid var(--line);border-radius:18px;margin-bottom:28px;padding:clamp(24px,4vw,56px);box-shadow:0 8px 32px #17364a05;scroll-margin-top:95px}.eyebrow{font:700 12px/1.5 ui-monospace,monospace;letter-spacing:.14em;color:var(--accent);text-transform:uppercase}.chapter h1{font-size:clamp(32px,5vw,64px);line-height:1.25;margin:24px 0}.chapter h2{font-size:clamp(24px,3vw,38px);line-height:1.4;margin:12px 0 20px}.chapter h3{font-size:19px;margin:0 0 10px}.lead{font-size:clamp(18px,2vw,24px);max-width:860px}.muted,small{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:24px 0}.triple{grid-template-columns:repeat(3,minmax(0,1fr))}.card{border:1px solid var(--line);border-radius:12px;padding:22px;background:#f8fbfb}.callout{border-left:4px solid var(--accent);background:#eaf7f6;padding:16px 22px;margin:22px 0}.warning{border-left-color:var(--gold);background:#fff6e8}.badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:99px;background:#dcf4ef;color:#07594e;margin-right:6px}.planned{background:#fff0d5;color:#865900}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px;margin:18px 0}th,td{text-align:left;vertical-align:top;padding:13px 12px;border-bottom:1px solid var(--line)}th{background:#edf5f6}code{font:14px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;background:#edf3f5;border-radius:4px;padding:2px 5px;overflow-wrap:anywhere}pre{background:var(--navy);color:#e4f8f6;padding:22px;border-radius:12px;overflow:auto;font-size:14px;line-height:1.65}pre code{background:none;color:inherit;padding:0}.flow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:26px 0}.node{border:1px solid #accdd1;background:#eff8f8;border-radius:12px;padding:16px;flex:1;min-width:140px}.arrow{color:var(--accent);font-size:22px}.stat{font-size:36px;font-weight:750;line-height:1.2;color:var(--accent)}.toc{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 20px;padding-left:22px}.speaker{margin-top:28px;border-top:1px solid var(--line);padding-top:18px;color:var(--muted)}details summary{cursor:pointer;font-weight:650}.stage{background:#edf5f6;border-radius:12px;padding:18px}.stage svg{display:block;width:100%;height:250px}.slider{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.slider input{width:220px}.formula{font:700 22px/1.6 ui-monospace,monospace;color:var(--accent)}body.present .chapter{display:none}body.present .chapter.active{display:block;min-height:calc(100vh - 150px)}body.present .wrap{padding-bottom:24px}.pager{display:flex;justify-content:space-between;gap:16px;align-items:center}.only-js{display:none}.js .only-js{display:flex}.foot{max-width:1152px;margin:auto;padding:0 24px 40px;color:var(--muted);font-size:13px}@media(max-width:720px){.grid,.triple{grid-template-columns:1fr}.toc{grid-template-columns:1fr}.wrap{padding:16px 12px 40px}.top{position:relative;padding:12px}.chapter{scroll-margin-top:15px}.brand{width:100%}th,td{padding:9px;min-width:110px}.flow{flex-direction:column;align-items:stretch}.arrow{text-align:center;transform:rotate(90deg)}body.present .chapter.active{min-height:0}.top select{max-width:100%}.stat{font-size:30px}}@media print{body{background:white;font-size:11pt}.top,.pager,.progress,.slider,.foot{display:none!important}.wrap{padding:0;max-width:none}.chapter,body.present .chapter{display:block!important;box-shadow:none;border:0;border-radius:0;margin:0;padding:24px 0;break-before:page;min-height:0!important}.chapter:first-child{break-before:auto}.grid{gap:12px}.card{padding:12px}a{color:inherit}pre{white-space:pre-wrap}details>*{display:block}h2,h3{break-after:avoid}.card,figure,pre{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress" aria-hidden="true"></div>
+<header class="top"><span class="brand">ARv2 / Engineering Guide</span><label class="only-js" for="chapter-select">章 <select id="chapter-select" aria-label="表示する章"></select></label><button class="only-js" id="mode" aria-pressed="false">スライド表示</button><button class="only-js" id="print">印刷 / PDF</button></header>
+<main class="wrap" id="content">
+<section class="chapter" id="overview" data-title="全体像">
+<span class="eyebrow">01 / Purpose &amp; Outcome</span><h1>水門を、<br>机の上の実空間へ。</h1>
+<p class="lead">閉伊川水門の既存GLBを再利用し、スマホでは平面AR、PCでは扉の動きと形状を確認できる3Dビューアへ進む。</p>
+<div class="grid triple"><div class="card"><div class="stat">20 cm</div><p>配置時の既定全幅。高さではなく、向き補正後の幅から倍率を求める。</p></div><div class="card"><div class="stat">2 routes</div><p>WebXRによるWeb内ARと、USDZを使うOSのQuick Look。</p></div><div class="card"><div class="stat">Static</div><p>Astroの静的配信。AR計算・変換・描画はブラウザと端末側で行う。</p></div></div>
+<div class="callout"><strong>ユーザーによるスマホ動作確認済み。</strong> このチャットで報告を受領。ただし機種・OS・利用したAR経路・精度の定量値は未記録。全端末での動作を保証する結果ではない。</div>
+<p class="muted">資料日: 2026-10-11 / 対象: 今回追加した平面ARと、同じリポジトリにある関連機能。ライブラリのバージョンはpackage-lock.jsonの解決値。</p>
+<details class="speaker"><summary>30秒で説明すると</summary><p>「水門のGLBをThree.jsで読み込み、床や机の交点をWebXRで取得して置いています。iPhoneの対応ブラウザではUSDZに変換し、Quick Lookに配置を任せます。ブラウザのAR機能を確認し、PCや非対応端末は3Dビューアへ案内します。iPhoneのOS画面とWeb内ARは、操作できるUIとアニメーションの範囲が違います。」</p></details>
+</section>
+
+<section class="chapter" id="map" data-title="ページと機能の地図">
+<span class="eyebrow">02 / Scope</span><h2>公開機能と、検証用の機能を分ける</h2>
+<div class="table-wrap"><table><thead><tr><th>パス / 機能</th><th>構成</th><th>状態・今回の変更</th></tr></thead><tbody>
+<tr><td><code>/</code></td><td>Astro、Leaflet地図、WebGLの水面背景</td><td>既存。平面AR・3Dビューアへの導線を有効化</td></tr>
+<tr><td><code>/ar/place</code></td><td>Astro + TypeScript + Three.js + 端末AR</td><td><span class="badge">今回追加</span>机・床への配置、カメラ起動案内</td></tr>
+<tr><td><code>/viewer</code></td><td>Three.js + OrbitControls + AnimationMixer</td><td><span class="badge">今回追加</span>形状・扉の動きを確認</td></tr>
+<tr><td><code>/unity/</code></td><td>既存Unity WebGL成果物</td><td>独立した3D空間体験。今回の平面ARはUnityを使用しない</td></tr>
+<tr><td><code>/lab/ar/*</code></td><td>LocAR、AR.js、独自方位センサー、印刷マーカー</td><td>既存の比較用エンジン。本番ビルドから除外</td></tr>
+<tr><td><code>/lab/glb-compare</code></td><td>GLB / Draco / Meshopt比較</td><td>圧縮の検証用。今回の経路は非圧縮GLBを読む</td></tr>
+<tr><td>現地AR・水位・断面・注釈</td><td>仕様書に記載</td><td><span class="badge planned">今回の範囲外</span>実装済みと説明しない</td></tr>
+</tbody></table></div><p>解説資料は <code>public/docs/ar-engineering-guide.html</code>。利用者向けのトップページには開発者用のリンクを追加しない。</p>
+</section>
+
+<section class="chapter" id="stack" data-title="技術スタック">
+<span class="eyebrow">03 / Stack</span><h2>何が、どの責務を持つのか</h2>
+<div class="table-wrap"><table><thead><tr><th>技術 / 解決バージョン</th><th>担当</th><th>今回の関わり</th></tr></thead><tbody>
+<tr><td>Astro 7.3.1</td><td>URLごとのHTML生成、静的ビルド、開発サーバー</td><td><code>.astro</code>で画面とルートを追加</td></tr>
+<tr><td>TypeScript 6.0.3</td><td>セッション・モデル・設定の型</td><td>ARの起動とライフサイクル、純粋な幾何計算</td></tr>
+<tr><td>Three.js 0.175.0</td><td>WebGL描画、GLBロード、座標変換、アニメ、USDZ出力</td><td>既存依存を再利用。新しいnpm依存は追加していない</td></tr>
+<tr><td>WebXR / Quick Look</td><td>端末の姿勢・位置推定、平面との交点、実空間への配置</td><td>ブラウザAPI / OS機能。npmライブラリではない</td></tr>
+<tr><td>Svelte 5.57.0</td><td>既存ARのIntroPanelなどのUI</td><td>今回の平面ARはAstroのDOM + TypeScript。Svelteを直接使用しない</td></tr>
+<tr><td>LocAR 0.1.9 / Leaflet 1.9.4</td><td>既存の位置情報AR / 地図</td><td>机上の平面配置には使わない</td></tr>
+<tr><td>A-Frame 1.6.0 / AR.js 3.4.7</td><td>labの既存AR・Hiroマーカー追跡</td><td>vendorに同梱。今回のWebXR経路から読み込まない</td></tr>
+<tr><td>Vitest 5.0.0 / Playwright 1.63.0</td><td>幾何計算テスト / 実ブラウザでの起動フロー検証</td><td>既存テストを更新、新規テストを追加</td></tr>
+<tr><td>Cloudflare Tunnel / GitHub Actions</td><td>スマホ向けHTTPS検証 / 型・テスト・ビルドと配信</td><td>ローカル検証を外から開く。アプリのARエンジンとは別</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="chapter" id="architecture" data-title="データと責務">
+<span class="eyebrow">04 / Architecture</span><h2>同じモデルを、3つの表示先へ渡す</h2>
+<div class="flow" aria-label="設定からモデルを読み込み、正規化し、表示経路を選ぶ"><div class="node"><strong>JSON設定</strong><br><small>モデルパス・向き<br>配置幅・法線しきい値</small></div><span class="arrow" aria-hidden="true">→</span><div class="node"><strong>GLTFLoader</strong><br><small>GLB → scene + clips</small></div><span class="arrow" aria-hidden="true">→</span><div class="node"><strong>接地・縮尺補正</strong><br><small>底面中央 / 全幅20cm</small></div><span class="arrow" aria-hidden="true">→</span><div class="node"><strong>経路選択</strong><br><small>WebXR / Quick Look<br>3Dビューア</small></div></div>
+<div class="grid"><div class="card"><h3>UIとセッション</h3><p><code>PlaceExperience.astro</code>がDOMとCSS、<code>experience.ts</code>がロード、能力判定、描画ループ、AR許可、起動・終了を担当する。</p></div><div class="card"><h3>幾何計算</h3><p><code>placement.ts</code>が設定検証、水平面判定、接地・幅計測、USDZ用の静止メッシュ生成を担当する。ブラウザなしで単体テストできる。</p></div></div>
+<pre><code>src/pages/ar/place.astro ─┐
+                         ├─ PlaceExperience.astro → experience.ts
+src/pages/viewer.astro ───┘                         ├─ placement.ts
+                                                   ├─ lib/loaders/loadModel.ts
+                                                   ├─ lib/config/locationConfig.ts
+                                                   └─ lib/paths.ts → withBase()</code></pre>
+<p>今回の分岐は端末名だけでは決めない。AR能力とタッチ環境を確認する。GPS設定の高度や緯度経度は平面ARの配置位置に使用しない。</p>
+</section>
+
+<section class="chapter" id="routing" data-title="スマホとPCの起動フロー">
+<span class="eyebrow">05 / Entry Flow</span><h2>カメラはユーザーの操作から起動する</h2>
+<div class="grid"><div class="card"><h3>① 対応スマホ</h3><p>タッチ対応 + coarseポインターを確認し、<code>isSessionSupported('immersive-ar')</code> または <code>relList.supports('ar')</code> が使えるかを確認する。</p><p>モデルを準備する間は3D確認画面を隠す。準備後の「カメラを起動」1タップで次へ。</p></div><div class="card"><h3>② PC・非対応スマホ</h3><p><code>location.replace(withBase('/viewer'))</code>で形状・動きの確認画面へ。カメラの許可要求はしない。</p><p>スマホの起動画面からも「3Dビューアで見る」を選べる。</p></div></div>
+<div class="flow"><div class="node">カメラ利用の説明</div><span class="arrow" aria-hidden="true">→</span><div class="node">起動タップ</div><span class="arrow" aria-hidden="true">→</span><div class="node">OS・ブラウザの許可</div><span class="arrow" aria-hidden="true">→</span><div class="node">カメラ / 平面探索 / 配置</div></div>
+<div class="callout warning">ここでいう確認は<strong>カメラ・ARの権限</strong>。ログイン認証ではない。許可済みならOSは確認を省略することがある。Quick LookのAR/Object初期タブもOS側で管理される。</div>
+<p>タッチ対応PCなどではスマホ判定が一致しない可能性がある。WebXRのセッションにはHit Test・local・DOM Overlayも必要なため、AR可否の事前確認だけで起動成功を保証しない。</p>
+</section>
+
+<section class="chapter" id="hittest" data-title="WebXRの平面配置">
+<span class="eyebrow">06 / WebXR Hit Test</span><h2>作るのは床のメッシュではなく、配置する交点</h2>
+<p>端末のAR基盤が検出した平面に、視点からのレイを当てる。アプリは得られた位置と向きに円の照準を描く。平面ポリゴンを取得して独自に床メッシュを生成する実装ではない。<a href="https://www.w3.org/TR/webxr-hit-test-1/">W3C Hit Test仕様</a></p>
+<pre><code>requestSession('immersive-ar', {
+  requiredFeatures: ['hit-test', 'local', 'dom-overlay'],
+  optionalFeatures: ['anchors'],
+  domOverlay: { root: overlay }
+});
+const viewer = await session.requestReferenceSpace('viewer');
+const source = await session.requestHitTestSource({
+  space: viewer, entityTypes: ['plane']
+});</code></pre>
+<div class="grid"><div class="card"><h3>配置前: 毎フレーム照準を更新</h3><p><code>frame.getHitTestResults(source)</code>から水平面の結果を選ぶ。位置が取れなければ円と配置ボタンを無効にする。壁・天井は候補から除く。</p></div><div class="card"><h3>タップ時: 座標をコピー</h3><p>次の有効なXRフレームで配置を確定する。モデルを照準の子やカメラの子にしない。配置後のカメラ移動は視点だけを変える。</p></div></div>
+<p>Android ChromeのWebXR ARはARCoreを使用するという説明がある。実装はこの基盤をブラウザAPI越しに利用し、独自SLAMは書いていない。<a href="https://developers.google.com/ar/develop/webxr">Google公式説明</a></p>
+</section>
+
+<section class="chapter" id="geometry" data-title="接地・幅・法線を理解する">
+<span class="eyebrow">07 / Geometry Lab</span><h2>位置とサイズの意味を、コードで揃える</h2>
+<div class="grid"><div class="card"><h3>底面中央を原点へ</h3><p>設定のyawを適用してBox3で計測。水平中心をX/Z原点へ、底面をY=0へ移す。中央原点のまま置くと水門の下半分が机に埋まる。</p><div class="formula">scale = 0.2 / measuredWidth</div><p>GPS用の高さ5mから縮尺を決めない。今回の机上模型は幅20cmが基準。</p></div><div class="card"><h3>上向きの水平面を選ぶ</h3><p>Hit Test姿勢のY軸を法線として扱い、<code>matrix[5] ≥ 0.9</code>を採用条件にする。理想的な単位法線では上向きから約25.8°以内に相当する。</p><p>この判定は傾きのフィルター。平面の広さ・信頼度・机か床かの分類はしていない。</p></div></div>
+<div class="stage"><div class="slider only-js"><label for="tilt">面の傾き</label><input id="tilt" type="range" min="0" max="180" value="0"><output id="tilt-value" for="tilt">0° / ny = 1.000 / 採用</output></div><svg viewBox="0 0 700 250" role="img" aria-labelledby="surface-title surface-desc"><title id="surface-title">面の法線と水平面の判定</title><desc id="surface-desc">上向き法線に近い床を採用し、壁や天井を除外する。スライダーで法線の向きが変化する説明図。</desc><defs><marker id="tip" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 Z" fill="#007e87"/></marker></defs><line x1="70" y1="190" x2="630" y2="190" stroke="#557183" stroke-width="2" stroke-dasharray="5 5"/><text x="75" y="220" fill="#557183">水平の机・床</text><g id="surface" transform="rotate(0 350 170)"><line x1="235" y1="170" x2="465" y2="170" stroke="#007e87" stroke-width="7"/><line x1="350" y1="170" x2="350" y2="60" stroke="#007e87" stroke-width="4" marker-end="url(#tip)"/></g><text x="480" y="65" fill="#17364a">Y軸 = 面の法線</text><text x="480" y="98" fill="#557183">説明用の図</text></svg></div>
+<p class="muted">設定: <code>public/config/placement.json</code> — 既定0.2m、最小0.1m、最大1m、しきい値0.9。</p>
+</section>
+
+<section class="chapter" id="tracking" data-title="固定・追跡喪失・終了">
+<span class="eyebrow">08 / Tracking &amp; Lifecycle</span><h2>置いた後の「固定」は、2段階で扱う</h2>
+<div class="grid"><div class="card"><h3>Anchorが使える場合</h3><p>有効フレーム内で <code>hit.createAnchor()</code> を呼ぶ。以降はAnchorのposeを取得し、端末の追跡補正を反映する。視点またはAnchorのposeが失われたらモデルを隠す。</p></div><div class="card"><h3>未対応・作成失敗の場合</h3><p>local参照空間で決めた位置・向きを維持する。Viewer poseが失われたら隠す。アンカーを使う場合と同じ精度を保証するものではない。</p></div></div>
+<pre><code>探索 → 照準あり → 配置待ち → 配置確定 → 追跡
+ ↑                                      │
+ └──────────── 置き直し ──────────────────┘
+
+置き直し / 終了: generation++ → anchor.delete()
+遅延して届いたAnchor: 世代番号が違えば削除
+終了: hitSource.cancel() → XR終了 → 画面を復元
+ページ離脱: loop停止、geometry/material/texture解放、Blob URL解放</code></pre>
+<div class="callout">Anchor作成は非同期。「置き直す」を押した後に古いPromiseが完了しても、前の位置へ戻らないよう世代番号で無効化している。</div>
+<p>座標は永続保存しない。ページ再読み込みや次のARセッションに配置位置を引き継ぐ機能はない。ドリフト・再局在化の挙動は端末で確認する。</p>
+</section>
+
+<section class="chapter" id="usdz" data-title="GLBからUSDZへの変換">
+<span class="eyebrow">09 / Native AR Asset Pipeline</span><h2>同じ水門をQuick Lookで表示するための補正</h2>
+<p>Three.jsの <code>USDZExporter</code> を使い、メッシュとマテリアルを静止USDZへ変換する。<code>Blob</code>のMIMEは <code>model/vnd.usdz+zip</code>、生成したURLを <code>&lt;a rel="ar"&gt;</code> に渡す。変換のためにモデルを外部サービスへ送らない。</p>
+<div class="flow"><div class="node">GLB / Three.js scene</div><span class="arrow" aria-hidden="true">→</span><div class="node">行列を頂点へ焼き込む</div><span class="arrow" aria-hidden="true">→</span><div class="node">反転・両面の補正</div><span class="arrow" aria-hidden="true">→</span><div class="node">USDZ / Blob / Quick Look</div></div>
+<div class="grid"><div class="card"><h3>負のスケール</h3><p>元GLBの複数ノードに <code>[-1,-1,-1]</code> がある。出力用ジオメトリへworld行列を適用し、行列式が負なら三角形の頂点順を交換する。元のGLB・Web表示用のジオメトリは変えない。</p></div><div class="card"><h3>両面マテリアル</h3><p>同梱ExporterはDoubleSideを表現しない。裏向きの三角形と逆向き法線を追加し、FrontSideマテリアルで両面を表現する。見え方を維持する代わりに出力三角形が増える。</p></div></div>
+<div class="callout warning">この変換は<strong>静止モデル</strong>。扉のアニメーションはUSDZに含めない。Quick Look自体はアニメーションを扱えるが、今回のExporter経路では輸出していない。Webの3DビューアではGLB内のクリップを再生する。</div>
+<p>制限: 現モデルのMeshStandardMaterialを対象にする。複数マテリアル配列はエラーにする。任意のスキニング・モーフ・シェーダーの再現を保証する汎用変換ではない。画像上限1024、変換時CPU/メモリと出力容量が性能上の確認点。</p>
+</section>
+
+<section class="chapter" id="ui" data-title="AR経路でUIが違う理由">
+<span class="eyebrow">10 / UI Ownership</span><h2>カメラ画面の所有者で、できることが変わる</h2>
+<div class="table-wrap"><table><thead><tr><th>項目</th><th>WebXR</th><th>今回のQuick Look経路</th><th>3Dビューア</th></tr></thead><tbody>
+<tr><td>描画・配置</td><td>WebGL + XRのpose</td><td>OSのAR画面</td><td>WebGL、実空間追跡なし</td></tr>
+<tr><td>扉の動き</td><td>AnimationMixerで複数クリップ再生</td><td>静止USDZのため再生しない</td><td>再生 / 一時停止</td></tr>
+<tr><td>回転・サイズ</td><td>Webのスライダー</td><td>OSの操作</td><td>スライダー + OrbitControls</td></tr>
+<tr><td>左上ホーム</td><td>DOM Overlayに表示。XRを終了して移動</td><td>OSの×を閉じた起動元ページに表示</td><td>通常のWebリンク</td></tr>
+<tr><td>権限・初期画面</td><td>ブラウザが権限を管理</td><td>OSが権限とAR/Object選択を管理</td><td>カメラは要求しない</td></tr>
+</tbody></table></div>
+<p>Quick Lookの「×」はWebページのDOMではない。公開されたバナー/カスタムアクションはあるが、標準の左上ボタンを置き換えるAPIは確認できないため、今回は置き換えない。<a href="https://developer.apple.com/documentation/arkit/adding-an-apple-pay-button-or-a-custom-action-in-ar-quick-look">Appleのカスタムアクション資料</a></p>
+<details class="speaker"><summary>よく聞かれる質問への答え</summary><p>「なぜiPhoneのARには扉再生ボタンがない？」— OSのQuick Lookへ表示を渡しているため。今回の静止USDZと標準UIではWeb側のAnimationMixerやDOMボタンはその画面へ持ち込めない。独自UI付きの同等体験を目指すなら、別のWebAR基盤またはネイティブアプリとして設計し直す必要がある。</p></details>
+</section>
+
+<section class="chapter" id="alternatives" data-title="他のAR方式との比較">
+<span class="eyebrow">11 / Alternatives</span><h2>「AR」という名前でも、観測できる情報は違う</h2>
+<div class="table-wrap"><table><thead><tr><th>方式</th><th>手がかり・得られる情報</th><th>今回採用しない理由 / 使いどころ</th></tr></thead><tbody>
+<tr><td>LocAR / GPS</td><td>緯度経度、精度、方位、高度。近距離で東・北のメートルへ変換</td><td>現地の大まかな位置向け。机の接地面を検出する仕組みではない</td></tr>
+<tr><td>独自DeviceOrientation</td><td>端末の向き、画面方向、別途GPS</td><td>回転だけではカメラの並進が分からない。位置固定の品質は別途検証</td></tr>
+<tr><td>AR.js + A-Frame</td><td>宣言的な3Dシーンと既存位置情報AR</td><td>既存比較用。今回の平面ARのAPIやUSDZ出力はThree.jsへ直接接続</td></tr>
+<tr><td>AR.js Hiroマーカー</td><td>印刷パターンから相対姿勢</td><td>目印が必要。印刷なしの机・床配置とは要件が違う</td></tr>
+<tr><td>AlvaAR</td><td>ブラウザ内の単眼SLAM / world tracking</td><td>実寸・平面の検証とGPLの扱いが未確定。リポジトリのライセンス方針により未導入</td></tr>
+<tr><td>擬似配置</td><td>方位センサーと仮定した床高</td><td>実平面を観測しない。実検出として見せる方式に今回はしない</td></tr>
+<tr><td>ネイティブARKit / ARCore</td><td>OSの追跡・平面機能をアプリから利用</td><td>独自UIを作れる候補だが、今回の静的Webの範囲では新規アプリを作らない</td></tr>
+</tbody></table></div>
+<p>SLAMは自己位置と環境を推定する考え方。GPSやジャイロを読んだだけでSLAM相当になるわけではない。単眼SLAMの採用では、実寸スケールと追跡喪失時の挙動も評価する。<a href="https://github.com/alanross/AlvaAR">AlvaAR一次資料</a></p>
+</section>
+
+<section class="chapter" id="existing" data-title="関連する既存機能">
+<span class="eyebrow">12 / Existing Systems</span><h2>水門AR以外の部品も、混同せず説明する</h2>
+<div class="grid"><div class="card"><h3>地図と地点設定</h3><p>Leafletが地点カタログからピンを表示する。地図タイルは外部サービス。位置情報ARは地点JSONの座標・yaw・高度・高さを使う。平面ARはモデルパスとyawを再利用し、置く位置はHit Testで決める。</p></div><div class="card"><h3>GLBと圧縮</h3><p>GLBには形状・マテリアル・画像・5つのアニメクリップがある。Draco/Meshopt版とデコーダは比較用に存在するが、今回の共通ローダーは設定された非圧縮GLBを使用する。</p></div><div class="card"><h3>Unity WebGL</h3><p><code>public/unity</code>のビルド成果物を独立したページとして配信。Three.js平面ARとはレンダラー・データ形式・操作ループが異なる。今回Unityのシーン・C#・AR Foundationは変更していない。</p></div><div class="card"><h3>ヒーローのWebGL水面</h3><p>トップページの水の表現は <code>src/lib/water-shader.ts</code>。装飾の描画であり、ARの平面検出や水理シミュレーションではない。</p></div></div>
+<p>本番では比較用の<code>/lab</code>、AR.js/A-Frameのvendor、検証地点JSONを出力後に除外する。開発・比較時は<code>INCLUDE_LAB=1</code>。この整理は今回のPRが依存する既存ブランチの変更。</p>
+</section>
+
+<section class="chapter" id="delivery" data-title="配信・スマホ検証・CI">
+<span class="eyebrow">13 / Delivery</span><h2>静的配信とHTTPSで、スマホまでつなぐ</h2>
+<div class="grid"><div class="card"><h3>配信パス</h3><p>Cloudflare Pagesはルート、GitHub Pagesは<code>/ARv2/</code>。<code>withBase()</code>でモデル・設定・遷移先をビルド時のBASE_URLに合わせる。ハードコードしたルート相対URLはサブパスで壊れる。</p></div><div class="card"><h3>HTTPS検証</h3><p>PCのAstro devをCloudflare Tunnel経由で公開する。スマホのカメラ・ARには安全なコンテキストが必要。サーバーのHost制限は接続ヘッダーで解決する。</p></div></div>
+<pre><code>npm run dev -- --host 127.0.0.1 --port 4326
+cloudflared tunnel --url http://127.0.0.1:4326 \
+  --http-host-header localhost
+
+# 発行されたHTTPS URL + /ar/place をスマホで開く
+# PCとトンネルは検証中、起動したままにする</code></pre>
+<p>CIはNode 22で型チェック、単体テスト、設定検証、両配信先向けビルド、lab除外チェック、Playwrightを実行する。アプリ用のAPIサーバーやデータベースはない。権限と端末機能はブラウザ・OSで管理する。</p>
+<p>この資料は外部JS・フォント・CDNを読み込まない単一HTML。ブラウザでローカルファイルとして開ける。参照リンクを開く場合だけネットワークを使う。</p>
+</section>
+
+<section class="chapter" id="verification" data-title="検証結果と残る課題">
+<span class="eyebrow">14 / Evidence &amp; Limits</span><h2>確認できたことと、まだ測っていないこと</h2>
+<div class="grid"><div class="card"><h3>確認済み</h3><ul><li>ユーザーがスマホで動作を確認し、本チャットで報告</li><li>単体テスト62件: 水平面、接地、幅、反転・両面補正、設定・既存計算</li><li>関連ブラウザテスト5件: PC遷移、スマホUSDZ準備、拒否後の再試行、非対応遷移、ビューア</li><li>型チェックと静的ビルド。既存の非推奨設定警告あり</li></ul></div><div class="card"><h3>確認を広げる項目</h3><ul><li>機種、OS、ブラウザ、WebXR/Quick Look経路を記録</li><li>60秒のドリフト、周囲からの視差、暗所・無地の机</li><li>Anchor対応/未対応、喪失・復帰、終了・再開</li><li>USDZ変換時間・最大メモリ・外観と初期20cm幅</li></ul></div></div>
+<div class="callout warning">既存トップページの自動スクロールE2Eは、以前のローカル実行で失敗した履歴がある。今回の関連5件の通過を、全E2Eの通過と読み替えない。実機報告も全端末・定量精度の評価とは分ける。</div>
+<p>今後の拡張: 圧縮モデル経路の評価、USDZの事前生成、ARのピンチ・2本指回転、扉シーク、水位の見た目、断面、注釈、英語UI。現時点の対応は幅0.1〜1mのスライダーと扉の再生/一時停止。</p>
+</section>
+
+<section class="chapter" id="handoff" data-title="コード読解と参照先">
+<span class="eyebrow">15 / Handoff</span><h2>この順番で読むと、実装の意図を追える</h2>
+<ol><li><code>PlaceExperience.astro</code>: 初期画面、data-modeによる表示切替、ホームリンク</li><li><code>experience.ts</code>: 能力判定 → ロード → preview → Native/WebXR起動 → animation loop → 終了</li><li><code>placement.ts</code>とテスト: 底面、幅、法線、負スケール、両面の計算</li><li><code>public/config/placement.json</code>と地点JSON: 値の供給元</li><li><code>e2e/placement.spec.ts</code>: 起動フローの外からの期待値</li><li><code>docs/plane-ar.md</code>: 採用理由、仕様との差異、実機チェック</li></ol>
+<div class="grid"><div class="card"><h3>公開APIの一次資料</h3><ul><li><a href="https://www.w3.org/TR/webxr-hit-test-1/">W3C WebXR Hit Test</a></li><li><a href="https://developers.google.com/ar/develop/webxr">Google WebXR / ARCore</a></li><li><a href="https://developer.apple.com/quick-look-gallery/">Apple Quick Look</a></li><li><a href="https://developer.apple.com/documentation/arkit/adding-an-apple-pay-button-or-a-custom-action-in-ar-quick-look">Apple Quick Lookカスタムアクション</a></li><li><a href="https://docs.astro.build/en/guides/deploy/">Astroの配信</a></li><li><a href="https://github.com/alanross/AlvaAR">AlvaAR</a></li></ul></div><div class="card"><h3>実装依存の仕様を確かめる場所</h3><p><code>node_modules/three/examples/jsm/exporters/USDZExporter.js</code>に、このプロジェクトが実際に使うExporterの対応範囲がある。Webの最新版ドキュメントだけで判断せず、固定された依存の実装を照合する。</p><p>WebXRの任意機能・Quick Lookの起動状態・端末権限は更新されるため、実機と一次資料で再確認する。</p></div></div>
+<details class="speaker"><summary>レビューで確認したい5つの問い</summary><ol><li>モデルがカメラではなく参照空間に置かれているか？</li><li>幅20cm・底面Y=0の計算が一箇所にあるか？</li><li>終了後や置き直し後に古いAnchorが復活しないか？</li><li>OSのUI制約とWebでできる操作を混同していないか？</li><li>ブラウザテスト・実機報告・未測定の精度が区別されているか？</li></ol></details>
+</section>
+<nav class="pager only-js" aria-label="章送り"><button id="prev">← 前の章</button><span id="counter" aria-live="polite"></span><button id="next">次の章 →</button></nav>
+</main>
+<footer class="foot">説明図は概念図。実際の端末カメラやセンサーは起動しません。読み物表示 / スライド表示、← → キー、印刷・PDFに対応。</footer>
+<script>
+document.documentElement.classList.add('js');
+const chapters=Array.from(document.querySelectorAll('.chapter'));
+const select=document.querySelector('#chapter-select');
+const mode=document.querySelector('#mode');
+let current=0;
+for(const [i,chapter] of chapters.entries()){const option=document.createElement('option');option.value=String(i);option.textContent=String(i+1).padStart(2,'0')+' '+chapter.dataset.title;select.append(option)}
+function show(index,scroll=true){current=Math.max(0,Math.min(chapters.length-1,index));for(const [i,chapter] of chapters.entries())chapter.classList.toggle('active',i===current);select.value=String(current);document.querySelector('#counter').textContent=(current+1)+' / '+chapters.length;document.querySelector('#prev').disabled=current===0;document.querySelector('#next').disabled=current===chapters.length-1;document.querySelector('#progress').style.width=((current+1)/chapters.length*100)+'%';history.replaceState(null,'','#'+chapters[current].id);if(scroll)chapters[current].scrollIntoView({behavior:'auto',block:'start'})}
+select.addEventListener('change',()=>show(Number(select.value)));
+document.querySelector('#prev').addEventListener('click',()=>show(current-1));
+document.querySelector('#next').addEventListener('click',()=>show(current+1));
+mode.addEventListener('click',()=>{const enabled=document.body.classList.toggle('present');mode.textContent=enabled?'読み物表示':'スライド表示';mode.setAttribute('aria-pressed',String(enabled));show(current)});
+document.querySelector('#print').addEventListener('click',()=>window.print());
+window.addEventListener('keydown',event=>{if(!document.body.classList.contains('present')||event.altKey||event.ctrlKey||event.metaKey||['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName))return;if(event.key==='ArrowRight'){event.preventDefault();show(current+1)}if(event.key==='ArrowLeft'){event.preventDefault();show(current-1)}});
+window.addEventListener('hashchange',()=>{const index=chapters.findIndex(chapter=>'#'+chapter.id===location.hash);if(index>=0)show(index)});
+const tilt=document.querySelector('#tilt');
+tilt.addEventListener('input',()=>{const angle=Number(tilt.value);const ny=Math.cos(angle*Math.PI/180);document.querySelector('#surface').setAttribute('transform','rotate('+angle+' 350 170)');document.querySelector('#tilt-value').textContent=angle+'° / ny = '+ny.toFixed(3)+' / '+(ny>=.9?'採用':'除外');});
+const initial=chapters.findIndex(chapter=>'#'+chapter.id===location.hash);show(initial>=0?initial:0,false);
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+---
+import { withBase } from '../../lib/paths';
+interface Props { viewer?: boolean }
+const { viewer = false } = Astro.props;
+---
+<main id="placement" data-viewer={String(viewer)} data-mode={viewer ? 'viewer' : 'loading'}>
+  <div id="viewport" aria-label="水門の3D表示"></div>
+  <section id="overlay">
+    <header><a id="home" href={withBase('/')} aria-label="ホームに戻る">⌂ ホーム</a><h1>{viewer ? '水門3Dビューア' : '手のひら・平面AR'}</h1></header>
+    <p id="camera-notice" hidden>カメラを使って机や床に水門を配置します。「カメラを起動」を押し、許可の確認が出たら許可してください。</p>
+    <details id="intro" hidden={viewer}>
+      <summary>配置のしかた</summary>
+      <p>机や床に、全幅20cmの水門を置いて見てみましょう。</p>
+      <p>明るい場所で模様のある平面にカメラを向け、ゆっくり動かします。円が現れたらタップして配置できます。</p>
+      <p>手のひらの動きへの追従には対応していません。</p>
+    </details>
+    <p id="status" role="status" aria-live="polite">水門を読み込んでいます…</p>
+    <div class="actions">
+      <button id="start-ar" disabled hidden>カメラを起動</button>
+      <button id="prepare-quicklook" disabled hidden>もう一度準備する</button>
+      <a id="quicklook" rel="ar" aria-label="カメラを起動" hidden><img alt="" width="1" height="1" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" />カメラを起動</a>
+      <a id="viewer-link" href={withBase('/viewer')} hidden>3Dビューアで見る</a>
+      <button id="place" hidden disabled>ここに置く</button>
+      <button id="reset" hidden>置き直す</button>
+      <button id="end-ar" hidden>ARを終了</button>
+    </div>
+    <fieldset id="model-controls" disabled>
+      <label>全幅 <output id="width-value">20cm</output><input id="width" type="range" min="0.1" max="1" step="0.01" value="0.2" /></label>
+      <label>向き<input id="rotation" type="range" min="-180" max="180" step="1" value="0" /></label>
+      <button id="animation">扉の動きを一時停止</button>
+    </fieldset>
+    <p id="viewer-help">ドラッグで回転、ピンチ・スクロールで拡大縮小できます。</p>
+  </section>
+</main>
+<script>
+  import { mountPlacementExperience } from './experience';
+  const root = document.querySelector<HTMLElement>('#placement');
+  if (root) mountPlacementExperience(root);
+</script>
+<style>
+  main { position: fixed; inset: 0; background: #102535; color: #fff; }
+  #viewport { position: absolute; inset: 0; }
+  #overlay { position: absolute; inset: 0; display: flex; flex-direction: column; box-sizing: border-box; pointer-events: none; padding: max(16px, env(safe-area-inset-top)) 18px max(16px, env(safe-area-inset-bottom)); overflow-y: auto; }
+  header { display: flex; align-items: center; gap: 20px; }
+  h1 { font-size: 1.2rem; }
+  a, button, input { pointer-events: auto; }
+  a { color: #fff; }
+  #home { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 10px; background: #102535ee; text-decoration: none; flex-shrink: 0; }
+  #intro, #status, fieldset, #viewer-help, #camera-notice { background: #102535e6; padding: 12px; border-radius: 12px; max-width: 430px; }
+  #intro { font-size: .9rem; pointer-events: auto; }
+  #status { font-weight: 600; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  button, .actions a { border: 0; border-radius: 10px; padding: 12px 16px; background: #d8f4ff; color: #102535; font: inherit; text-decoration: none; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+  fieldset { border: 0; margin: auto 0 0; pointer-events: auto; }
+  label { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  input { flex: 1; min-width: 0; }
+  [hidden] { display: none !important; }
+  #quicklook img { position: absolute; opacity: 0; }
+  main[data-mode='loading'] #viewport,
+  main[data-mode='camera-intro'] #viewport,
+  main[data-mode='loading'] #model-controls,
+  main[data-mode='camera-intro'] #model-controls,
+  main[data-mode='loading'] #viewer-help,
+  main[data-mode='camera-intro'] #viewer-help { display: none; }
+</style>
