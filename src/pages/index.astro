@@ -4,8 +4,7 @@ import { withBase } from '../lib/paths';
 
 // 体験メニュー。active なものだけリンクを持つ。soon はプレースホルダー(クリック不可)。
 // 開発者向けの比較ページ・検証用地点・デバッグUIは公開版に出さない(docs/ar-spec.md §6)。
-// 現地AR・床置きAR・3Dビューアは、仕様書の採用方式がまだ /ar/onsite・/ar/place・/viewer に
-// 組み込まれるまで「準備中」として出す。
+// 平面ARと非対応端末用の3Dビューアを公開する。
 const experiences = [
   {
     icon: '📍',
@@ -15,15 +14,17 @@ const experiences = [
   },
   {
     icon: '🧩',
-    title: '床置きAR',
-    description: '床や机に縮小した3Dモデルを置いて、回したり拡大縮小したりできます。',
-    status: 'soon' as const,
+    title: '手のひら・平面AR',
+    description: '机や床に手のひらサイズの水門を置いて、いろいろな角度から見られます。',
+    status: 'active' as const,
+    href: withBase('/ar/place'),
   },
   {
     icon: '🖥️',
     title: '3Dビューア',
     description: 'ARに対応していない端末でも、水門の3Dモデルを見られます。',
-    status: 'soon' as const,
+    status: 'active' as const,
+    href: withBase('/viewer'),
   },
   {
     icon: '🏠',

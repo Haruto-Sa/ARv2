@@ -1,0 +1,6 @@
+{
+  "targetWidthMeters": 0.2,
+  "minWidthMeters": 0.1,
+  "maxWidthMeters": 1,
+  "horizontalNormalThreshold": 0.9
+}
