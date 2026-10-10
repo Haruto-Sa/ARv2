@@ -67,23 +67,92 @@ test.describe('landing page', () => {
     expect(await scrollLeft()).toBe(start);
   });
 
-  test('menu links route to the right experiences, including Unity', async ({ page }) => {
-    await page.goto('/');
-    // メニューはマーキー(横流れ)用に2セット連続で描画される。後半セットは
-    // aria-hidden="true" でスクリーンリーダー・ロケータから隠された複製。
-    const visibleCards = page.locator('.menu-card:not([aria-hidden="true"])');
-
-    const unityCard = visibleCards.filter({ hasText: '閉伊川3D世界' });
-    await expect(unityCard).toHaveAttribute('href', '/unity/');
-
-    const locationCard = visibleCards.filter({ hasText: 'ロケーションAR' });
-    await expect(locationCard).toHaveAttribute('href', '#start');
-  });
-
   test('quick-start pattern buttons point at the three location-AR engines', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('button.pattern-button[formaction="/ar/locar"]')).toBeVisible();
     await expect(page.locator('button.pattern-button[formaction="/ar/arjs"]')).toBeVisible();
     await expect(page.locator('button.pattern-button[formaction="/ar/deviceorientation"]')).toBeVisible();
   });
+
+  test('dragging the menu and releasing over a card does not navigate', async ({ page }) => {
+    // 以前、ドラッグ終了直後のclickがカードへの意図しない遷移を起こしたことがある
+    // (pointerdown時点で無条件にpointer captureしていたのが原因)。しきい値を
+    // 超える移動を伴う本物のドラッグをシミュレートし、遷移が起きないことを確かめる。
+    // オートスクロールは常に動いているため切っておく(scrollIntoViewIfNeededの
+    // 「要素位置が安定するまで待つ」判定が、動き続ける要素では終わらずタイムアウトしうる)。
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    const card = visibleCard(page, '閉伊川3D世界');
+    await card.scrollIntoViewIfNeeded();
+    const box = await card.boundingBox();
+    if (!box) throw new Error('menu card has no bounding box');
+    const y = box.y + box.height / 2;
+    await page.mouse.move(box.x + box.width - 10, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x - 80, y, { steps: 10 }); // 4px閾値を十分超える移動
+    await page.mouse.up();
+    await page.waitForTimeout(200);
+    await expect(page).toHaveURL(/\/$/);
+  });
+});
+
+// 体験メニューの「active」なカードそれぞれについて、期待する遷移先。
+// ページ内アンカー(#start)も、ページ遷移(/ar/marker等)も両方含む。
+const MENU_CARDS: { title: string; href: string; expectedUrl: RegExp }[] = [
+  { title: 'ロケーションAR', href: '#start', expectedUrl: /#start$/ },
+  { title: '手のひらAR', href: '/ar/marker', expectedUrl: /\/ar\/marker$/ },
+  { title: '閉伊川3D世界', href: '/heigawa/', expectedUrl: /\/heigawa\/$/ },
+  { title: '流木コンテンツ', href: '/unity/', expectedUrl: /\/unity\/$/ },
+  { title: '開発者実験', href: '/lab/compare', expectedUrl: /\/lab\/compare$/ },
+];
+
+function visibleCard(page: import('@playwright/test').Page, title: string) {
+  // メニューはマーキー(横流れ)用に2セット連続で描画される。後半セットは
+  // aria-hidden="true" でスクリーンリーダー・ロケータから隠された複製。
+  return page.locator('.menu-card:not([aria-hidden="true"])').filter({ hasText: title });
+}
+
+test.describe('menu card navigation (every visible active card)', () => {
+  // オートスクロールは常に動いているため切っておく(scrollIntoViewIfNeededの
+  // 「要素位置が安定するまで待つ」判定が、動き続ける要素では終わらずタイムアウトしうる)。
+  // 検証したいのはクリック/タップでの遷移であって、オートスクロール自体は別テストで扱う。
+  test.use({ reducedMotion: 'reduce' });
+
+  for (const { title, href, expectedUrl } of MENU_CARDS) {
+    test(`${title}: href attribute is correct`, async ({ page }) => {
+      await page.goto('/');
+      await expect(visibleCard(page, title)).toHaveAttribute('href', href);
+    });
+
+    test(`${title}: a real mouse click navigates`, async ({ page }) => {
+      // href属性のチェックだけでは、クリックがドラッグ用のpointerdown/pointermove
+      // ハンドラに奪われて実際には遷移しない不具合を検出できない(過去に発生)。
+      // page.locator().click() ではなく、実ユーザーと同じ mouse.down()/up() の
+      // シーケンスで確かめる。
+      await page.goto('/');
+      const card = visibleCard(page, title);
+      await card.scrollIntoViewIfNeeded();
+      const box = await card.boundingBox();
+      if (!box) throw new Error(`${title}: menu card has no bounding box`);
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.mouse.down();
+      await page.waitForTimeout(50);
+      await page.mouse.up();
+      await expect(page).toHaveURL(expectedUrl);
+    });
+  }
+});
+
+test.describe('menu card navigation via touch tap', () => {
+  test.use({ hasTouch: true, reducedMotion: 'reduce' });
+
+  for (const { title, expectedUrl } of MENU_CARDS) {
+    test(`${title}: tap navigates @touch`, async ({ page }) => {
+      await page.goto('/');
+      const card = visibleCard(page, title);
+      await card.scrollIntoViewIfNeeded();
+      await card.tap();
+      await expect(page).toHaveURL(expectedUrl);
+    });
+  }
 });

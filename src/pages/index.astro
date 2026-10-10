@@ -59,13 +59,14 @@ const experiences = [
     title: '閉伊川3D世界',
     description: 'Unityで構築した閉伊川流域の3D空間を、WebGLでブラウザから探索できます。',
     status: 'active' as const,
-    href: withBase('/unity/'),
+    href: withBase('/heigawa/'),
   },
   {
     icon: '🪵',
     title: '流木コンテンツ',
     description: '拾い上げた流木を使ったコンテンツ。ネイティブアプリからWebGLへ移植中です。',
-    status: 'soon' as const,
+    status: 'active' as const,
+    href: withBase('/unity/'),
   },
   {
     icon: '🧪',
@@ -369,7 +370,6 @@ const steps = [
       let paused = false;
       let dragging = false;
       let moved = false;
-      let suppressClick = false;
       let dragStartX = 0;
       let dragStartScrollLeft = 0;
       let last = performance.now();
@@ -379,6 +379,11 @@ const steps = [
       }
 
       function wrapScroll(): void {
+        // prefers-reduced-motionでは複製セット(aria-hidden="true")がCSSで
+        // display:noneになり、track.scrollWidthは1セット分しかない。
+        // loopWidth()の「トラック幅は2セット分」という前提が崩れるため、
+        // この補正自体を無効にする(ラップ先の複製が存在しないので不要でもある)。
+        if (prefersReducedMotion) return;
         const half = loopWidth();
         if (half <= 0) return;
         if (flow!.scrollLeft >= half) flow!.scrollLeft -= half;
@@ -403,13 +408,19 @@ const steps = [
         moved = false;
         dragStartX = e.clientX;
         dragStartScrollLeft = flow!.scrollLeft;
-        flow!.style.cursor = 'grabbing';
-        flow!.setPointerCapture(e.pointerId);
       });
       flow.addEventListener('pointermove', (e) => {
         if (!dragging) return;
         const dx = e.clientX - dragStartX;
-        if (Math.abs(dx) > 4) moved = true;
+        if (!moved && Math.abs(dx) > 4) {
+          // ここで初めて capture する: pointerdown 時点で無条件に capture すると、
+          // 単純なクリックの click イベントまでこの要素に取られてしまい、
+          // カード(<a>)へのクリックがナビゲーションを起こせなくなる。
+          moved = true;
+          flow!.style.cursor = 'grabbing';
+          flow!.setPointerCapture(e.pointerId);
+        }
+        if (!moved) return;
         flow!.scrollLeft = dragStartScrollLeft - dx;
         e.preventDefault();
       });
@@ -417,22 +428,19 @@ const steps = [
         if (!dragging) return;
         dragging = false;
         flow!.style.cursor = 'grab';
-        if (moved) {
-          // ドラッグ後に指/マウスを離した位置でカードへの誤クリック(意図しない遷移)を防ぐ。
-          suppressClick = true;
-          setTimeout(() => {
-            suppressClick = false;
-          }, 60);
-        }
       };
       flow.addEventListener('pointerup', endDrag);
       flow.addEventListener('pointercancel', endDrag);
       flow.addEventListener(
         'click',
         (e) => {
-          if (suppressClick) {
+          // ドラッグ(しきい値を超えた移動)の直後に発生したclickは、指・マウスを
+          // 離した位置にあるカードへの意図しない遷移を起こすため、明示的に止める。
+          // タイマーではなく moved フラグ自体を見るため、clickが来るタイミングに依らない。
+          if (moved) {
             e.preventDefault();
             e.stopPropagation();
+            moved = false;
           }
         },
         true
