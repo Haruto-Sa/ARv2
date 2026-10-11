@@ -1,4 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+async function completeGuide(page: Page) {
+  await page.locator('#placement-guide').waitFor();
+  await page.locator('[data-guide-next]').click();
+  await page.locator('[data-guide-next]').click();
+  await page.locator('[data-guide-done]').click();
+}
 test.use({ isMobile: true, hasTouch: true, viewport: { width: 390, height: 844 } });
 
 test('PC goes straight to the watergate viewer even when rel=ar is supported', async ({ page }) => {
@@ -14,6 +20,7 @@ test('PC goes straight to the watergate viewer even when rel=ar is supported', a
   await expect(page.locator('#status')).toHaveText('水門を回して見てみましょう。', { timeout: 30_000 });
   await page.getByRole('button', { name: '扉の動きを一時停止' }).click();
   await expect(page.getByRole('button', { name: '扉の動きを再生' })).toBeVisible();
+  await page.locator('#adjustments summary').click();
   await page.locator('#width').fill('0.4');
   await expect(page.locator('#width-value')).toHaveText('40cm');
   expect(errors).toEqual([]);
@@ -31,6 +38,8 @@ test('Quick Look prepares a USDZ from the actual mirrored watergate meshes', asy
     if (message.text().includes('USDZExporter:')) errors.push(message.text());
   });
   await page.goto('/ar/place');
+  await expect(page.locator('#placement-guide')).toBeVisible();
+  await completeGuide(page);
   await expect(page.locator('#camera-notice')).toBeVisible();
   await expect(page.locator('#viewport')).toBeHidden();
   await expect(page.locator('#model-controls')).toBeHidden();
@@ -57,13 +66,14 @@ test('mobile camera denial allows retry or viewer fallback', async ({ page }) =>
     } });
   });
   await page.goto('/ar/place');
+  await completeGuide(page);
   const start = page.getByRole('button', { name: 'カメラを起動', exact: true });
   await expect(start).toBeEnabled({ timeout: 30_000 });
   await start.click();
   await expect(page.locator('#status')).toContainText('カメラ・ARの許可が必要');
   await expect(start).toBeEnabled();
   await expect(page.locator('#model-controls')).toBeHidden();
-  await page.getByRole('link', { name: '3Dビューアで見る' }).click();
+  await page.getByRole('link', { name: 'カメラなしで、扉の動きを見る →' }).click();
   await expect(page).toHaveURL(/\/viewer\/?$/);
 });
 

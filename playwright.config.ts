@@ -9,9 +9,6 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  // ヘッドレスChromeをworker 1つ(タブ1枚)だけで動かすと、requestAnimationFrame駆動の
-  // 連続アニメーション(体験メニューのオートスクロール等)がcompositor側で極端に
-  // 間引かれることがある(実機・複数タブ同時実行では発生しない)。最低2並列を確保する。
   workers: process.env.CI ? 2 : undefined,
   reporter: 'list',
   use: {
@@ -25,7 +22,7 @@ export default defineConfig({
     // 居座ってPlaywrightのwebServerライフサイクル管理から外れてしまう。
     // 非空文字を設定してその自動バックグラウンド化を止め、Playwright配下の
     // 通常プロセスとして起動・終了を管理させる。
-    command: `npm run build && npx astro preview --port ${PORT}`,
+    command: `npm run build && npx astro preview --ignore-lock --port ${PORT}`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
