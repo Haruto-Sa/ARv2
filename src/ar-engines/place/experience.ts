@@ -4,6 +4,7 @@ import { USDZExporter } from 'three/examples/jsm/exporters/USDZExporter.js';
 import { loadModel } from '../../lib/loaders/loadModel';
 import { loadLocationConfig } from '../../lib/config/locationConfig';
 import { withBase } from '../../lib/paths';
+import { mountOnboarding } from '../../../public/shared/onboarding.js';
 import { createStaticExport, isHorizontalSurface, preparePlacementModel, validatePlacementConfig, type PlacementConfig } from './placement';
 
 export async function mountPlacementExperience(root: HTMLElement) {
@@ -79,6 +80,9 @@ export async function mountPlacementExperience(root: HTMLElement) {
       return;
     }
     root.dataset.mode = viewerOnly ? 'viewer' : 'camera-intro';
+    const guide = mountOnboarding(element<HTMLDialogElement>('placement-guide'), { storageKey: viewerOnly ? 'arv2-viewer-guide-v1' : 'arv2-plane-guide-v1' });
+    element('help').addEventListener('click', guide.open);
+    if (!viewerOnly && !guide.hasSeen()) guide.open();
     element('camera-notice').hidden = viewerOnly;
     start.hidden = !supportsAR;
     element('viewer-link').hidden = viewerOnly;
@@ -223,7 +227,7 @@ export async function mountPlacementExperience(root: HTMLElement) {
           place.hidden = true; reset.hidden = true; end.hidden = true;
           root.dataset.mode = 'camera-intro';
           element('camera-notice').hidden = false;
-          element('intro').hidden = viewerOnly; element('viewer-help').hidden = false;
+          element('viewer-help').hidden = false;
           if (!disposed) preview();
           say('ARを終了しました。もう一度開始できます。');
         }, { once: true });
@@ -238,7 +242,7 @@ export async function mountPlacementExperience(root: HTMLElement) {
         controls!.enabled = false;
         placement.visible = false;
         start.hidden = true; place.hidden = false; end.hidden = false;
-        element('intro').hidden = true; element('viewer-help').hidden = true;
+        element('viewer-help').hidden = true;
         session.addEventListener('select', requestPlacement);
         say('机や床にカメラを向けて、ゆっくり動かしてください。');
       } catch (error) {

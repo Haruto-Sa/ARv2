@@ -2,35 +2,56 @@
 import { withBase } from '../../lib/paths';
 interface Props { viewer?: boolean }
 const { viewer = false } = Astro.props;
+const guide = viewer ? [
+  { icon: '↔', title: '水門をまわして見る', text: '画面の水門をドラッグすると、いろいろな角度から見られます。スマホは2本指のピンチ、パソコンはスクロールで近づいたり離れたりできます。' },
+  { icon: '▷', title: '扉の動きを確かめる', text: '画面下のボタンで扉の動きを一時停止・再生できます。「大きさ・向きを調整」を開くと、水門の全幅や向きを変えられます。' },
+  { icon: '⌂', title: 'いつでもホームに戻れる', text: '左上の「ホーム」から別の体験を選べます。操作に迷ったら、右上の「使い方」でこの案内をもう一度開けます。' },
+] : [
+  { icon: '◎', title: '明るい机や床を選ぶ', text: '少し模様のある、平らな場所を選びましょう。カメラを向け、スマホをゆっくり動かすと置ける面が見つかりやすくなります。' },
+  { icon: '▣', title: 'カメラを起動して、水門を置く', text: '「カメラを起動」を押し、許可の確認が出たら許可します。円が見えたら「ここに置く」。iPhoneでは開いた画面で「AR」を選び、画面の案内に沿って配置します。' },
+  { icon: '↔', title: '周りから見てみよう', text: '水門の位置を決めたら、スマホを動かして別の角度から眺めてみましょう。iPhoneのARでは静止した水門を表示します。扉の動きは3Dビューアで見られます。' },
+];
 ---
+<link rel="stylesheet" href={withBase('/shared/experience.css')} />
 <main id="placement" data-viewer={String(viewer)} data-mode={viewer ? 'viewer' : 'loading'}>
   <div id="viewport" aria-label="水門の3D表示"></div>
   <section id="overlay">
-    <header><a id="home" href={withBase('/')} aria-label="ホームに戻る">⌂ ホーム</a><h1>{viewer ? '水門3Dビューア' : '手のひら・平面AR'}</h1></header>
-    <p id="camera-notice" hidden>カメラを使って机や床に水門を配置します。「カメラを起動」を押し、許可の確認が出たら許可してください。</p>
-    <details id="intro" hidden={viewer}>
-      <summary>配置のしかた</summary>
-      <p>机や床に、全幅20cmの水門を置いて見てみましょう。</p>
-      <p>明るい場所で模様のある平面にカメラを向け、ゆっくり動かします。円が現れたらタップして配置できます。</p>
-      <p>手のひらの動きへの追従には対応していません。</p>
-    </details>
-    <p id="status" role="status" aria-live="polite">水門を読み込んでいます…</p>
-    <div class="actions">
-      <button id="start-ar" disabled hidden>カメラを起動</button>
-      <button id="prepare-quicklook" disabled hidden>もう一度準備する</button>
-      <a id="quicklook" rel="ar" aria-label="カメラを起動" hidden><img alt="" width="1" height="1" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" />カメラを起動</a>
-      <a id="viewer-link" href={withBase('/viewer')} hidden>3Dビューアで見る</a>
-      <button id="place" hidden disabled>ここに置く</button>
-      <button id="reset" hidden>置き直す</button>
-      <button id="end-ar" hidden>ARを終了</button>
+    <header class="experience-header"><a id="home" href={withBase('/')} aria-label="ホームに戻る">⌂ ホーム</a><h1>{viewer ? '水門3Dビューア' : '手のひら・平面AR'}</h1><button id="help" aria-label="使い方を開く">? 使い方</button></header>
+    <div class="camera-card" id="camera-card">
+      <p class="eyebrow">机の上に、小さな水門を。</p>
+      <div class="camera-symbol" aria-hidden="true">◎</div>
+      <h2>カメラで水門を<br />置いてみよう</h2>
+      <p id="camera-notice" hidden>明るい机や床にカメラを向けます。起動時に確認が出たら、カメラ・ARの利用を許可してください。</p>
+      <p class="camera-note">アプリや印刷マーカーは不要です。</p>
     </div>
-    <fieldset id="model-controls" disabled>
-      <label>全幅 <output id="width-value">20cm</output><input id="width" type="range" min="0.1" max="1" step="0.01" value="0.2" /></label>
-      <label>向き<input id="rotation" type="range" min="-180" max="180" step="1" value="0" /></label>
-      <button id="animation">扉の動きを一時停止</button>
-    </fieldset>
-    <p id="viewer-help">ドラッグで回転、ピンチ・スクロールで拡大縮小できます。</p>
+    <p id="status" role="status" aria-live="polite">水門を読み込んでいます…</p>
+    <div class="control-dock">
+      <div class="control-row actions">
+        <button id="start-ar" class="primary-action" disabled hidden>カメラを起動</button>
+        <button id="prepare-quicklook" class="primary-action" disabled hidden>もう一度準備する</button>
+        <a id="quicklook" class="primary-action" rel="ar" aria-label="カメラを起動" hidden><img alt="" width="1" height="1" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" />カメラを起動</a>
+        <button id="place" class="primary-action" hidden disabled>ここに置く</button>
+        <button id="reset" hidden>置き直す</button>
+        <button id="end-ar" hidden>ARを終了</button>
+      </div>
+      <fieldset id="model-controls" disabled>
+        <button id="animation" class="primary-action">扉の動きを一時停止</button>
+        <details id="adjustments"><summary>大きさ・向きを調整</summary>
+          <label>全幅 <output id="width-value">20cm</output><input id="width" aria-label="水門の全幅" type="range" min="0.1" max="1" step="0.01" value="0.2" /></label>
+          <label>向き<input id="rotation" aria-label="水門の向き" type="range" min="-180" max="180" step="1" value="0" /></label>
+        </details>
+      </fieldset>
+      <p id="viewer-help">ドラッグで回転 · ピンチやスクロールで拡大縮小</p>
+      <a id="viewer-link" class="viewer-link" href={withBase('/viewer')} hidden>カメラなしで、扉の動きを見る →</a>
+    </div>
   </section>
+  <dialog id="placement-guide" class="onboarding-dialog" aria-labelledby="guide-title">
+    <p class="guide-eyebrow">{viewer ? '3Dビューアの使い方' : '平面ARの使い方'}</p><span class="guide-count" data-guide-count>1 / 3</span>
+    <h2 id="guide-title">{viewer ? '水門を見て、動かそう' : '初めての平面AR'}</h2>
+    {guide.map((step, i) => <section data-guide-step hidden={i !== 0}><div class="onboarding-icon" aria-hidden="true">{step.icon}</div><h3>{step.title}</h3><p>{step.text}</p></section>)}
+    <p class="guide-tip">{viewer ? 'カメラの許可は必要ありません。' : '操作に迷ったら右上の「使い方」。iPhoneのARから戻るときは、OS画面の「×」を閉じてから「ホーム」を押します。'}</p>
+    <div class="guide-actions"><button data-guide-back hidden>戻る</button><button data-guide-next>次へ →</button><button data-guide-done hidden>わかった、始めよう</button></div>
+  </dialog>
 </main>
 <script>
   import { mountPlacementExperience } from './experience';
@@ -38,29 +59,9 @@ const { viewer = false } = Astro.props;
   if (root) mountPlacementExperience(root);
 </script>
 <style>
-  main { position: fixed; inset: 0; background: #102535; color: #fff; }
-  #viewport { position: absolute; inset: 0; }
-  #overlay { position: absolute; inset: 0; display: flex; flex-direction: column; box-sizing: border-box; pointer-events: none; padding: max(16px, env(safe-area-inset-top)) 18px max(16px, env(safe-area-inset-bottom)); overflow-y: auto; }
-  header { display: flex; align-items: center; gap: 20px; }
-  h1 { font-size: 1.2rem; }
-  a, button, input { pointer-events: auto; }
-  a { color: #fff; }
-  #home { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 10px; background: #102535ee; text-decoration: none; flex-shrink: 0; }
-  #intro, #status, fieldset, #viewer-help, #camera-notice { background: #102535e6; padding: 12px; border-radius: 12px; max-width: 430px; }
-  #intro { font-size: .9rem; pointer-events: auto; }
-  #status { font-weight: 600; }
-  .actions { display: flex; flex-wrap: wrap; gap: 8px; }
-  button, .actions a { border: 0; border-radius: 10px; padding: 12px 16px; background: #d8f4ff; color: #102535; font: inherit; text-decoration: none; cursor: pointer; }
-  button:disabled { opacity: .5; cursor: default; }
-  fieldset { border: 0; margin: auto 0 0; pointer-events: auto; }
-  label { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-  input { flex: 1; min-width: 0; }
-  [hidden] { display: none !important; }
-  #quicklook img { position: absolute; opacity: 0; }
-  main[data-mode='loading'] #viewport,
-  main[data-mode='camera-intro'] #viewport,
-  main[data-mode='loading'] #model-controls,
-  main[data-mode='camera-intro'] #model-controls,
-  main[data-mode='loading'] #viewer-help,
-  main[data-mode='camera-intro'] #viewer-help { display: none; }
+  main{position:fixed;inset:0;background:#102535;color:#fff}#viewport{position:absolute;inset:0}#overlay{position:absolute;inset:0;pointer-events:none}.control-dock{pointer-events:auto}.camera-card{position:absolute;top:50%;left:50%;transform:translate(-50%,-65%);width:min(460px,calc(100% - 48px));text-align:center;color:#1e4356}.camera-card h2{font-size:clamp(26px,4vw,38px);line-height:1.4;margin:14px 0}.camera-card p{font-size:14px;line-height:1.85;color:#557283}.eyebrow{font-size:12px!important;font-weight:750;letter-spacing:.06em;color:#176f92!important}.camera-symbol{display:grid;place-items:center;margin:18px auto;width:96px;height:96px;background:#e0edf3;border-radius:24px;font-size:60px;color:#176f92}.camera-note{font-size:12px!important}#status{position:absolute;top:max(76px,calc(env(safe-area-inset-top) + 70px));left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 40px);font-size:13px;line-height:1.7;background:#122f43de;border:1px solid #ffffff15;border-radius:12px;padding:10px 14px;text-align:center;margin:0;color:#e6f1f6;pointer-events:none}.viewer-link{display:block!important;text-align:center;margin-top:8px;font-size:12px!important;min-height:40px!important;border:0!important;background:none!important;color:#bbddec!important}#animation{width:100%}#quicklook img{position:absolute;opacity:0}#model-controls{margin-top:10px}#model-controls:disabled{opacity:.5}[hidden]{display:none!important}main .viewer-link[hidden]{display:none!important}
+  main[data-mode='loading'] #viewport,main[data-mode='camera-intro'] #viewport,main[data-mode='loading'] #model-controls,main[data-mode='camera-intro'] #model-controls,main[data-mode='loading'] #viewer-help,main[data-mode='camera-intro'] #viewer-help,main[data-mode='viewer'] .camera-card,main[data-mode='camera'] .camera-card{display:none}
+  main[data-mode='loading'],main[data-mode='camera-intro']{background:#f0f6f9}main[data-mode='camera-intro'] :global(.experience-header h1),main[data-mode='loading'] :global(.experience-header h1){color:#1e4356}main[data-mode='camera-intro'] #status,main[data-mode='loading'] #status{top:auto;bottom:225px;background:none;color:#557283;border:0}main[data-mode='viewer'] #status{font-size:12px}main[data-mode='viewer'] .control-dock .actions:empty{display:none}
+  @media(max-height:700px){.camera-card{top:45%;transform:translate(-50%,-70%)}.camera-symbol{width:64px;height:64px;font-size:44px;margin:10px auto}.camera-card h2{font-size:24px}.camera-note{display:none}main[data-mode='camera-intro'] #status,main[data-mode='loading'] #status{bottom:190px}}
+  @media(max-height:480px){.camera-card{display:none}main[data-mode='camera-intro'] #status,main[data-mode='loading'] #status{top:85px;bottom:auto}}
 </style>

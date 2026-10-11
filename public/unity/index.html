@@ -3,92 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Miyako3D</title>
+  <title>閉伊川3D世界 | 流木と水位を見てみよう</title>
   <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../shared/experience.css">
   <style>
-    html, body { margin: 0; min-height: 100%; background: #151b1d; color: #fff; font-family: system-ui, sans-serif; }
-    #unity-container { position: relative; width: min(100vw, 1200px); margin: auto; aspect-ratio: 960 / 600; overflow: hidden; }
-    #unity-container:fullscreen { width: 100vw; height: 100vh; aspect-ratio: auto; }
-    #unity-canvas { display: block; width: 100%; height: 100%; background: #20292a; }
-    #controls { position: absolute; top: 10px; left: 10px; width: min(190px, 44vw); padding: 10px; box-sizing: border-box; background: #142022dc; border: 1px solid #ffffff55; border-radius: 9px; font-size: 13px; box-shadow: 0 2px 10px #0007; }
-    #controls button, #controls input { font: inherit; }
-    #controls button { width: 100%; min-height: 34px; margin-top: 5px; border: 0; border-radius: 5px; background: #f4f5ef; color: #182428; cursor: pointer; }
-    #controls button:disabled { opacity: .5; cursor: default; }
-    #zone-drag { background: #dfaa30 !important; touch-action: none; cursor: grab !important; }
-    #zone-drag:active { cursor: grabbing !important; }
-    #readout { display: flex; flex-wrap: wrap; gap: 3px 9px; margin: 0 0 5px; font-variant-numeric: tabular-nums; }
-    #speed-row { display: flex; align-items: center; gap: 4px; margin-top: 6px; }
-    #speed-row label { white-space: nowrap; }
-    #speed { flex: 1; min-width: 0; }
-    #speed-value { min-width: 2.8em; text-align: right; }
-    #unity-loading { position: absolute; inset: 0; display: grid; place-items: center; background: #142022bb; pointer-events: none; font-size: 16px; }
-    #unity-loading[hidden] { display: none; }
-    #unity-warning { position: absolute; right: 10px; bottom: 10px; max-width: 50%; color: #fff; background: #a42b23; }
-    #fullscreen { position: absolute; right: 10px; bottom: 10px; width: 34px; height: 34px; border: 0; border-radius: 5px; background: #142022dc; color: #fff; cursor: pointer; }
-    @media (max-width: 600px) { #controls { top: 6px; left: 6px; padding: 7px; font-size: 11px; } #controls button { min-height: 31px; } }
-
-    #home-link { position: fixed; top: 10px; right: 10px; z-index: 30; padding: 7px 12px; background: #142022dc; border: 1px solid #ffffff55; border-radius: 5px; color: #fff; text-decoration: none; font-size: 13px; }
-    #onboarding { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: #0f1417e6; padding: 16px; box-sizing: border-box; }
-    #onboarding.hidden { display: none; }
-    #onboarding-card { max-width: 420px; width: 100%; background: #142022; border: 1px solid #ffffff33; border-radius: 12px; padding: 20px; box-sizing: border-box; box-shadow: 0 8px 30px #0009; }
-    #onboarding-card h2 { margin: 0 0 12px; font-size: 18px; }
-    #onboarding-card ul { margin: 0 0 18px; padding-left: 1.2em; line-height: 1.8; font-size: 14px; }
-    #onboarding-card button { width: 100%; min-height: 42px; border: 0; border-radius: 6px; background: #f4f5ef; color: #182428; font-size: 15px; cursor: pointer; }
+    html,body{margin:0;height:100%;overflow:hidden;background:#102535;color:#fff;font-family:system-ui,-apple-system,'Hiragino Kaku Gothic ProN',sans-serif}#unity-container{position:relative;width:100%;height:100dvh;overflow:hidden}#unity-container:fullscreen{height:100vh}#unity-canvas{display:block;width:100%;height:100%;background:#173342;touch-action:none}#readout{position:absolute;top:max(76px,calc(env(safe-area-inset-top) + 70px));left:50%;transform:translateX(-50%);display:flex;gap:16px;background:#122f43db;border:1px solid #ffffff20;border-radius:12px;padding:10px 16px;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}#zone-drag{touch-action:none;background:#e7c382;color:#3e3216;cursor:grab;flex:1}#zone-drag:active{cursor:grabbing}#start{min-width:140px}#unity-loading{position:absolute;inset:0;display:grid;place-items:center;background:#102535ee;z-index:2;text-align:center}#unity-loading .loading-card{padding:28px;max-width:380px}#unity-loading h2{font-size:23px;margin-bottom:12px}#unity-loading p{color:#b1cedf;font-size:14px;line-height:1.8}#load-progress{width:100%;height:8px;accent-color:#82cde5;border:0}#progress{font-size:14px;color:#ceeaf5}#retry-loading{min-height:46px;background:#d8f3fb;color:#153b50;border:0;border-radius:10px;padding:12px 20px;cursor:pointer}#unity-warning:not(:empty){position:absolute;left:50%;top:140px;transform:translateX(-50%);max-width:calc(100% - 32px);padding:12px 18px;border-radius:12px;background:#74392f;color:#fff;font-size:13px;z-index:6}.settings-row{display:flex;gap:8px;flex-wrap:wrap}.settings-row button{flex:1}[hidden]{display:none!important}.welcome{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);width:min(420px,calc(100% - 48px));text-align:center;color:#dceef7}.welcome h2{font-size:30px}.welcome p{font-size:15px;line-height:1.8;color:#a9c7da}@media(max-width:500px){#readout{font-size:12px;gap:12px}#start{min-width:0}.control-dock .control-row>button{flex:1}.welcome h2{font-size:26px}}@media(max-height:500px){#readout{left:auto;right:16px;top:65px;transform:none}.control-dock{width:min(600px,calc(100% - 160px));left:auto;right:16px;transform:none}}
   </style>
 </head>
 <body>
-  <a id="home-link" href="../">← ARv2トップへ戻る</a>
   <main id="unity-container">
-    <canvas id="unity-canvas" width=960 height=600 tabindex="0" aria-label="流木シミュレーション"></canvas>
-    <div id="unity-loading" hidden>読み込み中… <span id="progress">0%</span></div>
-    <section id="controls" aria-label="操作" hidden>
-      <div id="readout"><span id="flood">氾濫度 0%</span><span id="height">水位 0.0m</span></div>
-      <button id="zone-drag" type="button">捕捉工をドラッグ</button>
-      <button id="place-default" type="button">正規位置に配置</button>
-      <button id="start" type="button">開始</button>
-      <button id="reset-placement" type="button">配置リセット</button>
-      <button id="end" type="button">終了</button>
-      <button id="camera" type="button">カメラ切替</button>
-      <div id="speed-row"><label for="speed">速度</label><input id="speed" type="range" min="0.1" max="5" step="0.1" value="1"><output id="speed-value" for="speed">x1.0</output></div>
-      <button id="help" type="button">操作説明</button>
+    <canvas id="unity-canvas" width="960" height="600" tabindex="0" aria-label="流木と水位の3D体験"></canvas>
+    <header class="experience-header"><a id="home-link" href="../" aria-label="ホームに戻る">⌂ ホーム</a><h1>閉伊川3D世界</h1><div class="header-actions"><button id="help" type="button" aria-label="使い方を開く">? 使い方</button><button id="fullscreen" class="fullscreen-button" type="button" aria-label="全画面表示">⛶</button></div></header>
+    <div class="welcome" id="welcome"><h2>流木と水位を、<br>3Dで見てみよう。</h2><p>流木を受け止める捕捉工を置き、川の変化を観察します。</p></div>
+    <div id="readout" hidden aria-live="off"><span id="flood">氾濫度 0%</span><span id="height">水位 0.0m</span></div>
+    <div id="unity-loading" hidden role="status"><div class="loading-card"><h2>3D世界を準備しています</h2><p id="loading-description">初回は少し時間がかかります。<br>読み込みが終わるまでお待ちください。</p><progress id="load-progress" max="1" value="0" aria-label="読み込みの進み具合"></progress><p id="progress">0%</p><button id="retry-loading" hidden>もう一度読み込む</button></div></div>
+    <section id="controls" class="control-dock" aria-label="3D世界の操作" hidden>
+      <div class="control-row"><button id="start" class="primary-action" type="button">シミュレーションを開始</button><button id="end" type="button" disabled>終了・リセット</button><button id="camera" type="button">視点を変える</button></div>
+      <details id="unity-settings"><summary>捕捉工の配置・再生速度を調整</summary>
+        <p>捕捉工は流木を受け止める設備です。配置の変更は開始前に行えます。</p>
+        <div class="settings-row"><button id="zone-drag" type="button">捕捉工をドラッグ</button><button id="place-default" type="button">初期位置に置く</button><button id="reset-placement" type="button">配置をリセット</button></div>
+        <label for="speed">再生速度<input id="speed" type="range" min="0.1" max="5" step="0.1" value="1"><output id="speed-value" for="speed">×1.0</output></label>
+      </details>
     </section>
-    <button id="fullscreen" type="button" aria-label="全画面表示">⛶</button>
     <div id="unity-warning" role="alert"></div>
+    <dialog id="onboarding" class="onboarding-dialog" aria-labelledby="unity-guide-title">
+      <p class="guide-eyebrow">3D世界の使い方</p><span class="guide-count" data-guide-count>1 / 3</span><h2 id="unity-guide-title">流木と水位を見てみよう</h2>
+      <section data-guide-step><div class="onboarding-icon" aria-hidden="true">▥</div><h3>まず、捕捉工を置く</h3><p>捕捉工は流木を受け止める設備です。画面下の「捕捉工の配置・再生速度を調整」を開きます。「初期位置に置く」なら、すぐに配置できます。</p><p class="guide-tip">場所を変えるときは「捕捉工をドラッグ」を押したまま、画面上で動かします。</p></section>
+      <section data-guide-step hidden><div class="onboarding-icon" aria-hidden="true">▷</div><h3>変化を観察する</h3><p>画面下の「シミュレーションを開始」で流木や水位の変化を見られます。上部の水位・氾濫度も見てみましょう。配置を変えたいときは「終了・リセット」で戻します。</p><p class="guide-tip">再生速度を変えると、ゆっくり見たり、早送りしたりできます。</p></section>
+      <section data-guide-step hidden><div class="onboarding-icon" aria-hidden="true">↔</div><h3>視点を変えて見てみよう</h3><p>「視点を変える」で別の角度へ。左上の「ホーム」で体験メニューに戻ります。右上の「使い方」から、この案内をいつでも開けます。</p><p class="guide-tip">最初に3Dデータを読み込みます。準備が終わったら操作できます。</p></section>
+      <div class="guide-actions"><button data-guide-back hidden>戻る</button><button data-guide-next>次へ →</button><button id="start-experience" data-guide-done hidden>体験を始める</button></div>
+    </dialog>
   </main>
-
-  <div id="onboarding">
-    <div id="onboarding-card">
-      <h2>操作説明</h2>
-      <ul>
-        <li><strong>捕捉工をドラッグ</strong>：ボタンを押したまま動かして捕捉工の位置を変更します</li>
-        <li><strong>正規位置に配置</strong>：捕捉工を初期位置に戻します</li>
-        <li><strong>開始・終了</strong>：シミュレーションを開始、または終了してリセットします</li>
-        <li><strong>カメラ切替</strong>：視点を切り替えます</li>
-        <li><strong>速度変更</strong>：スライダーでシミュレーションの速度を変えます</li>
-      </ul>
-      <button id="start-experience" type="button">体験を始める</button>
-    </div>
-  </div>
-
-  <script>
+  <script type="module">
+    import { mountOnboarding } from '../shared/onboarding.js';
     const canvas = document.querySelector('#unity-canvas');
     const container = document.querySelector('#unity-container');
     const controls = document.querySelector('#controls');
     const onboarding = document.querySelector('#onboarding');
-    const onboardingButton = document.querySelector('#start-experience');
     const unityLoading = document.querySelector('#unity-loading');
     let unityInstance = null;
     let dragging = false;
     let unityLoadStarted = false;
-
-    const ONBOARDING_KEY = 'unity-onboarding-seen';
-    function hasSeenOnboarding() {
-      try { return localStorage.getItem(ONBOARDING_KEY) === '1'; } catch { return false; }
-    }
-    function markOnboardingSeen() {
-      try { localStorage.setItem(ONBOARDING_KEY, '1'); } catch {}
-    }
-
     function send(method, value) {
       if (!unityInstance) return;
       if (value === undefined) unityInstance.SendMessage('GameController', method);
@@ -96,14 +51,11 @@
     }
     function screenPosition(event) {
       const rect = canvas.getBoundingClientRect();
-      return JSON.stringify({
-        x: (event.clientX - rect.left) * canvas.width / rect.width,
-        y: (rect.bottom - event.clientY) * canvas.height / rect.height
-      });
+      return JSON.stringify({ x: (event.clientX - rect.left) * canvas.width / rect.width, y: (rect.bottom - event.clientY) * canvas.height / rect.height });
     }
-    function setIdle(isIdle) {
-      for (const id of ['zone-drag', 'place-default', 'reset-placement'])
-        document.getElementById(id).disabled = !isIdle;
+    function setIdle(idle) {
+      for (const id of ['zone-drag','place-default','reset-placement','start']) document.getElementById(id).disabled = !idle;
+      document.getElementById('end').disabled = idle;
     }
     window.addEventListener('unity-state', event => {
       const state = event.detail;
@@ -118,83 +70,54 @@
     document.getElementById('end').onclick = () => send('ResetGame', '');
     document.getElementById('camera').onclick = () => send('NextCamera', '');
     const speed = document.getElementById('speed');
-    speed.oninput = () => {
-      document.getElementById('speed-value').textContent = `x${Number(speed.value).toFixed(1)}`;
-      send('SetSpeed', speed.value);
-    };
-    const dragHandle = document.getElementById('zone-drag');
-    dragHandle.addEventListener('pointerdown', event => {
-      if (!unityInstance || dragHandle.disabled) return;
-      event.preventDefault();
-      dragging = true;
-      dragHandle.setPointerCapture(event.pointerId);
-      send('BeginWebDrag', screenPosition(event));
+    speed.oninput = () => { document.getElementById('speed-value').textContent = `×${Number(speed.value).toFixed(1)}`; send('SetSpeed', speed.value); };
+    const handle = document.getElementById('zone-drag');
+    handle.addEventListener('pointerdown', event => {
+      if (!unityInstance || handle.disabled) return;
+      event.preventDefault(); dragging = true; handle.setPointerCapture(event.pointerId); send('BeginWebDrag', screenPosition(event));
     });
-    dragHandle.addEventListener('pointermove', event => {
-      if (dragging) send('UpdateWebDrag', screenPosition(event));
-    });
-    function endDrag(event) {
-      if (!dragging) return;
-      dragging = false;
-      send('EndWebDrag', screenPosition(event));
-    }
-    dragHandle.addEventListener('pointerup', endDrag);
-    dragHandle.addEventListener('pointercancel', endDrag);
-    document.getElementById('fullscreen').onclick = () => {
-      if (document.fullscreenElement) document.exitFullscreen();
-      else container.requestFullscreen?.();
+    handle.addEventListener('pointermove', event => { if (dragging) send('UpdateWebDrag', screenPosition(event)); });
+    function endDrag(event) { if (!dragging) return; dragging = false; send('EndWebDrag', screenPosition(event)); }
+    handle.addEventListener('pointerup', endDrag); handle.addEventListener('pointercancel', endDrag);
+    handle.addEventListener('lostpointercapture', endDrag);
+    const fullscreen = document.getElementById('fullscreen');
+    if (!container.requestFullscreen) fullscreen.hidden = true;
+    fullscreen.onclick = async () => {
+      try { if (document.fullscreenElement) await document.exitFullscreen(); else await container.requestFullscreen(); }
+      catch { showBanner('この端末では全画面表示を開始できませんでした。'); }
     };
+    document.addEventListener('fullscreenchange', () => { fullscreen.setAttribute('aria-label', document.fullscreenElement ? '全画面表示を終了' : '全画面表示'); });
     function showBanner(message, type) {
-      const warning = document.getElementById('unity-warning');
-      warning.textContent = message;
+      const warning = document.getElementById('unity-warning'); warning.textContent = message;
       if (type !== 'error') setTimeout(() => { warning.textContent = ''; }, 5000);
     }
     const buildUrl = 'Build';
     const config = {
-      dataUrl: buildUrl + '/webgl-unity6-verify.data.unityweb',
-      frameworkUrl: buildUrl + '/webgl-unity6-verify.framework.js.unityweb',
-      codeUrl: buildUrl + '/webgl-unity6-verify.wasm.unityweb',
-      streamingAssetsUrl: 'StreamingAssets',
-      companyName: "PrimaLab",
-      productName: "Miyako3D",
-      productVersion: "0.1.0",
-      showBanner: showBanner
+      dataUrl: buildUrl + '/webgl-unity6-verify.data.unityweb', frameworkUrl: buildUrl + '/webgl-unity6-verify.framework.js.unityweb', codeUrl: buildUrl + '/webgl-unity6-verify.wasm.unityweb', streamingAssetsUrl: 'StreamingAssets', companyName: 'PrimaLab', productName: 'Miyako3D', productVersion: '0.1.0', showBanner
     };
+    function loadFailure(error) {
+      console.error('Unity load failed', error);
+      unityLoadStarted = false;
+      document.getElementById('loading-description').textContent = '読み込めませんでした。通信状況をご確認のうえ、もう一度お試しください。';
+      document.getElementById('retry-loading').hidden = false;
+    }
     function startUnityLoad() {
       if (unityLoadStarted) return;
-      unityLoadStarted = true;
-      unityLoading.hidden = false;
-      const loader = document.createElement('script');
-      loader.src = buildUrl + '/webgl-unity6-verify.loader.js';
+      unityLoadStarted = true; unityLoading.hidden = false; document.getElementById('welcome').hidden = true;
+      document.getElementById('retry-loading').hidden = true;
+      document.getElementById('loading-description').textContent = '3Dデータを読み込んでいます。準備が終わるまでお待ちください。';
+      document.getElementById('progress').textContent = '0%'; document.getElementById('load-progress').value = 0;
+      const loader = document.createElement('script'); loader.src = buildUrl + '/webgl-unity6-verify.loader.js';
+      loader.onerror = () => { loader.remove(); loadFailure('loader unavailable'); };
       loader.onload = () => createUnityInstance(canvas, config, progress => {
-        document.getElementById('progress').textContent = `${Math.round(progress * 100)}%`;
-      }).then(instance => {
-        unityInstance = instance;
-        unityLoading.remove();
-        controls.hidden = false;
-        setIdle(true);
-      }).catch(error => showBanner(String(error), 'error'));
+        document.getElementById('progress').textContent = `${Math.round(progress * 100)}%`; document.getElementById('load-progress').value = progress;
+      }).then(instance => { unityInstance = instance; unityLoading.hidden = true; controls.hidden = false; document.getElementById('readout').hidden = false; setIdle(true); }).catch(loadFailure);
       document.body.appendChild(loader);
     }
-
-    function updateOnboardingButton() {
-      onboardingButton.textContent = unityLoadStarted ? '閉じる' : '体験を始める';
-    }
-    onboardingButton.onclick = () => {
-      onboarding.classList.add('hidden');
-      markOnboardingSeen();
-      startUnityLoad();
-    };
-    document.getElementById('help').onclick = () => {
-      updateOnboardingButton();
-      onboarding.classList.remove('hidden');
-    };
-
-    updateOnboardingButton();
-    if (hasSeenOnboarding()) {
-      onboarding.classList.add('hidden');
-      startUnityLoad();
-    }
+    const guide = mountOnboarding(onboarding, { storageKey: 'arv2-unity-guide-v2', onComplete: startUnityLoad });
+    document.getElementById('help').onclick = () => { document.getElementById('start-experience').textContent = unityLoadStarted ? 'わかった、閉じる' : '体験を始める'; guide.open(); };
+    document.getElementById('retry-loading').onclick = startUnityLoad;
+    if (guide.hasSeen()) startUnityLoad(); else guide.open();
   </script>
 </body>
 </html>
