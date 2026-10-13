@@ -3,7 +3,7 @@
  * `normalizeConfig`/`validateConfig` は src/lib/config/locationConfig.ts と共有し、
  * 検証ロジックを二重管理しない。
  */
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { normalizeConfig, validateConfig } from '../src/lib/config/locationConfig.ts';
@@ -25,6 +25,9 @@ for (const file of files) {
   const raw = JSON.parse(readFileSync(fullPath, 'utf-8'));
   const config = normalizeConfig(raw);
   const issues = validateConfig(config);
+  if (config.modelPath.startsWith('/') && !existsSync(path.join(locationsDir, '..', '..', config.modelPath.slice(1)))) {
+    issues.push(`modelPath のファイルが public/ にありません: ${config.modelPath}`);
+  }
 
   if (issues.length > 0) {
     hasError = true;

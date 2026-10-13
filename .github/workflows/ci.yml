@@ -35,6 +35,9 @@ jobs:
         env:
           DEPLOY_TARGET: gh-pages
 
+      - name: Verify deployed placement files
+        run: npm run verify-placement -- --dir dist --expect production
+
       - name: Assert /lab is excluded from the production build
         run: scripts/assert-no-lab.sh
 
@@ -42,6 +45,9 @@ jobs:
         run: npm run build
         env:
           DEPLOY_TARGET: cloudflare
+
+      - name: Verify deployed placement files
+        run: npm run verify-placement -- --dir dist --expect production
 
       - name: Assert /lab is excluded from the production build
         run: scripts/assert-no-lab.sh

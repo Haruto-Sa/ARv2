@@ -34,7 +34,22 @@ export function preparePlacementModel(root: THREE.Object3D, yawDeg: number) {
   if (!Number.isFinite(size.x) || size.x <= 1e-6) throw new Error('水門モデルの幅を取得できません。');
   const center = bounds.getCenter(new THREE.Vector3());
   root.position.sub(new THREE.Vector3(center.x, bounds.min.y, center.z));
-  return { model, width: size.x, height: size.y };
+  return { model, width: size.x, height: size.y, depth: size.z };
+}
+
+/** A model-space footprint and center mark. This is a reference, not a plane measurement. */
+export function createPlacementGuide(width: number, depth: number): THREE.LineSegments {
+  const x = width / 2;
+  const z = depth / 2;
+  const mark = Math.min(width, depth) * 0.08;
+  const points = [
+    -x, 0, -z, x, 0, -z, x, 0, -z, x, 0, z,
+    x, 0, z, -x, 0, z, -x, 0, z, -x, 0, -z,
+    -mark, 0, 0, mark, 0, 0, 0, 0, -mark, 0, 0, mark,
+  ];
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
+  return new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color: 0x6affe0, depthTest: false, depthWrite: false }));
 }
 
 /** Bake mirrored GLB transforms: USDZ/Quick Look does not support negative scales. */

@@ -41,10 +41,10 @@ const guide = viewer ? [
           <label>向き<input id="rotation" aria-label="水門の向き" type="range" min="-180" max="180" step="1" value="0" /></label>
         </details>
       </fieldset>
+      <button id="verification-open" hidden>配置の検証記録</button>
       <p id="viewer-help">ドラッグで回転 · ピンチやスクロールで拡大縮小</p>
       <a id="viewer-link" class="viewer-link" href={withBase('/viewer')} hidden>カメラなしで、扉の動きを見る →</a>
     </div>
-  </section>
   <dialog id="placement-guide" class="onboarding-dialog" aria-labelledby="guide-title">
     <p class="guide-eyebrow">{viewer ? '3Dビューアの使い方' : '平面ARの使い方'}</p><span class="guide-count" data-guide-count>1 / 3</span>
     <h2 id="guide-title">{viewer ? '水門を見て、動かそう' : '初めての平面AR'}</h2>
@@ -52,6 +52,20 @@ const guide = viewer ? [
     <p class="guide-tip">{viewer ? 'カメラの許可は必要ありません。' : '操作に迷ったら右上の「使い方」。iPhoneのARから戻るときは、OS画面の「×」を閉じてから「ホーム」を押します。'}</p>
     <div class="guide-actions"><button data-guide-back hidden>戻る</button><button data-guide-next>次へ →</button><button data-guide-done hidden>わかった、始めよう</button></div>
   </dialog>
+  <dialog id="verification-dialog" class="onboarding-dialog" aria-labelledby="verification-title">
+    <p class="guide-eyebrow">検証モード · 端末内だけで記録</p><h2 id="verification-title">配置を確認する</h2>
+    <p>補助線はモデルの底面と中央の目安です。現実の机・床とのずれは、定規と目印で確認してください。</p>
+    <label class="reference-toggle"><input id="placement-reference" type="checkbox" />接地の目安を表示（WebXR・3D表示のみ）</label>
+    <p id="reference-note">iPhoneのQuick Look内には補助線を表示できません。配置・追跡の状態も取得できません。</p>
+    <p id="verification-summary" role="status"></p>
+    <details id="verification-data"><summary>詳細な記録（JSON）を開く</summary>
+    <label for="verification-report">現在の状態とビルド情報</label>
+    <textarea id="verification-report" rows="12" readonly spellcheck="false"></textarea>
+    </details>
+    <p id="verification-feedback" role="status">座標はAR開始地点からの相対値で、GPS座標ではありません。</p>
+    <div class="verification-actions"><button id="verification-refresh">状態を更新</button><button id="verification-copy">コピー</button><button id="verification-download">JSONを保存</button><button id="verification-close">閉じる</button></div>
+  </dialog>
+  </section>
 </main>
 <script>
   import { mountPlacementExperience } from './experience';
@@ -59,6 +73,7 @@ const guide = viewer ? [
   if (root) mountPlacementExperience(root);
 </script>
 <style>
+  .onboarding-dialog{pointer-events:auto}#verification-summary{background:#e5f1f6;border-radius:10px;padding:12px}#verification-data summary{min-height:44px;align-content:center;cursor:pointer;font-size:14px}#verification-report{width:100%;resize:vertical;font:12px/1.6 monospace;border:1px solid #bed1dd;border-radius:8px;padding:10px;background:white;color:#16394d}.reference-toggle{display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px}.verification-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.verification-actions button{min-height:44px;padding:10px 14px;border:1px solid #bed1dd;border-radius:8px;background:white;color:#16394d;cursor:pointer}#verification-open{width:100%;margin-top:10px}
   main{position:fixed;inset:0;background:#102535;color:#fff}#viewport{position:absolute;inset:0}#overlay{position:absolute;inset:0;pointer-events:none}.control-dock{pointer-events:auto}.camera-card{position:absolute;top:50%;left:50%;transform:translate(-50%,-65%);width:min(460px,calc(100% - 48px));text-align:center;color:#1e4356}.camera-card h2{font-size:clamp(26px,4vw,38px);line-height:1.4;margin:14px 0}.camera-card p{font-size:14px;line-height:1.85;color:#557283}.eyebrow{font-size:12px!important;font-weight:750;letter-spacing:.06em;color:#176f92!important}.camera-symbol{display:grid;place-items:center;margin:18px auto;width:96px;height:96px;background:#e0edf3;border-radius:24px;font-size:60px;color:#176f92}.camera-note{font-size:12px!important}#status{position:absolute;top:max(76px,calc(env(safe-area-inset-top) + 70px));left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 40px);font-size:13px;line-height:1.7;background:#122f43de;border:1px solid #ffffff15;border-radius:12px;padding:10px 14px;text-align:center;margin:0;color:#e6f1f6;pointer-events:none}.viewer-link{display:block!important;text-align:center;margin-top:8px;font-size:12px!important;min-height:40px!important;border:0!important;background:none!important;color:#bbddec!important}#animation{width:100%}#quicklook img{position:absolute;opacity:0}#model-controls{margin-top:10px}#model-controls:disabled{opacity:.5}[hidden]{display:none!important}main .viewer-link[hidden]{display:none!important}
   main[data-mode='loading'] #viewport,main[data-mode='camera-intro'] #viewport,main[data-mode='loading'] #model-controls,main[data-mode='camera-intro'] #model-controls,main[data-mode='loading'] #viewer-help,main[data-mode='camera-intro'] #viewer-help,main[data-mode='viewer'] .camera-card,main[data-mode='camera'] .camera-card{display:none}
   main[data-mode='loading'],main[data-mode='camera-intro']{background:#f0f6f9}main[data-mode='camera-intro'] :global(.experience-header h1),main[data-mode='loading'] :global(.experience-header h1){color:#1e4356}main[data-mode='camera-intro'] #status,main[data-mode='loading'] #status{top:auto;bottom:225px;background:none;color:#557283;border:0}main[data-mode='viewer'] #status{font-size:12px}main[data-mode='viewer'] .control-dock .actions:empty{display:none}

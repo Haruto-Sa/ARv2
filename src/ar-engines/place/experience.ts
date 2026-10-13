@@ -5,7 +5,8 @@ import { loadModel } from '../../lib/loaders/loadModel';
 import { loadLocationConfig } from '../../lib/config/locationConfig';
 import { withBase } from '../../lib/paths';
 import { mountOnboarding } from '../../../public/shared/onboarding.js';
-import { createStaticExport, isHorizontalSurface, preparePlacementModel, validatePlacementConfig, type PlacementConfig } from './placement';
+import { mountPlacementVerification } from './verification';
+import { createPlacementGuide, createStaticExport, isHorizontalSurface, preparePlacementModel, validatePlacementConfig, type PlacementConfig } from './placement';
 
 export async function mountPlacementExperience(root: HTMLElement) {
   const element = <T extends HTMLElement>(id: string) => root.querySelector<T>(`#${id}`)!;
@@ -20,6 +21,8 @@ export async function mountPlacementExperience(root: HTMLElement) {
   const quicklook = element<HTMLAnchorElement>('quicklook');
   const prepareQuicklook = element<HTMLButtonElement>('prepare-quicklook');
   const viewerOnly = root.dataset.viewer === 'true';
+  const verifying = new URLSearchParams(location.search).get('verify') === '1';
+  if (verifying) element<HTMLAnchorElement>('viewer-link').href += '?verify=1';
   const say = (message: string) => { if (status.textContent !== message) status.textContent = message; };
   let renderer: THREE.WebGLRenderer | undefined;
   let session: XRSession | undefined;
@@ -31,12 +34,40 @@ export async function mountPlacementExperience(root: HTMLElement) {
   let controls: OrbitControls | undefined;
   let mixer: THREE.AnimationMixer | undefined;
   let camera: THREE.PerspectiveCamera | undefined;
+  let placed = false;
+  let phase = 'loading';
+  let tracking = 'not-started';
+  let anchoring = 'none';
+  let nativeAR = false;
+  let capabilities: { webXR: boolean | null; quickLook: boolean } = { webXR: null, quickLook: false };
+  let baselineYawDegrees: number | null = null;
+  let dimensions: { width: number; height: number; depth: number } | null = null;
+  let modelPath: string | null = null;
+  const events: { at: string; phase: string; tracking: string; anchoring: string }[] = [];
+  function record(nextPhase: string, nextTracking = tracking, nextAnchoring = anchoring) {
+    if (phase === nextPhase && tracking === nextTracking && anchoring === nextAnchoring) return;
+    phase = nextPhase; tracking = nextTracking; anchoring = nextAnchoring;
+    events.push({ at: new Date().toISOString(), phase, tracking, anchoring });
+    if (events.length > 50) events.shift();
+  }
   const scene = new THREE.Scene();
   const placement = new THREE.Group();
   const reticle = new THREE.Mesh(new THREE.RingGeometry(0.035, 0.045, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x6affe0, side: THREE.DoubleSide }));
   reticle.matrixAutoUpdate = false;
   reticle.visible = false;
   scene.add(placement, reticle);
+  mountPlacementVerification(root, () => ({
+    route: viewerOnly ? 'viewer' : nativeAR ? 'quick-look' : 'webxr',
+    phase, tracking, anchoring, placed: nativeAR ? null : placed, modelPath, capabilities, baselineYawDegrees,
+    modelReferenceDimensionsMeters: dimensions,
+    additionalYawDegrees: Number(rotationInput.value),
+    referenceSpace: session ? 'local' : null,
+    placedPositionMeters: placed ? placement.position.toArray() : null,
+    placedQuaternion: placed ? placement.quaternion.toArray() : null,
+    modelBottomOriginMeters: 0,
+    nativePlacementObservable: false,
+    events: [...events],
+  }));
 
   function dispose() {
     if (disposed) return;
@@ -50,7 +81,7 @@ export async function mountPlacementExperience(root: HTMLElement) {
     mixer?.stopAllAction();
     const textures = new Set<THREE.Texture>();
     scene.traverse((object) => {
-      if (!(object instanceof THREE.Mesh)) return;
+      if (!(object instanceof THREE.Mesh) && !(object instanceof THREE.Line)) return;
       object.geometry.dispose();
       for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
         for (const value of Object.values(material)) if (value instanceof THREE.Texture) textures.add(value);
@@ -73,9 +104,10 @@ export async function mountPlacementExperience(root: HTMLElement) {
     const supportsAR = !viewerOnly && window.isSecureContext && !!navigator.xr
       && await navigator.xr.isSessionSupported('immersive-ar').catch(() => false);
     const supportsQuicklook = quicklook.relList.supports('ar');
+    capabilities = { webXR: viewerOnly ? null : supportsAR, quickLook: supportsQuicklook };
     const mobile = navigator.maxTouchPoints > 0 && window.matchMedia('(any-pointer: coarse)').matches;
     if (!viewerOnly && (!mobile || (!supportsAR && !supportsQuicklook))) {
-      window.location.replace(withBase('/viewer'));
+      window.location.replace(withBase('/viewer') + (verifying ? '?verify=1' : ''));
       dispose();
       return;
     }
@@ -92,9 +124,16 @@ export async function mountPlacementExperience(root: HTMLElement) {
     ]);
     if (!placementResponse.ok) throw new Error('配置設定を読み込めません。');
     const settings = validatePlacementConfig(await placementResponse.json() as PlacementConfig);
-    const loaded = await loadModel(withBase(config.modelPath));
-    const { model, width, height } = preparePlacementModel(loaded.root, config.yawDeg);
-    placement.add(model);
+    baselineYawDegrees = config.yawDeg;
+    modelPath = withBase(config.modelPath);
+    const loaded = await loadModel(modelPath);
+    const { model, width, height, depth } = preparePlacementModel(loaded.root, config.yawDeg);
+    const reference = createPlacementGuide(width, depth);
+    reference.visible = false;
+    placement.add(model, reference);
+    element<HTMLInputElement>('placement-reference').addEventListener('change', event => {
+      reference.visible = (event.target as HTMLInputElement).checked;
+    });
     if (disposed) { disposed = false; dispose(); return; }
     camera = new THREE.PerspectiveCamera(50, root.clientWidth / root.clientHeight, 0.01, 1000);
     const viewCamera = camera;
@@ -117,6 +156,8 @@ export async function mountPlacementExperience(root: HTMLElement) {
     widthInput.value = String(settings.targetWidthMeters);
     const applyWidth = () => {
       model.scale.setScalar(Number(widthInput.value) / width);
+      reference.scale.copy(model.scale);
+      dimensions = { width: width * model.scale.x, height: height * model.scale.x, depth: depth * model.scale.x };
       element('width-value').textContent = `${Math.round(Number(widthInput.value) * 100)}cm`;
     };
     applyWidth();
@@ -133,7 +174,7 @@ export async function mountPlacementExperience(root: HTMLElement) {
     };
     preview();
     widthInput.addEventListener('input', applyWidth);
-    rotationInput.addEventListener('input', () => { model.rotation.y = THREE.MathUtils.degToRad(Number(rotationInput.value)); });
+    rotationInput.addEventListener('input', () => { model.rotation.y = THREE.MathUtils.degToRad(Number(rotationInput.value)); reference.rotation.y = model.rotation.y; });
     const clips = loaded.animations.filter((clip) => !config.animation.clips || config.animation.clips.includes(clip.name));
     if (config.animation.enabled && clips.length) {
       mixer = new THREE.AnimationMixer(loaded.root);
@@ -151,6 +192,7 @@ export async function mountPlacementExperience(root: HTMLElement) {
     } else animation.hidden = true;
     element<HTMLFieldSetElement>('model-controls').disabled = false;
     start.disabled = false;
+    record(viewerOnly ? 'viewer' : 'ready');
     prepareQuicklook.disabled = false;
     say(viewerOnly ? '水門を回して見てみましょう。' : supportsAR ? '準備ができました。「カメラを起動」を押してください。' : 'カメラ起動用のモデルを準備しています…');
 
@@ -174,6 +216,8 @@ export async function mountPlacementExperience(root: HTMLElement) {
         if (disposed) return;
         quicklookUrl = URL.createObjectURL(new Blob([new Uint8Array(data)], { type: 'model/vnd.usdz+zip' }));
         quicklook.href = `${quicklookUrl}#canonicalWebPageURL=${encodeURIComponent(new URL(withBase('/ar/place'), window.location.origin).href)}`;
+        nativeAR = true;
+        record('quicklook-ready', 'native-unobservable', 'native-unobservable');
         quicklook.hidden = false;
         prepareQuicklook.hidden = true;
         say('「カメラを起動」でARを開きます。静止モデルを配置します。OSの画面で「AR」を選択してください。');
@@ -183,20 +227,25 @@ export async function mountPlacementExperience(root: HTMLElement) {
         say('平面AR用モデルの準備に失敗しました。もう一度お試しください。');
       }
     };
+    quicklook.addEventListener('click', () => record('quicklook-opened', 'native-unobservable', 'native-unobservable'));
     prepareQuicklook.addEventListener('click', prepareNativeAR);
     if (!viewerOnly && supportsQuicklook && !supportsAR) void prepareNativeAR();
 
     let queuedPlacement = false;
-    let placed = false;
-    const requestPlacement = () => { if (!placed && reticle.visible) queuedPlacement = true; };
+    const requestPlacement = () => { if (!placed && reticle.visible && !element<HTMLDialogElement>('placement-guide').open && !element<HTMLDialogElement>('verification-dialog').open) queuedPlacement = true; };
     place.addEventListener('click', requestPlacement);
-    element('overlay').addEventListener('beforexrselect', (event) => event.preventDefault());
+    element('overlay').addEventListener('beforexrselect', event => {
+      // UI taps must not also place the model; transparent background taps may select.
+      if ((event.target instanceof Element && event.target.closest('button,a,input,label,summary,dialog'))
+        || element<HTMLDialogElement>('placement-guide').open || element<HTMLDialogElement>('verification-dialog').open) event.preventDefault();
+    });
     reset.addEventListener('click', () => {
       generation++;
       anchor?.delete(); anchor = undefined;
       placed = false;
       queuedPlacement = false;
       placement.visible = false;
+      record('searching', 'not-started', 'none');
       reset.hidden = true; place.hidden = false; place.disabled = true;
       say('机や床にカメラを向けて、ゆっくり動かしてください。');
     });
@@ -222,6 +271,7 @@ export async function mountPlacementExperience(root: HTMLElement) {
           hitSource?.cancel(); hitSource = undefined;
           anchor?.delete(); anchor = undefined;
           session = undefined;
+          record('ended', 'not-started', 'none');
           placed = false; queuedPlacement = false; reticle.visible = false;
           start.hidden = false; start.disabled = false;
           place.hidden = true; reset.hidden = true; end.hidden = true;
@@ -240,6 +290,7 @@ export async function mountPlacementExperience(root: HTMLElement) {
         root.dataset.mode = 'camera';
         element('camera-notice').hidden = true;
         controls!.enabled = false;
+        record('searching', 'not-started', 'none');
         placement.visible = false;
         start.hidden = true; place.hidden = false; end.hidden = false;
         element('viewer-help').hidden = true;
@@ -248,6 +299,7 @@ export async function mountPlacementExperience(root: HTMLElement) {
       } catch (error) {
         if (requested) await requested.end().catch(() => {});
         start.disabled = false;
+        record('error', 'not-started', 'none');
         const denied = error instanceof DOMException && error.name === 'NotAllowedError';
         say(denied ? 'カメラ・ARの許可が必要です。ブラウザのサイト設定で許可して、もう一度開始してください。'
           : '平面ARを開始できませんでした。対応端末・HTTPS接続をご確認ください。3D表示は引き続き使えます。');
@@ -271,23 +323,28 @@ export async function mountPlacementExperience(root: HTMLElement) {
                 placement.position.set(pose.transform.position.x, pose.transform.position.y, pose.transform.position.z);
                 placement.quaternion.set(pose.transform.orientation.x, pose.transform.orientation.y, pose.transform.orientation.z, pose.transform.orientation.w);
               }
+              record(pose ? 'placed' : 'tracking-lost', pose ? 'tracking' : 'lost', 'anchor');
               say(pose ? '配置しました。近づいたり、周りから見たりできます。' : '位置を見失いました。置いた場所にカメラを戻してください。');
             } else {
               placement.visible = !!frame.getViewerPose(referenceSpace);
+              record(placement.visible ? 'placed' : 'tracking-lost', placement.visible ? 'tracking' : 'lost', anchoring === 'pending' ? 'pending' : 'local');
               say(placement.visible ? '配置しました。近づいたり、周りから見たりできます。' : '追跡を再開するため、周囲をゆっくり映してください。');
             }
           } else {
-            const hit = frame.getHitTestResults(hitSource).find((result) => {
+            const viewerTracked = !!frame.getViewerPose(referenceSpace);
+            record(viewerTracked ? 'searching' : 'tracking-lost', viewerTracked ? 'tracking' : 'lost', 'none');
+            const hit = viewerTracked ? frame.getHitTestResults(hitSource).find((result) => {
               const pose = result.getPose(referenceSpace);
               return pose && isHorizontalSurface(pose.transform.matrix, settings.horizontalNormalThreshold);
-            });
+            }) : undefined;
             const pose = hit?.getPose(referenceSpace);
             reticle.visible = !!pose;
             place.disabled = !pose;
             if (pose) reticle.matrix.fromArray(pose.transform.matrix);
-            say(pose ? '円の場所に水門を置けます。画面をタップしてください。' : '机や床を探しています。明るい場所で、模様のある面をゆっくり映してください。');
+            say(pose ? '円の場所に水門を置けます。「ここに置く」を押してください。' : '机や床を探しています。明るい場所で、模様のある面をゆっくり映してください。');
             if (queuedPlacement && pose && hit) {
               placed = true;
+              record('placed', 'tracking', hit.createAnchor ? 'pending' : 'local');
               placement.position.set(pose.transform.position.x, pose.transform.position.y, pose.transform.position.z);
               placement.quaternion.set(pose.transform.orientation.x, pose.transform.orientation.y, pose.transform.orientation.z, pose.transform.orientation.w);
               placement.visible = true; reticle.visible = false;
@@ -296,8 +353,8 @@ export async function mountPlacementExperience(root: HTMLElement) {
               // Invoke inside the active frame; stale promises must not resurrect reset anchors.
               if (hit.createAnchor) void hit.createAnchor().then((created) => {
                 if (disposed || generation !== currentGeneration || !session) created.delete();
-                else anchor = created;
-              }).catch(() => { /* Local reference-space placement remains valid without anchors. */ });
+                else { anchor = created; record(tracking === 'lost' ? 'tracking-lost' : 'placed', tracking, 'anchor'); }
+              }).catch(() => { if (!disposed && generation === currentGeneration && session) record(tracking === 'lost' ? 'tracking-lost' : 'placed', tracking, 'local'); });
             }
             queuedPlacement = false;
           }
@@ -307,6 +364,7 @@ export async function mountPlacementExperience(root: HTMLElement) {
     });
     window.addEventListener('resize', resize);
   } catch (error) {
+    record('error');
     say(`水門を表示できませんでした。${error instanceof Error ? error.message : 'ページを再読み込みしてください。'}`);
     dispose();
   }

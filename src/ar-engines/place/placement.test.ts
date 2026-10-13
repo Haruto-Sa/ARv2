@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { createStaticExport, isHorizontalSurface, preparePlacementModel, validatePlacementConfig } from './placement';
+import { createPlacementGuide, createStaticExport, isHorizontalSurface, preparePlacementModel, validatePlacementConfig } from './placement';
 
 describe('surface placement', () => {
   it('accepts upward horizontal surfaces and rejects walls, ceilings and invalid poses', () => {
@@ -38,6 +38,21 @@ describe('surface placement', () => {
     expect(mesh.scale.toArray()).toEqual([1, 1, 1]);
     expect(mesh.geometry.index!.getX(1)).toBe(originalIndex[2]);
     expect(source.geometry.index!.array).toEqual(originalIndex);
+  });
+
+  it('keeps the verification footprint on the model bottom and at its scaled reference width', () => {
+    const source = new THREE.Mesh(new THREE.BoxGeometry(4, 2, 6));
+    const { model, width, depth } = preparePlacementModel(source, 30);
+    const reference = createPlacementGuide(width, depth);
+    model.scale.setScalar(0.2 / width);
+    reference.scale.copy(model.scale);
+    const bounds = new THREE.Box3().setFromObject(reference);
+    expect(bounds.min.y).toBe(0);
+    expect(bounds.max.y).toBe(0);
+    expect(bounds.getSize(new THREE.Vector3()).x).toBeCloseTo(0.2);
+    expect(bounds.getSize(new THREE.Vector3()).z).toBeCloseTo(depth * model.scale.x);
+    const snapshot = createStaticExport(new THREE.Group().add(model, reference));
+    expect(snapshot.children).toHaveLength(1); // reference lines must not appear in Quick Look
   });
 
   it('rejects inverted or nonfinite placement limits', () => {

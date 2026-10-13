@@ -43,6 +43,8 @@ Quick Look用USDZは静止状態のメッシュとマテリアルをエクスポ
 
 ## 検証
 
+[デモ・本番の配置確認手順](placement-verification.md)と[記録テンプレート](eval/placement-run-template.md)を参照。`?verify=1` で接地補助線・状態JSONの保存を明示的に有効にする。
+
 2026-10-11: ユーザーからスマホで検証して動作を確認できたとの報告を受領。機種・OS・ブラウザ・WebXR/Quick Look経路、配置精度の定量結果は未記録。以下は追加の実機確認項目であり、全端末確認済みを意味しない。
 
 初学者向けの画面別解説は `public/docs/ar-engineering-guide.html`（配信時 `/docs/ar-engineering-guide.html`）。トップ・平面AR・3Dビューア・Unityを画面写真とともに説明する。オフライン表示では隣の `screenshots/` も保存する。印刷では全ページを表示する。

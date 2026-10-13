@@ -142,3 +142,7 @@ legacy/                 以前の実装の参照用アーカイブ（現行ビ�
 ## デプロイ
 
 GitHub Pages と Cloudflare の両方に、同じビルドをパス構成だけ切り替えて配信しています（ビルド時の環境変数でベースパスを切替）。具体的な手順は `docs/` 配下を参照してください。
+
+## デモと本番の配置検証
+
+[配置検証手順](placement-verification.md)を参照。`npm run verify-placement -- --dir dist --expect production` でビルド成果物、`--url <実際の配信URL>` で公開ページ・設定・モデルの実体を確認します。実空間の精度は別途実機で測定します。
