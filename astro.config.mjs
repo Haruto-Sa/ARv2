@@ -1,6 +1,7 @@
 import { defineConfig } from 'astro/config';
 
 import svelte from '@astrojs/svelte';
+import { buildInfo } from './scripts/build-info.mjs';
 import { stripLab } from './scripts/astro-strip-lab.mjs';
 
 // GitHub Pages はサブパス配信(/ARv2/)、Cloudflare Pages はドメインルート配信。
@@ -13,5 +14,5 @@ export default defineConfig({
   output: 'static',
   base,
   // INCLUDE_LAB=1 のときだけ /lab/* 等を残す(既定で除外。docs/ar-spec.md §3.1)。
-  integrations: [svelte(), stripLab()],
+  integrations: [svelte(), stripLab(), buildInfo()],
 });
