@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { test, expect } from './fixtures/placement';
 async function completeGuide(page: Page) {
   await page.locator('#placement-guide').waitFor();
   await page.locator('[data-guide-next]').click();
@@ -26,7 +27,7 @@ test('PC goes straight to the watergate viewer even when rel=ar is supported', a
   expect(errors).toEqual([]);
 });
 
-test('Quick Look prepares a USDZ from the actual mirrored watergate meshes', async ({ page }) => {
+test('Quick Look prepares a USDZ from the actual mirrored watergate meshes @webgl', async ({ page }) => {
   test.setTimeout(90_000);
   await page.addInitScript(() => {
     const original = DOMTokenList.prototype.supports;

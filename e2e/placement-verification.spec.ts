@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/placement';
 test.setTimeout(60000);
 
 test('verification is opt-in and survives PC fallback', async ({page})=>{

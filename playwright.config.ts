@@ -8,14 +8,19 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  retries: 0,
   workers: process.env.CI ? 2 : undefined,
-  reporter: 'list',
+  globalTimeout: 10 * 60_000,
+  reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: `http://localhost:${PORT}`,
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'ui', grepInvert: /@webgl/, use: { ...devices['Desktop Chrome'] } },
+    { name: 'webgl', grep: /@webgl/, workers: 1, use: { ...devices['Desktop Chrome'] } },
+  ],
   webServer: {
     // ASTRO_PREVIEW_BACKGROUND: astroはAIエージェント実行を検知すると自動で
     // バックグラウンドサーバーとして起動し、ビルドを更新しても古いプロセスが
@@ -24,7 +29,7 @@ export default defineConfig({
     // 通常プロセスとして起動・終了を管理させる。
     command: `npm run build && npx astro preview --ignore-lock --port ${PORT}`,
     url: `http://localhost:${PORT}`,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120_000,
     // INCLUDE_LAB=1: E2Eスイートは /lab/* ページ(比較ランチャー等)も検証するため、
     // 本番ビルドの既定(除外)ではなくプレビュー/検証ビルド相当にする。

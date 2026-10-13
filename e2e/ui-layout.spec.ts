@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/placement';
 for (const size of [{width:320,height:568},{width:844,height:390}]) {
  test(`experience navigation fits ${size.width}x${size.height}`,async({page})=>{
   await page.setViewportSize(size);
