@@ -11,7 +11,7 @@
 // Astroの静的ルーティングは `src/pages/lab/**` をファイルベースでそのままページ化するため、
 // ビルド対象から動的に除外する標準機構がない。dist/ 側で後処理するのが最小の変更で済む。
 
-import { existsSync, readdirSync, rmSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -55,6 +55,22 @@ export function stripLab() {
             if (f.startsWith('lab-') && f.endsWith('.json')) {
               rmSync(path.join(locationsDir, f));
               removed.push(`config/locations/${f}`);
+            } else if (f.endsWith('.json') && f !== 'index.json') {
+              // Keep development correction controls out of public location configs.
+              const configPath = path.join(locationsDir, f);
+              const config = JSON.parse(readFileSync(configPath, 'utf8'));
+              config.debug = false;
+              writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
+            }
+          }
+        }
+
+        const modelsDir = path.join(outDir, 'models');
+        if (existsSync(modelsDir)) {
+          for (const f of readdirSync(modelsDir)) {
+            if (f.startsWith('lab-')) {
+              rmSync(path.join(modelsDir, f), { recursive: true, force: true });
+              removed.push(`models/${f}`);
             }
           }
         }
