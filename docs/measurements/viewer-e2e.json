@@ -1,0 +1,268 @@
+{
+  "environment": {
+    "node": "22.23.3",
+    "platform": "macOS",
+    "retries": 0,
+    "repeatEach": 3,
+    "model": "actual suimon-kousin.glb",
+    "tests": "original 10 placement cases from 3035e5d"
+  },
+  "runs": [
+    {
+      "revision": "3035e5d",
+      "workers": 1,
+      "stats": {
+        "startTime": "2026-10-13T13:26:35.607Z",
+        "duration": 298537.162,
+        "expected": 30,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "caseDurationMs": {
+        "verification is opt-in and survives PC fallback": [
+          24402,
+          24001,
+          30021
+        ],
+        "AR help belongs to the overlay and only UI taps block XR selection": [
+          16977,
+          16979,
+          16911
+        ],
+        "Quick Look reports unobservable placement instead of a false failure": [
+          3987,
+          3897,
+          3902
+        ],
+        "PC goes straight to the watergate viewer even when rel=ar is supported": [
+          11942,
+          12611,
+          11562
+        ],
+        "Quick Look prepares a USDZ from the actual mirrored watergate meshes": [
+          3914,
+          3889,
+          3834
+        ],
+        "mobile camera denial allows retry or viewer fallback": [
+          6839,
+          4925,
+          7509
+        ],
+        "unsupported smartphone is redirected to the viewer": [
+          3400,
+          3596,
+          3373
+        ],
+        "viewer works independently of AR support": [
+          1963,
+          1944,
+          1960
+        ],
+        "experience navigation fits 320x568": [
+          11069,
+          11226,
+          11107
+        ],
+        "experience navigation fits 844x390": [
+          10705,
+          10448,
+          10565
+        ]
+      }
+    },
+    {
+      "revision": "3035e5d",
+      "workers": 2,
+      "stats": {
+        "startTime": "2026-10-13T13:33:03.723Z",
+        "duration": 242370.45500000002,
+        "expected": 30,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "caseDurationMs": {
+        "verification is opt-in and survives PC fallback": [
+          41506,
+          41017,
+          40256
+        ],
+        "AR help belongs to the overlay and only UI taps block XR selection": [
+          28954,
+          28437,
+          28498
+        ],
+        "Quick Look reports unobservable placement instead of a false failure": [
+          4852,
+          4989,
+          4843
+        ],
+        "PC goes straight to the watergate viewer even when rel=ar is supported": [
+          20388,
+          22416,
+          21044
+        ],
+        "Quick Look prepares a USDZ from the actual mirrored watergate meshes": [
+          5273,
+          5117,
+          5267
+        ],
+        "mobile camera denial allows retry or viewer fallback": [
+          12981,
+          12410,
+          11560
+        ],
+        "unsupported smartphone is redirected to the viewer": [
+          5918,
+          5444,
+          6216
+        ],
+        "viewer works independently of AR support": [
+          3178,
+          3436,
+          3299
+        ],
+        "experience navigation fits 320x568": [
+          17979,
+          17951,
+          17864
+        ],
+        "experience navigation fits 844x390": [
+          17041,
+          17093,
+          17121
+        ]
+      }
+    },
+    {
+      "revision": "this change on dd808a8",
+      "workers": 1,
+      "stats": {
+        "startTime": "2026-10-13T15:35:35.565Z",
+        "duration": 94904.088,
+        "expected": 30,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "caseDurationMs": {
+        "verification is opt-in and survives PC fallback": [
+          6865,
+          6739,
+          6007
+        ],
+        "AR help belongs to the overlay and only UI taps block XR selection": [
+          3741,
+          3642,
+          3926
+        ],
+        "Quick Look reports unobservable placement instead of a false failure": [
+          2059,
+          1907,
+          2009
+        ],
+        "PC goes straight to the watergate viewer even when rel=ar is supported": [
+          2199,
+          2232,
+          2240
+        ],
+        "Quick Look prepares a USDZ from the actual mirrored watergate meshes": [
+          1909,
+          2021,
+          1931
+        ],
+        "mobile camera denial allows retry or viewer fallback": [
+          318,
+          334,
+          317
+        ],
+        "unsupported smartphone is redirected to the viewer": [
+          2084,
+          2055,
+          2143
+        ],
+        "viewer works independently of AR support": [
+          1921,
+          1811,
+          1988
+        ],
+        "experience navigation fits 320x568": [
+          4679,
+          4756,
+          5291
+        ],
+        "experience navigation fits 844x390": [
+          4489,
+          4590,
+          4661
+        ]
+      }
+    },
+    {
+      "revision": "this change on dd808a8",
+      "workers": 2,
+      "stats": {
+        "startTime": "2026-10-13T15:38:11.435Z",
+        "duration": 70573.17499999999,
+        "expected": 30,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "caseDurationMs": {
+        "verification is opt-in and survives PC fallback": [
+          9581,
+          9464,
+          9506
+        ],
+        "AR help belongs to the overlay and only UI taps block XR selection": [
+          5448,
+          6320,
+          4117
+        ],
+        "Quick Look reports unobservable placement instead of a false failure": [
+          2320,
+          2381,
+          2482
+        ],
+        "PC goes straight to the watergate viewer even when rel=ar is supported": [
+          3062,
+          2771,
+          3237
+        ],
+        "Quick Look prepares a USDZ from the actual mirrored watergate meshes": [
+          2194,
+          2344,
+          2323
+        ],
+        "mobile camera denial allows retry or viewer fallback": [
+          327,
+          390,
+          375
+        ],
+        "unsupported smartphone is redirected to the viewer": [
+          2925,
+          3296,
+          2947
+        ],
+        "viewer works independently of AR support": [
+          2822,
+          3064,
+          2955
+        ],
+        "experience navigation fits 320x568": [
+          7674,
+          8134,
+          8594
+        ],
+        "experience navigation fits 844x390": [
+          6852,
+          7318,
+          7790
+        ]
+      }
+    }
+  ]
+}

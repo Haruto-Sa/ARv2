@@ -1,0 +1,1100 @@
+[
+  {
+    "revision": "3035e5d",
+    "node": "v22.23.3",
+    "platform": "darwin",
+    "cpuRate": 1,
+    "viewport": "390x844@1",
+    "results": [
+      {
+        "run": 0,
+        "phases": {
+          "playing": {
+            "rafCalls": 11,
+            "rafCpuMs": 5.200000286102295,
+            "maxRafCpuMs": 0.9000000953674316,
+            "drawCalls": 99,
+            "drawCpuMs": 0,
+            "longTasks": 10,
+            "longTaskMs": 2033,
+            "windowStart": 1466.1000003814697,
+            "durationMs": 2244.8999996185303
+          },
+          "paused": {
+            "rafCalls": 11,
+            "rafCpuMs": 3.5,
+            "maxRafCpuMs": 0.6999998092651367,
+            "drawCalls": 99,
+            "drawCpuMs": 0.09999990463256836,
+            "longTasks": 11,
+            "longTaskMs": 2252,
+            "windowStart": 6393.300000190735,
+            "durationMs": 2257.300000190735
+          },
+          "guide": {
+            "rafCalls": 5,
+            "rafCpuMs": 1.4000000953674316,
+            "maxRafCpuMs": 0.3000001907348633,
+            "drawCalls": 45,
+            "drawCpuMs": 0,
+            "longTasks": 5,
+            "longTaskMs": 2538,
+            "windowStart": 22176.200000286102,
+            "durationMs": 2541.7999997138977
+          },
+          "resumed": {
+            "rafCalls": 6,
+            "rafCpuMs": 1.0999999046325684,
+            "maxRafCpuMs": 0.3000001907348633,
+            "drawCalls": 54,
+            "drawCpuMs": 0.09999990463256836,
+            "longTasks": 6,
+            "longTaskMs": 2879,
+            "windowStart": 32127.200000286102,
+            "durationMs": 2881.5999999046326
+          }
+        },
+        "actions": {
+          "modelReady": 1087.749208,
+          "pause": 2274.92375,
+          "resizeAndRotate": 4571.664875,
+          "openGuide": 7482.193166999999,
+          "closeGuide": 1131.2071249999972,
+          "resume": 5302.030708000002
+        },
+        "crashed": false
+      },
+      {
+        "run": 1,
+        "phases": {
+          "playing": {
+            "rafCalls": 9,
+            "rafCpuMs": 4.699999809265137,
+            "maxRafCpuMs": 1,
+            "drawCalls": 81,
+            "drawCpuMs": 0.09999990463256836,
+            "longTasks": 9,
+            "longTaskMs": 2296,
+            "windowStart": 1530.4000000953674,
+            "durationMs": 2301
+          },
+          "paused": {
+            "rafCalls": 11,
+            "rafCpuMs": 3.9000000953674316,
+            "maxRafCpuMs": 1.5,
+            "drawCalls": 99,
+            "drawCpuMs": 0.09999990463256836,
+            "longTasks": 11,
+            "longTaskMs": 2302,
+            "windowStart": 6830.699999809265,
+            "durationMs": 2308.0999999046326
+          },
+          "guide": {
+            "rafCalls": 6,
+            "rafCpuMs": 0.9999990463256836,
+            "maxRafCpuMs": 0.2999997138977051,
+            "drawCalls": 54,
+            "drawCpuMs": 0,
+            "longTasks": 5,
+            "longTaskMs": 2304,
+            "windowStart": 19797.400000095367,
+            "durationMs": 2769.5999999046326
+          },
+          "resumed": {
+            "rafCalls": 6,
+            "rafCpuMs": 1.4999995231628418,
+            "maxRafCpuMs": 0.3000001907348633,
+            "drawCalls": 54,
+            "drawCpuMs": 0,
+            "longTasks": 6,
+            "longTaskMs": 2763,
+            "windowStart": 29031.699999809265,
+            "durationMs": 2770.9000000953674
+          }
+        },
+        "actions": {
+          "modelReady": 1091.2086659999986,
+          "pause": 2581.9109160000007,
+          "resizeAndRotate": 4625.635542000004,
+          "openGuide": 5112.815875,
+          "closeGuide": 920.8929169999974,
+          "resume": 5075.926542000001
+        },
+        "crashed": false
+      },
+      {
+        "run": 2,
+        "phases": {
+          "playing": {
+            "rafCalls": 11,
+            "rafCpuMs": 5.099999904632568,
+            "maxRafCpuMs": 1.0999999046325684,
+            "drawCalls": 99,
+            "drawCpuMs": 0.20000028610229492,
+            "longTasks": 11,
+            "longTaskMs": 2244,
+            "windowStart": 1407.5,
+            "durationMs": 2248.3999996185303
+          },
+          "paused": {
+            "rafCalls": 11,
+            "rafCpuMs": 4.59999942779541,
+            "maxRafCpuMs": 1.1999998092651367,
+            "drawCalls": 99,
+            "drawCpuMs": 0.20000028610229492,
+            "longTasks": 11,
+            "longTaskMs": 2242,
+            "windowStart": 6324.89999961853,
+            "durationMs": 2249
+          },
+          "guide": {
+            "rafCalls": 6,
+            "rafCpuMs": 1.200000286102295,
+            "maxRafCpuMs": 0.3000001907348633,
+            "drawCalls": 54,
+            "drawCpuMs": 0,
+            "longTasks": 6,
+            "longTaskMs": 2762,
+            "windowStart": 19187.39999961853,
+            "durationMs": 2764.5
+          },
+          "resumed": {
+            "rafCalls": 6,
+            "rafCpuMs": 1.200000286102295,
+            "maxRafCpuMs": 0.3000001907348633,
+            "drawCalls": 54,
+            "drawCpuMs": 0,
+            "longTasks": 6,
+            "longTaskMs": 2792,
+            "windowStart": 28882.799999713898,
+            "durationMs": 2794.5
+          }
+        },
+        "actions": {
+          "modelReady": 1001.4086249999964,
+          "pause": 2259.482290999993,
+          "resizeAndRotate": 4597.436834000007,
+          "openGuide": 5085.269333999997,
+          "closeGuide": 925.0901670000021,
+          "resume": 5078.358082999999
+        },
+        "crashed": false
+      }
+    ]
+  },
+  {
+    "revision": "3035e5d CPU4",
+    "node": "v22.23.3",
+    "platform": "darwin",
+    "cpuRate": 4,
+    "viewport": "390x844@1",
+    "results": [
+      {
+        "run": 0,
+        "phases": {
+          "playing": {
+            "rafCalls": 12,
+            "rafCpuMs": 17.90000009536743,
+            "maxRafCpuMs": 2.9000000953674316,
+            "drawCalls": 108,
+            "drawCpuMs": 0.10000038146972656,
+            "longTasks": 12,
+            "longTaskMs": 2270,
+            "windowStart": 1574.8000001907349,
+            "durationMs": 2277.8999996185303
+          },
+          "paused": {
+            "rafCalls": 11,
+            "rafCpuMs": 24.09999990463257,
+            "maxRafCpuMs": 6.5,
+            "drawCalls": 99,
+            "drawCpuMs": 1.0000004768371582,
+            "longTasks": 11,
+            "longTaskMs": 2278,
+            "windowStart": 6582.099999904633,
+            "durationMs": 2286.2000002861023
+          },
+          "guide": {
+            "rafCalls": 6,
+            "rafCpuMs": 4.599999904632568,
+            "maxRafCpuMs": 1.0999999046325684,
+            "drawCalls": 54,
+            "drawCpuMs": 0.10000038146972656,
+            "longTasks": 5,
+            "longTaskMs": 2343,
+            "windowStart": 19661.900000095367,
+            "durationMs": 2802.2999997138977
+          },
+          "resumed": {
+            "rafCalls": 6,
+            "rafCpuMs": 5.099999904632568,
+            "maxRafCpuMs": 1.299999713897705,
+            "drawCalls": 54,
+            "drawCpuMs": 0,
+            "longTasks": 6,
+            "longTaskMs": 2769,
+            "windowStart": 28987.300000190735,
+            "durationMs": 2774.0999999046326
+          }
+        },
+        "actions": {
+          "modelReady": 1251.1442499999998,
+          "pause": 2310.1027910000003,
+          "resizeAndRotate": 4673.475666999999,
+          "openGuide": 5183.891166999998,
+          "closeGuide": 468.7796670000025,
+          "resume": 5130.844417
+        },
+        "crashed": false
+      },
+      {
+        "run": 1,
+        "phases": {
+          "playing": {
+            "rafCalls": 11,
+            "rafCpuMs": 20.100000381469727,
+            "maxRafCpuMs": 2.5999999046325684,
+            "drawCalls": 99,
+            "drawCpuMs": 0,
+            "longTasks": 10,
+            "longTaskMs": 2073,
+            "windowStart": 1527.9000000953674,
+            "durationMs": 2285.4000000953674
+          },
+          "paused": {
+            "rafCalls": 10,
+            "rafCpuMs": 21.90000009536743,
+            "maxRafCpuMs": 9.799999713897705,
+            "drawCalls": 90,
+            "drawCpuMs": 0.09999990463256836,
+            "longTasks": 9,
+            "longTaskMs": 2017,
+            "windowStart": 6540.400000095367,
+            "durationMs": 2254.5999999046326
+          },
+          "guide": {
+            "rafCalls": 6,
+            "rafCpuMs": 3.700000762939453,
+            "maxRafCpuMs": 1.3000001907348633,
+            "drawCalls": 54,
+            "drawCpuMs": 0.09999990463256836,
+            "longTasks": 5,
+            "longTaskMs": 2312,
+            "windowStart": 19548.400000095367,
+            "durationMs": 2778.4000000953674
+          },
+          "resumed": {
+            "rafCalls": 6,
+            "rafCpuMs": 6.5,
+            "maxRafCpuMs": 1.6999998092651367,
+            "drawCalls": 54,
+            "drawCpuMs": 0.09999990463256836,
+            "longTasks": 5,
+            "longTaskMs": 2318,
+            "windowStart": 28396.699999809265,
+            "durationMs": 2784.2000002861023
+          }
+        },
+        "actions": {
+          "modelReady": 1140.476416999998,
+          "pause": 2308.7817920000016,
+          "resizeAndRotate": 4700.206582999999,
+          "openGuide": 5120.042666000001,
+          "closeGuide": 470.354333999996,
+          "resume": 4674.867750000005
+        },
+        "crashed": false
+      },
+      {
+        "run": 2,
+        "phases": {
+          "playing": {
+            "rafCalls": 11,
+            "rafCpuMs": 20.700000762939453,
+            "maxRafCpuMs": 2.6000003814697266,
+            "drawCalls": 99,
+            "drawCpuMs": 0.5999999046325684,
+            "longTasks": 10,
+            "longTaskMs": 2090,
+            "windowStart": 1530.6999998092651,
+            "durationMs": 2302.7000002861023
+          },
+          "paused": {
+            "rafCalls": 11,
+            "rafCpuMs": 19.700000762939453,
+            "maxRafCpuMs": 7.5,
+            "drawCalls": 99,
+            "drawCpuMs": 0.5999999046325684,
+            "longTasks": 11,
+            "longTaskMs": 2273,
+            "windowStart": 6803.699999809265,
+            "durationMs": 2283.9000000953674
+          },
+          "guide": {
+            "rafCalls": 6,
+            "rafCpuMs": 4.499999523162842,
+            "maxRafCpuMs": 1.0999999046325684,
+            "drawCalls": 54,
+            "drawCpuMs": 0,
+            "longTasks": 5,
+            "longTaskMs": 2319,
+            "windowStart": 19804,
+            "durationMs": 2790.2999997138977
+          },
+          "resumed": {
+            "rafCalls": 6,
+            "rafCpuMs": 4.800000190734863,
+            "maxRafCpuMs": 1,
+            "drawCalls": 54,
+            "drawCpuMs": 0,
+            "longTasks": 6,
+            "longTaskMs": 2766,
+            "windowStart": 29084.5,
+            "durationMs": 2769.7999997138977
+          }
+        },
+        "actions": {
+          "modelReady": 1132.1012499999997,
+          "pause": 2551.4172499999986,
+          "resizeAndRotate": 4688.898042000001,
+          "openGuide": 5099.109749999989,
+          "closeGuide": 472.17537500000617,
+          "resume": 5093.454832999996
+        },
+        "crashed": false
+      }
+    ]
+  },
+  {
+    "revision": "dd808a8",
+    "node": "v22.23.3",
+    "platform": "darwin",
+    "cpuRate": 1,
+    "viewport": "390x844@1",
+    "results": [
+      {
+        "run": 0,
+        "phases": {
+          "playing": {
+            "rafCalls": 18,
+            "rafCpuMs": 3.799999713897705,
+            "maxRafCpuMs": 0.40000009536743164,
+            "drawCalls": 162,
+            "drawCpuMs": 0,
+            "longTasks": 18,
+            "longTaskMs": 2168,
+            "windowStart": 813.0999999046326,
+            "durationMs": 2179.4000000953674
+          },
+          "paused": {
+            "rafCalls": 120,
+            "rafCpuMs": 9.900000095367432,
+            "maxRafCpuMs": 0.20000028610229492,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 4214.199999809265,
+            "durationMs": 2001.1999998092651
+          },
+          "guide": {
+            "rafCalls": 120,
+            "rafCpuMs": 3.200000762939453,
+            "maxRafCpuMs": 0.19999980926513672,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 6549.5,
+            "durationMs": 2002
+          },
+          "resumed": {
+            "rafCalls": 9,
+            "rafCpuMs": 1.6000003814697266,
+            "maxRafCpuMs": 0.3000001907348633,
+            "drawCalls": 81,
+            "drawCpuMs": 0,
+            "longTasks": 8,
+            "longTaskMs": 2188,
+            "windowStart": 8892.799999713898,
+            "durationMs": 2482.5999999046326
+          }
+        },
+        "actions": {
+          "modelReady": 574.1955,
+          "pause": 1219.159334,
+          "resizeAndRotate": 29.90887500000008,
+          "openGuide": 302.55270800000017,
+          "closeGuide": 3.3755830000009155,
+          "resume": 32.34491600000001
+        },
+        "crashed": false
+      },
+      {
+        "run": 1,
+        "phases": {
+          "playing": {
+            "rafCalls": 18,
+            "rafCpuMs": 4.100000381469727,
+            "maxRafCpuMs": 0.3000001907348633,
+            "drawCalls": 162,
+            "drawCpuMs": 0,
+            "longTasks": 17,
+            "longTaskMs": 2055,
+            "windowStart": 860.6999998092651,
+            "durationMs": 2184.699999809265
+          },
+          "paused": {
+            "rafCalls": 120,
+            "rafCpuMs": 7.599998950958252,
+            "maxRafCpuMs": 0.20000028610229492,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 4268.599999904633,
+            "durationMs": 2000.6999998092651
+          },
+          "guide": {
+            "rafCalls": 120,
+            "rafCpuMs": 2.0999999046325684,
+            "maxRafCpuMs": 0.10000038146972656,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 6645,
+            "durationMs": 2001.1999998092651
+          },
+          "resumed": {
+            "rafCalls": 9,
+            "rafCpuMs": 1.6000003814697266,
+            "maxRafCpuMs": 0.20000028610229492,
+            "drawCalls": 81,
+            "drawCpuMs": 0,
+            "longTasks": 8,
+            "longTaskMs": 2220,
+            "windowStart": 8974.39999961853,
+            "durationMs": 2513.9000000953674
+          }
+        },
+        "actions": {
+          "modelReady": 619.7986249999994,
+          "pause": 1221.177916999999,
+          "resizeAndRotate": 51.90016699999978,
+          "openGuide": 320.7559169999986,
+          "closeGuide": 4.527666000001773,
+          "resume": 319.2061250000006
+        },
+        "crashed": false
+      },
+      {
+        "run": 2,
+        "phases": {
+          "playing": {
+            "rafCalls": 18,
+            "rafCpuMs": 3.499999523162842,
+            "maxRafCpuMs": 0.40000009536743164,
+            "drawCalls": 162,
+            "drawCpuMs": 0.19999980926513672,
+            "longTasks": 17,
+            "longTaskMs": 2039,
+            "windowStart": 851.3000001907349,
+            "durationMs": 2166
+          },
+          "paused": {
+            "rafCalls": 120,
+            "rafCpuMs": 7.40000057220459,
+            "maxRafCpuMs": 0.20000028610229492,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 4244.599999904633,
+            "durationMs": 2001.3000001907349
+          },
+          "guide": {
+            "rafCalls": 120,
+            "rafCpuMs": 2.299999237060547,
+            "maxRafCpuMs": 0.19999980926513672,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 6611.099999904633,
+            "durationMs": 2001.3000001907349
+          },
+          "resumed": {
+            "rafCalls": 9,
+            "rafCpuMs": 1.9999995231628418,
+            "maxRafCpuMs": 0.3000001907348633,
+            "drawCalls": 81,
+            "drawCpuMs": 0.10000038146972656,
+            "longTasks": 8,
+            "longTaskMs": 2195,
+            "windowStart": 8940.599999904633,
+            "durationMs": 2490.1000003814697
+          }
+        },
+        "actions": {
+          "modelReady": 611.9582499999997,
+          "pause": 1225.3984999999993,
+          "resizeAndRotate": 40.55958300000202,
+          "openGuide": 321.3551249999982,
+          "closeGuide": 4.338083999999071,
+          "resume": 319.35054200000013
+        },
+        "crashed": false
+      }
+    ]
+  },
+  {
+    "revision": "dd808a8 CPU4",
+    "node": "v22.23.3",
+    "platform": "darwin",
+    "cpuRate": 4,
+    "viewport": "390x844@1",
+    "results": [
+      {
+        "run": 0,
+        "phases": {
+          "playing": {
+            "rafCalls": 17,
+            "rafCpuMs": 14.5,
+            "maxRafCpuMs": 1.5999999046325684,
+            "drawCalls": 153,
+            "drawCpuMs": 0,
+            "longTasks": 16,
+            "longTaskMs": 2034,
+            "windowStart": 1027.5,
+            "durationMs": 2170
+          },
+          "paused": {
+            "rafCalls": 120,
+            "rafCpuMs": 2.700000762939453,
+            "maxRafCpuMs": 0.8000001907348633,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 4505.5,
+            "durationMs": 2001.0999999046326
+          },
+          "guide": {
+            "rafCalls": 120,
+            "rafCpuMs": 0.9999995231628418,
+            "maxRafCpuMs": 0.3000001907348633,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 6910.400000095367,
+            "durationMs": 2000
+          },
+          "resumed": {
+            "rafCalls": 8,
+            "rafCpuMs": 5.900000095367432,
+            "maxRafCpuMs": 1,
+            "drawCalls": 72,
+            "drawCpuMs": 0.10000038146972656,
+            "longTasks": 7,
+            "longTaskMs": 2065,
+            "windowStart": 10118.099999904633,
+            "durationMs": 2367.800000190735
+          }
+        },
+        "actions": {
+          "modelReady": 768.3184170000001,
+          "pause": 1302.3399999999997,
+          "resizeAndRotate": 49.55687500000022,
+          "openGuide": 349.75916700000016,
+          "closeGuide": 4.563125000000582,
+          "resume": 899.8502910000007
+        },
+        "crashed": false
+      },
+      {
+        "run": 1,
+        "phases": {
+          "playing": {
+            "rafCalls": 13,
+            "rafCpuMs": 15.599999904632568,
+            "maxRafCpuMs": 2.0999999046325684,
+            "drawCalls": 117,
+            "drawCpuMs": 1.0000004768371582,
+            "longTasks": 13,
+            "longTaskMs": 2156,
+            "windowStart": 962.2000002861023,
+            "durationMs": 2163.5999999046326
+          },
+          "paused": {
+            "rafCalls": 120,
+            "rafCpuMs": 1.5999994277954102,
+            "maxRafCpuMs": 0.39999961853027344,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 4446.700000286102,
+            "durationMs": 2000.1999998092651
+          },
+          "guide": {
+            "rafCalls": 120,
+            "rafCpuMs": 0.4999995231628418,
+            "maxRafCpuMs": 0.09999990463256836,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 6828.5,
+            "durationMs": 2000.5
+          },
+          "resumed": {
+            "rafCalls": 8,
+            "rafCpuMs": 5.700000286102295,
+            "maxRafCpuMs": 1.1000003814697266,
+            "drawCalls": 72,
+            "drawCpuMs": 0.10000038146972656,
+            "longTasks": 7,
+            "longTaskMs": 2063,
+            "windowStart": 9433.200000286102,
+            "durationMs": 2362.7999997138977
+          }
+        },
+        "actions": {
+          "modelReady": 704.9998329999999,
+          "pause": 1313.5413329999992,
+          "resizeAndRotate": 41.10508299999856,
+          "openGuide": 335.4870840000003,
+          "closeGuide": 6.2008329999989655,
+          "resume": 301.9131669999988
+        },
+        "crashed": false
+      },
+      {
+        "run": 2,
+        "phases": {
+          "playing": {
+            "rafCalls": 17,
+            "rafCpuMs": 16.000000476837158,
+            "maxRafCpuMs": 1.799999713897705,
+            "drawCalls": 153,
+            "drawCpuMs": 0.9000000953674316,
+            "longTasks": 16,
+            "longTaskMs": 2069,
+            "windowStart": 959.5999999046326,
+            "durationMs": 2207.9000000953674
+          },
+          "paused": {
+            "rafCalls": 120,
+            "rafCpuMs": 2.40000057220459,
+            "maxRafCpuMs": 0.6999998092651367,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 4498.900000095367,
+            "durationMs": 2000
+          },
+          "guide": {
+            "rafCalls": 120,
+            "rafCpuMs": 0.2999997138977051,
+            "maxRafCpuMs": 0.09999990463256836,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 6863.400000095367,
+            "durationMs": 2000.4000000953674
+          },
+          "resumed": {
+            "rafCalls": 8,
+            "rafCpuMs": 5.800000190734863,
+            "maxRafCpuMs": 1.1999998092651367,
+            "drawCalls": 72,
+            "drawCpuMs": 0,
+            "longTasks": 8,
+            "longTaskMs": 2362,
+            "windowStart": 9196.599999904633,
+            "durationMs": 2379.300000190735
+          }
+        },
+        "actions": {
+          "modelReady": 700.895708,
+          "pause": 1327.2878329999985,
+          "resizeAndRotate": 39.40412500000093,
+          "openGuide": 321.10608299999876,
+          "closeGuide": 6.755624999997963,
+          "resume": 322.5888750000013
+        },
+        "crashed": false
+      }
+    ]
+  },
+  {
+    "revision": "this change",
+    "node": "v22.23.3",
+    "platform": "darwin",
+    "cpuRate": 1,
+    "viewport": "390x844@1",
+    "results": [
+      {
+        "run": 0,
+        "phases": {
+          "playing": {
+            "rafCalls": 17,
+            "rafCpuMs": 4.700000286102295,
+            "maxRafCpuMs": 0.5,
+            "drawCalls": 153,
+            "drawCpuMs": 0.09999990463256836,
+            "longTasks": 17,
+            "longTaskMs": 2213,
+            "windowStart": 912.5,
+            "durationMs": 2222.1000003814697
+          },
+          "paused": {
+            "rafCalls": 0,
+            "rafCpuMs": 0,
+            "maxRafCpuMs": 0,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 4436.700000286102,
+            "durationMs": 2001
+          },
+          "guide": {
+            "rafCalls": 0,
+            "rafCpuMs": 0,
+            "maxRafCpuMs": 0,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 6947,
+            "durationMs": 2001.3000001907349
+          },
+          "resumed": {
+            "rafCalls": 9,
+            "rafCpuMs": 1.3999996185302734,
+            "maxRafCpuMs": 0.20000028610229492,
+            "drawCalls": 81,
+            "drawCpuMs": 0,
+            "longTasks": 8,
+            "longTaskMs": 2121,
+            "windowStart": 9252.400000095367,
+            "durationMs": 2416.2000002861023
+          }
+        },
+        "actions": {
+          "modelReady": 629.7275420000001,
+          "pause": 1299.949583,
+          "resizeAndRotate": 196.9367919999995,
+          "openGuide": 309.6140409999998,
+          "closeGuide": 278.9977089999993,
+          "resume": 21.139875000000757
+        },
+        "crashed": false
+      },
+      {
+        "run": 1,
+        "phases": {
+          "playing": {
+            "rafCalls": 18,
+            "rafCpuMs": 3.9000000953674316,
+            "maxRafCpuMs": 0.40000009536743164,
+            "drawCalls": 162,
+            "drawCpuMs": 0,
+            "longTasks": 17,
+            "longTaskMs": 2070,
+            "windowStart": 866.3000001907349,
+            "durationMs": 2200
+          },
+          "paused": {
+            "rafCalls": 0,
+            "rafCpuMs": 0,
+            "maxRafCpuMs": 0,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 4302.099999904633,
+            "durationMs": 2001.2000002861023
+          },
+          "guide": {
+            "rafCalls": 0,
+            "rafCpuMs": 0,
+            "maxRafCpuMs": 0,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 6828.099999904633,
+            "durationMs": 2000.6000003814697
+          },
+          "resumed": {
+            "rafCalls": 8,
+            "rafCpuMs": 1.4000000953674316,
+            "maxRafCpuMs": 0.20000028610229492,
+            "drawCalls": 72,
+            "drawCpuMs": 0,
+            "longTasks": 8,
+            "longTaskMs": 2261,
+            "windowStart": 9157.400000095367,
+            "durationMs": 2280.199999809265
+          }
+        },
+        "actions": {
+          "modelReady": 621.0086659999997,
+          "pause": 1233.5836250000011,
+          "resizeAndRotate": 494.6128329999992,
+          "openGuide": 27.618791000000783,
+          "closeGuide": 300.9979579999999,
+          "resume": 24.549332999999024
+        },
+        "crashed": false
+      },
+      {
+        "run": 2,
+        "phases": {
+          "playing": {
+            "rafCalls": 18,
+            "rafCpuMs": 3.9999990463256836,
+            "maxRafCpuMs": 0.5,
+            "drawCalls": 162,
+            "drawCpuMs": 0,
+            "longTasks": 17,
+            "longTaskMs": 2050,
+            "windowStart": 852.5,
+            "durationMs": 2181.0999999046326
+          },
+          "paused": {
+            "rafCalls": 0,
+            "rafCpuMs": 0,
+            "maxRafCpuMs": 0,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 4259.299999713898,
+            "durationMs": 2001.2000002861023
+          },
+          "guide": {
+            "rafCalls": 0,
+            "rafCpuMs": 0,
+            "maxRafCpuMs": 0,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 6577.39999961853,
+            "durationMs": 2001.2000002861023
+          },
+          "resumed": {
+            "rafCalls": 9,
+            "rafCpuMs": 1.5,
+            "maxRafCpuMs": 0.2999997138977051,
+            "drawCalls": 81,
+            "drawCpuMs": 0,
+            "longTasks": 8,
+            "longTaskMs": 2258,
+            "windowStart": 8907.799999713898,
+            "durationMs": 2552.300000190735
+          }
+        },
+        "actions": {
+          "modelReady": 610.4110000000001,
+          "pause": 1223.8350830000018,
+          "resizeAndRotate": 24.433916000001773,
+          "openGuide": 289.3520419999986,
+          "closeGuide": 300.4570420000018,
+          "resume": 25.610000000000582
+        },
+        "crashed": false
+      }
+    ]
+  },
+  {
+    "revision": "this change CPU4",
+    "node": "v22.23.3",
+    "platform": "darwin",
+    "cpuRate": 4,
+    "viewport": "390x844@1",
+    "results": [
+      {
+        "run": 0,
+        "phases": {
+          "playing": {
+            "rafCalls": 17,
+            "rafCpuMs": 17.000000476837158,
+            "maxRafCpuMs": 1.5999999046325684,
+            "drawCalls": 153,
+            "drawCpuMs": 0.09999990463256836,
+            "longTasks": 17,
+            "longTaskMs": 2168,
+            "windowStart": 910.4000000953674,
+            "durationMs": 2179.300000190735
+          },
+          "paused": {
+            "rafCalls": 0,
+            "rafCpuMs": 0,
+            "maxRafCpuMs": 0,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 4406.10000038147,
+            "durationMs": 2000.2999997138977
+          },
+          "guide": {
+            "rafCalls": 0,
+            "rafCpuMs": 0,
+            "maxRafCpuMs": 0,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 6764.300000190735,
+            "durationMs": 2000.8000001907349
+          },
+          "resumed": {
+            "rafCalls": 8,
+            "rafCpuMs": 4.699999809265137,
+            "maxRafCpuMs": 1.1999998092651367,
+            "drawCalls": 72,
+            "drawCpuMs": 0,
+            "longTasks": 8,
+            "longTaskMs": 2365,
+            "windowStart": 9095.800000190735,
+            "durationMs": 2380.9000000953674
+          }
+        },
+        "actions": {
+          "modelReady": 648.57875,
+          "pause": 1310.7237079999995,
+          "resizeAndRotate": 31.45141700000022,
+          "openGuide": 323.09783400000015,
+          "closeGuide": 4.533374999999069,
+          "resume": 28.302041999999346
+        },
+        "crashed": false
+      },
+      {
+        "run": 1,
+        "phases": {
+          "playing": {
+            "rafCalls": 17,
+            "rafCpuMs": 17.299999237060547,
+            "maxRafCpuMs": 2.299999713897705,
+            "drawCalls": 153,
+            "drawCpuMs": 0.19999980926513672,
+            "longTasks": 16,
+            "longTaskMs": 2046,
+            "windowStart": 959,
+            "durationMs": 2183.5999999046326
+          },
+          "paused": {
+            "rafCalls": 0,
+            "rafCpuMs": 0,
+            "maxRafCpuMs": 0,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 4455.299999713898,
+            "durationMs": 2000.2000002861023
+          },
+          "guide": {
+            "rafCalls": 0,
+            "rafCpuMs": 0,
+            "maxRafCpuMs": 0,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 6809.900000095367,
+            "durationMs": 2000.3999996185303
+          },
+          "resumed": {
+            "rafCalls": 8,
+            "rafCpuMs": 4.400000095367432,
+            "maxRafCpuMs": 1.1999998092651367,
+            "drawCalls": 72,
+            "drawCpuMs": 0.09999990463256836,
+            "longTasks": 8,
+            "longTaskMs": 2355,
+            "windowStart": 9147.900000095367,
+            "durationMs": 2371.2999997138977
+          }
+        },
+        "actions": {
+          "modelReady": 700.942708999999,
+          "pause": 1306.932166999999,
+          "resizeAndRotate": 34.209500000000844,
+          "openGuide": 316.9770409999983,
+          "closeGuide": 3.92949999999837,
+          "resume": 37.50870899999791
+        },
+        "crashed": false
+      },
+      {
+        "run": 2,
+        "phases": {
+          "playing": {
+            "rafCalls": 17,
+            "rafCpuMs": 18.400001049041748,
+            "maxRafCpuMs": 2.3000001907348633,
+            "drawCalls": 153,
+            "drawCpuMs": 0.9000005722045898,
+            "longTasks": 16,
+            "longTaskMs": 2045,
+            "windowStart": 956.3999996185303,
+            "durationMs": 2186.4000000953674
+          },
+          "paused": {
+            "rafCalls": 0,
+            "rafCpuMs": 0,
+            "maxRafCpuMs": 0,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 4455.39999961853,
+            "durationMs": 2000.3000001907349
+          },
+          "guide": {
+            "rafCalls": 0,
+            "rafCpuMs": 0,
+            "maxRafCpuMs": 0,
+            "drawCalls": 0,
+            "drawCpuMs": 0,
+            "longTasks": 0,
+            "longTaskMs": 0,
+            "windowStart": 6812.699999809265,
+            "durationMs": 2000.5999999046326
+          },
+          "resumed": {
+            "rafCalls": 8,
+            "rafCpuMs": 5.500000953674316,
+            "maxRafCpuMs": 1,
+            "drawCalls": 72,
+            "drawCpuMs": 0.10000038146972656,
+            "longTasks": 8,
+            "longTaskMs": 2353,
+            "windowStart": 9148.5,
+            "durationMs": 2368.0999999046326
+          }
+        },
+        "actions": {
+          "modelReady": 698.0712920000005,
+          "pause": 1308.2927500000005,
+          "resizeAndRotate": 34.59287499999846,
+          "openGuide": 318.6568750000006,
+          "closeGuide": 298.4517089999972,
+          "resume": 34.34233300000051
+        },
+        "crashed": false
+      }
+    ]
+  }
+]
