@@ -33,6 +33,9 @@ export async function mountPlacementExperience(root: HTMLElement) {
   let quicklookUrl: string | undefined;
   let controls: OrbitControls | undefined;
   let mixer: THREE.AnimationMixer | undefined;
+  const actions: THREE.AnimationAction[] = [];
+  let needsRender = true;
+  let lastRenderedTime = -Infinity;
   let camera: THREE.PerspectiveCamera | undefined;
   let placed = false;
   let phase = 'loading';
@@ -94,6 +97,7 @@ export async function mountPlacementExperience(root: HTMLElement) {
     window.removeEventListener('resize', resize);
   }
   function resize() {
+    needsRender = true;
     renderer?.setSize(root.clientWidth, root.clientHeight);
     if (camera) { camera.aspect = root.clientWidth / root.clientHeight; camera.updateProjectionMatrix(); }
   }
@@ -133,6 +137,7 @@ export async function mountPlacementExperience(root: HTMLElement) {
     placement.add(model, reference);
     element<HTMLInputElement>('placement-reference').addEventListener('change', event => {
       reference.visible = (event.target as HTMLInputElement).checked;
+      needsRender = true;
     });
     if (disposed) { disposed = false; dispose(); return; }
     camera = new THREE.PerspectiveCamera(50, root.clientWidth / root.clientHeight, 0.01, 1000);
@@ -151,10 +156,13 @@ export async function mountPlacementExperience(root: HTMLElement) {
     scene.add(light);
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
+    controls.addEventListener('change', () => { needsRender = true; });
+    for (const id of ['placement-guide', 'verification-dialog']) element(id).addEventListener('close', () => { needsRender = true; });
     widthInput.min = String(settings.minWidthMeters);
     widthInput.max = String(settings.maxWidthMeters);
     widthInput.value = String(settings.targetWidthMeters);
     const applyWidth = () => {
+      needsRender = true;
       model.scale.setScalar(Number(widthInput.value) / width);
       reference.scale.copy(model.scale);
       dimensions = { width: width * model.scale.x, height: height * model.scale.x, depth: depth * model.scale.x };
@@ -162,6 +170,7 @@ export async function mountPlacementExperience(root: HTMLElement) {
     };
     applyWidth();
     const preview = () => {
+      needsRender = true;
       placement.visible = true;
       placement.position.set(0, 0, 0);
       placement.quaternion.identity();
@@ -174,7 +183,7 @@ export async function mountPlacementExperience(root: HTMLElement) {
     };
     preview();
     widthInput.addEventListener('input', applyWidth);
-    rotationInput.addEventListener('input', () => { model.rotation.y = THREE.MathUtils.degToRad(Number(rotationInput.value)); reference.rotation.y = model.rotation.y; });
+    rotationInput.addEventListener('input', () => { model.rotation.y = THREE.MathUtils.degToRad(Number(rotationInput.value)); reference.rotation.y = model.rotation.y; needsRender = true; });
     const clips = loaded.animations.filter((clip) => !config.animation.clips || config.animation.clips.includes(clip.name));
     if (config.animation.enabled && clips.length) {
       mixer = new THREE.AnimationMixer(loaded.root);
@@ -184,8 +193,10 @@ export async function mountPlacementExperience(root: HTMLElement) {
         action.setLoop(config.animation.loop ? THREE.LoopRepeat : THREE.LoopOnce, config.animation.loop ? Infinity : 1);
         action.clampWhenFinished = true;
         action.play();
+        actions.push(action);
       }
       animation.addEventListener('click', () => {
+        needsRender = true;
         mixer!.timeScale = mixer!.timeScale === 0 ? config.animation.timeScale : 0;
         animation.textContent = mixer!.timeScale === 0 ? '扉の動きを再生' : '扉の動きを一時停止';
       });
@@ -307,10 +318,22 @@ export async function mountPlacementExperience(root: HTMLElement) {
     });
     let previousTime: number | undefined;
     renderer.setAnimationLoop((time: number, frame?: XRFrame) => {
+      if (!session) {
+        // Hidden camera-intro canvases and modal backdrops need no continuous 3D work.
+        // Keep real XR frames unthrottled so hit tests and tracking continue normally.
+        if (document.hidden || root.dataset.mode !== 'viewer'
+          || element<HTMLDialogElement>('placement-guide').open || element<HTMLDialogElement>('verification-dialog').open) {
+          previousTime = time;
+          return;
+        }
+        controls!.update();
+        if (time - lastRenderedTime < 1000 / 30) return;
+        const animating = !!mixer && mixer.timeScale !== 0 && actions.some(action => action.isRunning());
+        if (!needsRender && !animating) { previousTime = time; return; }
+      }
       const delta = previousTime === undefined ? 0 : Math.min((time - previousTime) / 1000, 0.1);
       previousTime = time;
       mixer?.update(delta);
-      if (!session) controls!.update();
       if (session && frame && hitSource) {
         const referenceSpace = renderer!.xr.getReferenceSpace();
         if (referenceSpace) {
@@ -361,6 +384,8 @@ export async function mountPlacementExperience(root: HTMLElement) {
         }
       }
       renderer!.render(scene, viewCamera);
+      needsRender = false;
+      lastRenderedTime = time;
     });
     window.addEventListener('resize', resize);
   } catch (error) {
