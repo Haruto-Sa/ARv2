@@ -5,6 +5,8 @@
  * @param {{storageKey: string, onComplete?: () => void}} options
  */
 export function mountOnboarding(dialog, options) {
+  const listeners = new AbortController();
+  const listen = (target, type, callback) => target.addEventListener(type, callback, { signal: listeners.signal });
   const steps = Array.from(dialog.querySelectorAll('[data-guide-step]'));
   const next = dialog.querySelector('[data-guide-next]');
   const previous = dialog.querySelector('[data-guide-back]');
@@ -35,10 +37,10 @@ export function mountOnboarding(dialog, options) {
     if (opener instanceof HTMLElement) opener.focus();
     options.onComplete?.();
   }
-  next.addEventListener('click', () => { index++; render(); (index === steps.length - 1 ? done : next).focus(); });
-  previous.addEventListener('click', () => { index--; render(); next.focus(); });
-  done.addEventListener('click', finish);
-  dialog.addEventListener('cancel', event => { event.preventDefault(); finish(); });
+  listen(next, 'click', () => { index++; render(); (index === steps.length - 1 ? done : next).focus(); });
+  listen(previous, 'click', () => { index--; render(); next.focus(); });
+  listen(done, 'click', finish);
+  listen(dialog, 'cancel', event => { event.preventDefault(); finish(); });
   render();
-  return { open, hasSeen };
+  return { open, hasSeen, dispose: () => listeners.abort() };
 }
