@@ -732,7 +732,7 @@
     ]
   },
   {
-    "revision": "this change",
+    "revision": "a7fe6fc",
     "node": "v22.23.3",
     "platform": "darwin",
     "cpuRate": 1,
@@ -742,15 +742,15 @@
         "run": 0,
         "phases": {
           "playing": {
-            "rafCalls": 17,
-            "rafCpuMs": 4.700000286102295,
-            "maxRafCpuMs": 0.5,
-            "drawCalls": 153,
-            "drawCpuMs": 0.09999990463256836,
-            "longTasks": 17,
-            "longTaskMs": 2213,
-            "windowStart": 912.5,
-            "durationMs": 2222.1000003814697
+            "rafCalls": 18,
+            "rafCpuMs": 4.400000095367432,
+            "maxRafCpuMs": 0.40000009536743164,
+            "drawCalls": 162,
+            "drawCpuMs": 0,
+            "longTasks": 18,
+            "longTaskMs": 2237,
+            "windowStart": 803.3000001907349,
+            "durationMs": 2245.5
           },
           "paused": {
             "rafCalls": 0,
@@ -760,8 +760,8 @@
             "drawCpuMs": 0,
             "longTasks": 0,
             "longTaskMs": 0,
-            "windowStart": 4436.700000286102,
-            "durationMs": 2001
+            "windowStart": 4317.199999809265,
+            "durationMs": 2001.4000000953674
           },
           "guide": {
             "rafCalls": 0,
@@ -771,28 +771,28 @@
             "drawCpuMs": 0,
             "longTasks": 0,
             "longTaskMs": 0,
-            "windowStart": 6947,
-            "durationMs": 2001.3000001907349
+            "windowStart": 6677.199999809265,
+            "durationMs": 2001.8000001907349
           },
           "resumed": {
             "rafCalls": 9,
-            "rafCpuMs": 1.3999996185302734,
-            "maxRafCpuMs": 0.20000028610229492,
+            "rafCpuMs": 1.5999999046325684,
+            "maxRafCpuMs": 0.3000001907348633,
             "drawCalls": 81,
-            "drawCpuMs": 0,
+            "drawCpuMs": 0.09999990463256836,
             "longTasks": 8,
-            "longTaskMs": 2121,
-            "windowStart": 9252.400000095367,
-            "durationMs": 2416.2000002861023
+            "longTaskMs": 2207,
+            "windowStart": 9006.599999904633,
+            "durationMs": 2498.4000000953674
           }
         },
         "actions": {
-          "modelReady": 629.7275420000001,
-          "pause": 1299.949583,
-          "resizeAndRotate": 196.9367919999995,
-          "openGuide": 309.6140409999998,
-          "closeGuide": 278.9977089999993,
-          "resume": 21.139875000000757
+          "modelReady": 562.0889999999999,
+          "pause": 1265.9739580000005,
+          "resizeAndRotate": 34.56987500000014,
+          "openGuide": 320.795666,
+          "closeGuide": 296.97212500000023,
+          "resume": 26.858541999999943
         },
         "crashed": false
       },
@@ -801,14 +801,14 @@
         "phases": {
           "playing": {
             "rafCalls": 18,
-            "rafCpuMs": 3.9000000953674316,
+            "rafCpuMs": 4,
             "maxRafCpuMs": 0.40000009536743164,
             "drawCalls": 162,
-            "drawCpuMs": 0,
+            "drawCpuMs": 0.09999990463256836,
             "longTasks": 17,
-            "longTaskMs": 2070,
-            "windowStart": 866.3000001907349,
-            "durationMs": 2200
+            "longTaskMs": 2091,
+            "windowStart": 873.9000000953674,
+            "durationMs": 2223.300000190735
           },
           "paused": {
             "rafCalls": 0,
@@ -818,8 +818,8 @@
             "drawCpuMs": 0,
             "longTasks": 0,
             "longTaskMs": 0,
-            "windowStart": 4302.099999904633,
-            "durationMs": 2001.2000002861023
+            "windowStart": 4361.200000286102,
+            "durationMs": 2001.2999997138977
           },
           "guide": {
             "rafCalls": 0,
@@ -829,28 +829,28 @@
             "drawCpuMs": 0,
             "longTasks": 0,
             "longTaskMs": 0,
-            "windowStart": 6828.099999904633,
-            "durationMs": 2000.6000003814697
+            "windowStart": 6696,
+            "durationMs": 2002.1000003814697
           },
           "resumed": {
-            "rafCalls": 8,
-            "rafCpuMs": 1.4000000953674316,
+            "rafCalls": 9,
+            "rafCpuMs": 1.5000014305114746,
             "maxRafCpuMs": 0.20000028610229492,
-            "drawCalls": 72,
-            "drawCpuMs": 0,
+            "drawCalls": 81,
+            "drawCpuMs": 0.09999990463256836,
             "longTasks": 8,
-            "longTaskMs": 2261,
-            "windowStart": 9157.400000095367,
-            "durationMs": 2280.199999809265
+            "longTaskMs": 2206,
+            "windowStart": 8992.60000038147,
+            "durationMs": 2502.0999999046326
           }
         },
         "actions": {
-          "modelReady": 621.0086659999997,
-          "pause": 1233.5836250000011,
-          "resizeAndRotate": 494.6128329999992,
-          "openGuide": 27.618791000000783,
-          "closeGuide": 300.9979579999999,
-          "resume": 24.549332999999024
+          "modelReady": 628.5127080000002,
+          "pause": 1261.7347499999996,
+          "resizeAndRotate": 25.51929200000086,
+          "openGuide": 305.2540829999998,
+          "closeGuide": 264.3188330000012,
+          "resume": 28.336542000000918
         },
         "crashed": false
       },
@@ -859,14 +859,14 @@
         "phases": {
           "playing": {
             "rafCalls": 18,
-            "rafCpuMs": 3.9999990463256836,
+            "rafCpuMs": 4.599999904632568,
             "maxRafCpuMs": 0.5,
             "drawCalls": 162,
-            "drawCpuMs": 0,
+            "drawCpuMs": 0.19999980926513672,
             "longTasks": 17,
-            "longTaskMs": 2050,
-            "windowStart": 852.5,
-            "durationMs": 2181.0999999046326
+            "longTaskMs": 2094,
+            "windowStart": 883.9000000953674,
+            "durationMs": 2226.5999999046326
           },
           "paused": {
             "rafCalls": 0,
@@ -876,8 +876,8 @@
             "drawCpuMs": 0,
             "longTasks": 0,
             "longTaskMs": 0,
-            "windowStart": 4259.299999713898,
-            "durationMs": 2001.2000002861023
+            "windowStart": 4398.800000190735,
+            "durationMs": 2000.6999998092651
           },
           "guide": {
             "rafCalls": 0,
@@ -887,35 +887,35 @@
             "drawCpuMs": 0,
             "longTasks": 0,
             "longTaskMs": 0,
-            "windowStart": 6577.39999961853,
-            "durationMs": 2001.2000002861023
+            "windowStart": 6760.400000095367,
+            "durationMs": 2002.0999999046326
           },
           "resumed": {
             "rafCalls": 9,
-            "rafCpuMs": 1.5,
-            "maxRafCpuMs": 0.2999997138977051,
+            "rafCpuMs": 1.799999713897705,
+            "maxRafCpuMs": 0.3000001907348633,
             "drawCalls": 81,
-            "drawCpuMs": 0,
+            "drawCpuMs": 0.09999990463256836,
             "longTasks": 8,
-            "longTaskMs": 2258,
-            "windowStart": 8907.799999713898,
-            "durationMs": 2552.300000190735
+            "longTaskMs": 2191,
+            "windowStart": 9089.800000190735,
+            "durationMs": 2486.199999809265
           }
         },
         "actions": {
-          "modelReady": 610.4110000000001,
-          "pause": 1223.8350830000018,
-          "resizeAndRotate": 24.433916000001773,
-          "openGuide": 289.3520419999986,
-          "closeGuide": 300.4570420000018,
-          "resume": 25.610000000000582
+          "modelReady": 636.8873329999988,
+          "pause": 1286.0793750000012,
+          "resizeAndRotate": 325.86320799999885,
+          "openGuide": 32.09424999999828,
+          "closeGuide": 297.85166599999866,
+          "resume": 26.935166999999637
         },
         "crashed": false
       }
     ]
   },
   {
-    "revision": "this change CPU4",
+    "revision": "a7fe6fc CPU4",
     "node": "v22.23.3",
     "platform": "darwin",
     "cpuRate": 4,
@@ -926,14 +926,14 @@
         "phases": {
           "playing": {
             "rafCalls": 17,
-            "rafCpuMs": 17.000000476837158,
+            "rafCpuMs": 17.90000009536743,
             "maxRafCpuMs": 1.5999999046325684,
             "drawCalls": 153,
-            "drawCpuMs": 0.09999990463256836,
-            "longTasks": 17,
-            "longTaskMs": 2168,
-            "windowStart": 910.4000000953674,
-            "durationMs": 2179.300000190735
+            "drawCpuMs": 0,
+            "longTasks": 16,
+            "longTaskMs": 2060,
+            "windowStart": 1027.2999997138977,
+            "durationMs": 2204.0999999046326
           },
           "paused": {
             "rafCalls": 0,
@@ -943,8 +943,8 @@
             "drawCpuMs": 0,
             "longTasks": 0,
             "longTaskMs": 0,
-            "windowStart": 4406.10000038147,
-            "durationMs": 2000.2999997138977
+            "windowStart": 4612.699999809265,
+            "durationMs": 2000.5
           },
           "guide": {
             "rafCalls": 0,
@@ -954,28 +954,28 @@
             "drawCpuMs": 0,
             "longTasks": 0,
             "longTaskMs": 0,
-            "windowStart": 6764.300000190735,
-            "durationMs": 2000.8000001907349
+            "windowStart": 6978.5,
+            "durationMs": 2000.6999998092651
           },
           "resumed": {
             "rafCalls": 8,
-            "rafCpuMs": 4.699999809265137,
-            "maxRafCpuMs": 1.1999998092651367,
+            "rafCpuMs": 5.400000095367432,
+            "maxRafCpuMs": 1,
             "drawCalls": 72,
-            "drawCpuMs": 0,
+            "drawCpuMs": 0.09999990463256836,
             "longTasks": 8,
-            "longTaskMs": 2365,
-            "windowStart": 9095.800000190735,
-            "durationMs": 2380.9000000953674
+            "longTaskMs": 2357,
+            "windowStart": 9312.799999713898,
+            "durationMs": 2373.2000002861023
           }
         },
         "actions": {
-          "modelReady": 648.57875,
-          "pause": 1310.7237079999995,
-          "resizeAndRotate": 31.45141700000022,
-          "openGuide": 323.09783400000015,
-          "closeGuide": 4.533374999999069,
-          "resume": 28.302041999999346
+          "modelReady": 769.4997089999999,
+          "pause": 1375.1804589999997,
+          "resizeAndRotate": 28.2334579999997,
+          "openGuide": 332.42883299999994,
+          "closeGuide": 300.14850000000115,
+          "resume": 29.248583999999028
         },
         "crashed": false
       },
@@ -984,14 +984,14 @@
         "phases": {
           "playing": {
             "rafCalls": 17,
-            "rafCpuMs": 17.299999237060547,
-            "maxRafCpuMs": 2.299999713897705,
+            "rafCpuMs": 16.40000009536743,
+            "maxRafCpuMs": 1.4000000953674316,
             "drawCalls": 153,
-            "drawCpuMs": 0.19999980926513672,
-            "longTasks": 16,
-            "longTaskMs": 2046,
-            "windowStart": 959,
-            "durationMs": 2183.5999999046326
+            "drawCpuMs": 0.09999990463256836,
+            "longTasks": 17,
+            "longTaskMs": 2203,
+            "windowStart": 971.0999999046326,
+            "durationMs": 2214.300000190735
           },
           "paused": {
             "rafCalls": 0,
@@ -1001,8 +1001,8 @@
             "drawCpuMs": 0,
             "longTasks": 0,
             "longTaskMs": 0,
-            "windowStart": 4455.299999713898,
-            "durationMs": 2000.2000002861023
+            "windowStart": 4522.400000095367,
+            "durationMs": 2000.0999999046326
           },
           "guide": {
             "rafCalls": 0,
@@ -1012,28 +1012,28 @@
             "drawCpuMs": 0,
             "longTasks": 0,
             "longTaskMs": 0,
-            "windowStart": 6809.900000095367,
-            "durationMs": 2000.3999996185303
+            "windowStart": 6878.400000095367,
+            "durationMs": 2000
           },
           "resumed": {
             "rafCalls": 8,
-            "rafCpuMs": 4.400000095367432,
-            "maxRafCpuMs": 1.1999998092651367,
+            "rafCpuMs": 5.999999523162842,
+            "maxRafCpuMs": 1.0999999046325684,
             "drawCalls": 72,
-            "drawCpuMs": 0.09999990463256836,
+            "drawCpuMs": 0,
             "longTasks": 8,
-            "longTaskMs": 2355,
-            "windowStart": 9147.900000095367,
-            "durationMs": 2371.2999997138977
+            "longTaskMs": 2361,
+            "windowStart": 9214.300000190735,
+            "durationMs": 2376.699999809265
           }
         },
         "actions": {
-          "modelReady": 700.942708999999,
-          "pause": 1306.932166999999,
-          "resizeAndRotate": 34.209500000000844,
-          "openGuide": 316.9770409999983,
-          "closeGuide": 3.92949999999837,
-          "resume": 37.50870899999791
+          "modelReady": 711.8421249999992,
+          "pause": 1331.7299580000017,
+          "resizeAndRotate": 32.54054199999882,
+          "openGuide": 320.14070800000263,
+          "closeGuide": 298.8978330000027,
+          "resume": 32.76720800000112
         },
         "crashed": false
       },
@@ -1042,14 +1042,14 @@
         "phases": {
           "playing": {
             "rafCalls": 17,
-            "rafCpuMs": 18.400001049041748,
-            "maxRafCpuMs": 2.3000001907348633,
+            "rafCpuMs": 17.59999990463257,
+            "maxRafCpuMs": 1.4000000953674316,
             "drawCalls": 153,
-            "drawCpuMs": 0.9000005722045898,
-            "longTasks": 16,
-            "longTaskMs": 2045,
-            "windowStart": 956.3999996185303,
-            "durationMs": 2186.4000000953674
+            "drawCpuMs": 0,
+            "longTasks": 17,
+            "longTaskMs": 2207,
+            "windowStart": 967.1999998092651,
+            "durationMs": 2218.6000003814697
           },
           "paused": {
             "rafCalls": 0,
@@ -1059,8 +1059,8 @@
             "drawCpuMs": 0,
             "longTasks": 0,
             "longTaskMs": 0,
-            "windowStart": 4455.39999961853,
-            "durationMs": 2000.3000001907349
+            "windowStart": 4553.5,
+            "durationMs": 2000.5999999046326
           },
           "guide": {
             "rafCalls": 0,
@@ -1070,28 +1070,28 @@
             "drawCpuMs": 0,
             "longTasks": 0,
             "longTaskMs": 0,
-            "windowStart": 6812.699999809265,
-            "durationMs": 2000.5999999046326
+            "windowStart": 6908,
+            "durationMs": 2000.5
           },
           "resumed": {
             "rafCalls": 8,
-            "rafCpuMs": 5.500000953674316,
+            "rafCpuMs": 5.799999237060547,
             "maxRafCpuMs": 1,
             "drawCalls": 72,
-            "drawCpuMs": 0.10000038146972656,
+            "drawCpuMs": 0,
             "longTasks": 8,
-            "longTaskMs": 2353,
-            "windowStart": 9148.5,
-            "durationMs": 2368.0999999046326
+            "longTaskMs": 2354,
+            "windowStart": 9229,
+            "durationMs": 2371
           }
         },
         "actions": {
-          "modelReady": 698.0712920000005,
-          "pause": 1308.2927500000005,
-          "resizeAndRotate": 34.59287499999846,
-          "openGuide": 318.6568750000006,
-          "closeGuide": 298.4517089999972,
-          "resume": 34.34233300000051
+          "modelReady": 709.1942089999975,
+          "pause": 1360.1989579999972,
+          "resizeAndRotate": 34.39604200000031,
+          "openGuide": 316.0405409999985,
+          "closeGuide": 296.22641699999804,
+          "resume": 19.82012499999837
         },
         "crashed": false
       }

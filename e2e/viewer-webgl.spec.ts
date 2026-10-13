@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures/placement';
 
 for (const rate of [1, 4]) {
-  for (const scenario of ['settings', 'camera', 'lifecycle']) {
+  for (const scenario of ['settings', 'animation', 'camera', 'lifecycle']) {
     test(`real viewer ${scenario} at CPU ${rate}x @webgl`, async ({ page }) => {
       await page.setViewportSize({ width: 390, height: 844 });
       const cdp = await page.context().newCDPSession(page);
@@ -42,6 +42,8 @@ for (const rate of [1, 4]) {
         await page.locator('#rotation').fill('45');
         await expect.poll(draws).toBeGreaterThan(before);
         await idle();
+      }
+      if (scenario === 'animation') {
         await page.locator('#animation').click();
         await expect(page.locator('#animation')).toHaveText('扉の動きを一時停止');
         before = await draws();
