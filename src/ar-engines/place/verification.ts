@@ -1,8 +1,9 @@
 import { withBase } from '../../lib/paths';
 
 /** Explicit, local-only verification tools. No telemetry or automatic camera capture. */
-export function mountPlacementVerification(root: HTMLElement, snapshot: () => Record<string, unknown>) {
+export function mountPlacementVerification(root: HTMLElement, snapshot: () => Record<string, unknown>, signal?: AbortSignal) {
   if (new URLSearchParams(location.search).get('verify') !== '1') return;
+  const listen = (target: Element, type: string, callback: EventListener) => target.addEventListener(type, callback, { signal });
   const button = root.querySelector<HTMLButtonElement>('#verification-open')!;
   const dialog = root.querySelector<HTMLDialogElement>('#verification-dialog')!;
   const report = root.querySelector<HTMLTextAreaElement>('#verification-report')!;
@@ -27,18 +28,18 @@ export function mountPlacementVerification(root: HTMLElement, snapshot: () => Re
     }, null, 2);
   };
   button.hidden = false;
-  button.addEventListener('click', () => { opener = document.activeElement as HTMLElement; render(); dialog.showModal(); });
-  dialog.addEventListener('close', () => opener?.focus());
-  root.querySelector('#verification-close')!.addEventListener('click', () => dialog.close());
-  root.querySelector('#verification-refresh')!.addEventListener('click', render);
-  root.querySelector('#verification-download')!.addEventListener('click', () => {
+  listen(button, 'click', () => { opener = document.activeElement as HTMLElement; render(); dialog.showModal(); });
+  listen(dialog, 'close', () => opener?.focus());
+  listen(root.querySelector('#verification-close')!, 'click', () => dialog.close());
+  listen(root.querySelector('#verification-refresh')!, 'click', render);
+  listen(root.querySelector('#verification-download')!, 'click', () => {
     render();
     const url = URL.createObjectURL(new Blob([report.value], { type: 'application/json' }));
     const link = document.createElement('a'); link.href = url;
     link.download = `placement-check-${Date.now()}.json`; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
-  root.querySelector('#verification-copy')!.addEventListener('click', async () => {
+  listen(root.querySelector('#verification-copy')!, 'click', async () => {
     render();
     try { await navigator.clipboard.writeText(report.value); feedback.textContent = 'コピーしました。'; }
     catch {
@@ -46,7 +47,7 @@ export function mountPlacementVerification(root: HTMLElement, snapshot: () => Re
       report.focus(); report.select(); feedback.textContent = 'コピーできませんでした。選択した内容を手動でコピーするか、JSONを保存してください。';
     }
   });
-  void fetch(withBase('/build-info.json'), { cache: 'no-store' }).then(async response => {
+  void fetch(withBase('/build-info.json'), { cache: 'no-store', signal }).then(async response => {
     if (response.ok) build = await response.json();
-  }).catch(() => {}).finally(() => { if (dialog.open) render(); });
+  }).catch(() => {}).finally(() => { if (!signal?.aborted && dialog.open) render(); });
 }
