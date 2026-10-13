@@ -1,0 +1,74 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/paths';
+
+// Matterport URL: suimonAR(ARjs)プロジェクトのmatterport.htmlで使われていたものと同じモデル。
+const MATTERPORT_URL = 'https://my.matterport.com/show/?m=iv6KVjdHh2e';
+---
+
+<BaseLayout title="点群3D空間(Matterport) | 閉伊川水門プロジェクト">
+  <main class="wrap">
+    <a class="back-link" href={withBase('/')}>&larr; トップへ戻る</a>
+    <h1>点群3D空間(Matterport)</h1>
+    <p>現地の点群スキャンを、埋め込みビューでそのまま歩き回れます。</p>
+
+    <div class="frame-shell">
+      <iframe
+        src={MATTERPORT_URL}
+        title="Matterport 3D空間"
+        allow="autoplay; fullscreen; web-share; xr-spatial-tracking;"
+        allowfullscreen
+      ></iframe>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .wrap {
+    width: min(1100px, 100% - 32px);
+    margin: 32px auto 48px;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-bottom: 18px;
+    color: #557183;
+    text-decoration: none;
+    font-size: 14px;
+  }
+
+  .back-link:hover {
+    color: #176f92;
+  }
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: 24px;
+    color: #173a4e;
+  }
+
+  p {
+    margin: 0 0 18px;
+    color: #557183;
+    line-height: 1.7;
+  }
+
+  .frame-shell {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #d9e7ec;
+    box-shadow: 0 16px 42px rgba(22, 50, 74, 0.16);
+    background: #050a12;
+  }
+
+  .frame-shell iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+</style>

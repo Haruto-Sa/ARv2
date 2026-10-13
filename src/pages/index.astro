@@ -1,10 +1,18 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { withBase } from '../lib/paths';
+// status: 'active' はリンク先が実在するもの。'soon' は準備中(クリック不可)のプレースホルダー。
+// 現地AR(実物大を実際の水門に重ねるAR)は、まだ採用方式が未確定で /ar/onsite が未実装のため soon。
+// 「小本川流木捕捉工シミュレーション」は Unity WebGL (/unity/) 上の体験。実機確認の結果、
+// このシーンは小本川に見立てた川に流木捕捉工を配置するシミュレーションのみで、閉伊川水門は
+// 表示されない。閉伊川水門・津波を独立した体験として訴求しない(過去に表記が混同していた)。
 const experiences = [
-  { icon: '◎', title: '手のひら・平面AR', tag: 'スマートフォンで', description: '机や床に小さな水門を置いて、まわりから眺めてみましょう。', href: '/ar/place', action: '水門を置いてみる', note: '明るい場所で、カメラを使います。' },
-  { icon: '◇', title: '3Dビューア', tag: 'スマホ・パソコンで', description: '水門を回して形を見たり、扉が動く様子を確かめたりできます。', href: '/viewer', action: '水門の動きを見る', note: 'カメラの許可は必要ありません。' },
-  { icon: '≈', title: '閉伊川3D世界', tag: 'ブラウザで体験', description: '流木を受け止める捕捉工を配置して、水位や流木の変化を見てみましょう。', href: '/unity/', action: '3D世界を体験する', note: '最初に操作の案内が表示されます。' },
+  { icon: '◎', title: '床置きAR', tag: 'スマートフォンで', description: 'テーブルや床などの平面を検出し、縮小した水門モデルを置いて、まわりから眺められます。', href: '/ar/place', action: '水門を置いてみる', note: '明るい場所で、カメラを使います。', status: 'active' as const },
+  { icon: '⊕', title: '現地AR', tag: '現地で(準備中)', description: '実物大の水門モデルを、実際の水門の前で重ねて表示します。採用方式を検証中です。', status: 'soon' as const },
+  { icon: '◇', title: '3Dビューア', tag: 'スマホ・パソコンで', description: '水門を回して形を見たり、扉が動く様子を確かめたりできます。', href: '/viewer', action: '水門の動きを見る', note: 'カメラの許可は必要ありません。', status: 'active' as const },
+  { icon: '≈', title: '小本川流木捕捉工シミュレーション', tag: 'ブラウザで体験', description: '流木を受け止める捕捉工を、小本川に見立てた川に配置して、水位や流木の変化を確かめられます。', href: '/unity/', action: 'シミュレーションを体験する', note: '最初に操作の案内が表示されます。', status: 'active' as const },
+  { icon: '▦', title: '点群3D空間(Matterport)', tag: 'ブラウザで体験', description: '現地の点群スキャンを、埋め込みビューでそのまま歩き回れます。', href: '/matterport/', action: '3D空間を歩いてみる', note: '読み込みに数秒かかります。', status: 'active' as const },
+  { icon: '◐', title: '360度動画', tag: '準備中', description: '現地で撮影した360度映像を見られます。', status: 'soon' as const },
 ];
 ---
 <BaseLayout title="閉伊川水門プロジェクト | 水門を見て、動かして、学ぶ">
@@ -28,16 +36,21 @@ const experiences = [
       <section id="menu" aria-labelledby="menu-title">
         <div class="section-heading"><div><p class="eyebrow">EXPERIENCES</p><h2 id="menu-title">何を体験してみますか？</h2></div><p>スマホでもパソコンでも、気軽に始められます。</p></div>
         <div class="experience-grid">
-          {experiences.map((item, i) => <article class="menu-card">
+          {experiences.map((item, i) => <article class={`menu-card${item.status === 'soon' ? ' soon' : ''}`}>
             <div class={`card-art art-${i}`} aria-hidden="true"><span>{item.icon}</span><div class="gate-lines"></div></div>
-            <div class="card-body"><span class="tag">{item.tag}</span><h3>{item.title}</h3><p>{item.description}</p><a class="button" href={withBase(item.href)}>{item.action}<span aria-hidden="true">→</span></a><small>{item.note}</small></div>
+            <div class="card-body">
+              <span class="tag">{item.tag}</span><h3>{item.title}</h3><p>{item.description}</p>
+              {item.status === 'active'
+                ? <a class="button" href={withBase(item.href!)}>{item.action}<span aria-hidden="true">→</span></a>
+                : <span class="button disabled" aria-disabled="true">準備中</span>}
+              {item.note && <small>{item.note}</small>}
+            </div>
           </article>)}
         </div>
-        <details class="upcoming"><summary>これから公開予定の体験</summary><p>現地AR・点群3D空間・360度動画を準備しています。現在利用できる体験は、上の3つです。</p></details>
       </section>
       <section id="usage" aria-labelledby="usage-title">
         <p class="eyebrow">GETTING STARTED</p><h2 id="usage-title">初めてでも、3ステップで</h2>
-        <ol class="steps"><li><span>1</span><div><h3>好きな体験を選ぶ</h3><p>上のメニューから、AR・3Dビューア・3D世界を選びます。</p></div></li><li><span>2</span><div><h3>画面の案内を読む</h3><p>ARや3D世界では、最初に使い方をご案内します。ARは「カメラを起動」から許可の確認へ進みます。</p></div></li><li><span>3</span><div><h3>見て、動かしてみる</h3><p>困ったら右上の「使い方」。別の体験を選ぶときは、左上の「ホーム」で戻れます。</p></div></li></ol>
+        <ol class="steps"><li><span>1</span><div><h3>好きな体験を選ぶ</h3><p>上のメニューから、体験したいものを選びます。</p></div></li><li><span>2</span><div><h3>画面の案内を読む</h3><p>ARやシミュレーションでは、最初に使い方をご案内します。ARは「カメラを起動」から許可の確認へ進みます。</p></div></li><li><span>3</span><div><h3>見て、動かしてみる</h3><p>困ったら右上の「使い方」。別の体験を選ぶときは、左上の「ホーム」で戻れます。</p></div></li></ol>
         <div class="tip"><strong>ARが使えない端末でも大丈夫。</strong><p>平面ARに対応していない場合は、3Dビューアが開きます。カメラなしで水門の形や動きを見られます。</p></div>
       </section>
       <section id="map" aria-labelledby="map-title"><p class="eyebrow">LOCATION</p><h2 id="map-title">水門の場所</h2><p class="section-note">閉伊川水門があるのは岩手県宮古市。ARや3Dの体験は、現地に行かなくても楽しめます。</p><div id="locations-map" aria-label="水門地点の地図"></div><p class="map-fallback" hidden>地図を読み込めませんでした。通信状況をご確認ください。</p></section>
@@ -75,7 +88,7 @@ const experiences = [
   :global(html){scroll-behavior:smooth} :global(a:focus-visible),:global(button:focus-visible),:global(summary:focus-visible){outline:3px solid #e7ac41;outline-offset:4px} .skip-link{position:absolute;left:16px;top:-80px;z-index:100;padding:12px;background:white}.skip-link:focus{top:12px}
   .site-header{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px max(20px,calc((100vw - 1120px)/2));background:#f5fafbef;backdrop-filter:blur(12px);border-bottom:1px solid #dbe7ec}.brand{display:flex;align-items:center;gap:10px;color:#183d50;font-size:15px;font-weight:750;text-decoration:none}.brand-mark{font-size:30px;line-height:1;color:#148aa0}nav{display:flex;gap:12px}nav a{display:flex;align-items:center;min-height:44px;padding:0 8px;font-size:14px;text-decoration:none;color:#476679}
   .hero{position:relative;overflow:hidden;background:#dceaf5}.hero-canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.5;pointer-events:none}.hero-inner{position:relative;max-width:1120px;margin:auto;padding:80px 24px 72px}.eyebrow{font-size:12px;font-weight:750;color:#13768e;letter-spacing:.12em;margin:0 0 12px}h1{font-size:clamp(34px,5vw,62px);line-height:1.3;letter-spacing:.03em;margin:0 0 24px;color:#173a4e}.lead{line-height:1.9;color:#345970;font-size:17px;margin:0 0 28px}.button{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:48px;border-radius:12px;padding:12px 18px;background:#e7f3f8;color:#17556e;text-decoration:none;font-weight:700;font-size:15px}.primary{display:inline-flex;background:#176f92;color:white;min-width:190px;box-shadow:0 6px 18px #176f9230}.hero-note{font-size:13px;color:#466c80;margin:16px 0 0}
-  .content{max-width:1120px;padding:0 24px 64px;margin:auto}section[id]{padding-top:64px;scroll-margin-top:64px}.section-heading{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:28px}.section-heading p:last-child{font-size:14px;color:#557183}h2{font-size:clamp(23px,3vw,30px);line-height:1.4;margin:0 0 18px}.experience-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}.menu-card{border:1px solid #dae6ec;border-radius:20px;overflow:hidden;background:white;box-shadow:0 8px 28px #173a4e06;display:flex;flex-direction:column}.card-art{height:145px;position:relative;overflow:hidden;display:grid;place-items:center;background:#dceff2}.card-art>span{font-size:76px;color:#176f92;z-index:1}.art-1{background:#e4eaf5}.art-2{background:#e0eee7}.gate-lines{position:absolute;bottom:-30px;width:75%;height:70px;border:9px double #176f921c;border-radius:40%}.card-body{padding:24px;display:flex;flex-direction:column;flex:1;gap:12px}.tag{align-self:start;border-radius:6px;background:#f1f6f8;color:#416a7c;padding:3px 8px;font-size:11px;font-weight:700}h3{font-size:19px;line-height:1.5;margin:0}.card-body p{font-size:14px;line-height:1.85;color:#506c7e;margin:0 0 8px;flex:1}.card-body small{font-size:11px;color:#667f8d}.upcoming{padding:20px 0;color:#617786;font-size:14px}.upcoming summary{cursor:pointer;min-height:44px;align-content:center}.upcoming p{line-height:1.8}
+  .content{max-width:1120px;padding:0 24px 64px;margin:auto}section[id]{padding-top:64px;scroll-margin-top:64px}.section-heading{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:28px}.section-heading p:last-child{font-size:14px;color:#557183}h2{font-size:clamp(23px,3vw,30px);line-height:1.4;margin:0 0 18px}.experience-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}.menu-card{border:1px solid #dae6ec;border-radius:20px;overflow:hidden;background:white;box-shadow:0 8px 28px #173a4e06;display:flex;flex-direction:column}.menu-card.soon{opacity:.64}.card-art{height:145px;position:relative;overflow:hidden;display:grid;place-items:center;background:#dceff2}.card-art>span{font-size:76px;color:#176f92;z-index:1}.art-1{background:#f5ecdf}.art-2{background:#e4eaf5}.art-3{background:#e0eee7}.art-4{background:#e8e4f5}.art-5{background:#f0e4ea}.gate-lines{position:absolute;bottom:-30px;width:75%;height:70px;border:9px double #176f921c;border-radius:40%}.card-body{padding:24px;display:flex;flex-direction:column;flex:1;gap:12px}.tag{align-self:start;border-radius:6px;background:#f1f6f8;color:#416a7c;padding:3px 8px;font-size:11px;font-weight:700}h3{font-size:19px;line-height:1.5;margin:0}.card-body p{font-size:14px;line-height:1.85;color:#506c7e;margin:0 0 8px;flex:1}.card-body small{font-size:11px;color:#667f8d}.button.disabled{background:#eef2f4;color:#8198a6;justify-content:center;box-shadow:none;cursor:default}
   .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;list-style:none;padding:0;margin:28px 0}.steps li{display:flex;gap:14px}.steps li>span{background:#dceef4;color:#176f92;font-weight:800;border-radius:50%;width:32px;height:32px;display:grid;place-items:center;flex:none}.steps h3{font-size:16px}.steps p{font-size:14px;color:#557183;line-height:1.85;margin:8px 0 0}.tip{background:white;border:1px solid #d9e7ec;border-radius:14px;padding:22px}.tip strong{font-size:15px}.tip p,.section-note{font-size:14px;color:#557183;line-height:1.8}.tip p{margin-bottom:0}#locations-map{height:320px;border-radius:18px;z-index:1;border:1px solid #d9e7ec}:global(.watergate-pin){color:#147993;font-size:28px;text-shadow:0 0 2px white}footer{max-width:1120px;margin:auto;padding:24px;display:flex;justify-content:space-between;gap:18px;border-top:1px solid #d9e7ec;font-size:12px;color:#557183}footer a{color:inherit}
   @media(max-width:720px){.site-header{flex-wrap:wrap;gap:0;padding:8px 18px}.brand{width:100%;font-size:14px}nav{width:100%;justify-content:space-between}nav a{font-size:12px;padding:0}.hero-inner{padding:44px 22px}.lead{font-size:14px}.desktop-break{display:none}.content{padding:0 18px 40px}section[id]{padding-top:42px;scroll-margin-top:112px}.section-heading{display:block;margin-bottom:20px}.experience-grid,.steps{grid-template-columns:1fr;gap:18px}.card-art{height:115px}.card-body{padding:22px}.card-body small{font-size:12px}.steps{gap:22px}footer{flex-direction:column;padding:24px 18px}h2{font-size:24px}}
   @media(prefers-reduced-motion:reduce){:global(html){scroll-behavior:auto}}
