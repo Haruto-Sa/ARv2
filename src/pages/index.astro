@@ -45,13 +45,23 @@ const experiences = [
   </main>
   <footer><span>閉伊川水門プロジェクト</span><a href="https://github.com/Haruto-Sa/ARv2" target="_blank" rel="noopener">このプロジェクトについて ↗</a></footer>
   <script>
-    import { loadLocationCatalog } from '../lib/config/locationConfig';
+    import { loadLocationCatalog, loadLocationConfig } from '../lib/config/locationConfig';
     import { withBase } from '../lib/paths';
     import { initWaterCanvas } from '../lib/water-shader';
     import * as L from 'leaflet';
     import 'leaflet/dist/leaflet.css';
     const canvas = document.querySelector<HTMLCanvasElement>('.hero-canvas');
     if (canvas) initWaterCanvas(canvas);
+
+    type PinVariant = 'watergate' | 'verification' | 'current-location';
+    const PIN_GLYPH: Record<PinVariant, string> = { watergate: '●', verification: '▲', 'current-location': '◉' };
+    const PIN_CLASS: Record<PinVariant, string> = { watergate: 'watergate-pin', verification: 'verification-pin', 'current-location': 'current-location-pin' };
+    function addPin(map: L.Map, point: [number, number], name: string, variant: PinVariant) {
+      const icon = L.divIcon({ className: PIN_CLASS[variant], html: `<span aria-hidden="true">${PIN_GLYPH[variant]}</span>`, iconSize: [28, 28], iconAnchor: [14, 14] });
+      const label = document.createElement('span'); label.textContent = name;
+      L.marker(point, { icon }).addTo(map).bindPopup(label);
+    }
+
     async function initMap() {
       try {
         const map = L.map('locations-map', { scrollWheelZoom: false });
@@ -59,13 +69,36 @@ const experiences = [
         const catalog = await loadLocationCatalog(withBase('/config/locations/index.json'));
         const points: [number, number][] = [];
         for (const location of catalog) {
-          const point: [number, number] = [location.latitude, location.longitude]; points.push(point);
-          const icon = L.divIcon({ className: 'watergate-pin', html: '<span aria-hidden="true">●</span>', iconSize: [28, 28], iconAnchor: [14, 14] });
-          const label = document.createElement('span'); label.textContent = location.name;
-          L.marker(point, { icon }).addTo(map).bindPopup(label);
+          // 第二地域連携棟は検証用。後日オーナーが手動で削除予定。本番ビルドではlab-*接頭辞により自動的に除外される。
+          const isVerification = location.id.startsWith('lab-');
+          let lat = location.latitude;
+          let lon = location.longitude;
+          if (isVerification) {
+            try {
+              const { config } = await loadLocationConfig(withBase(`/config/locations/${location.id}.json`));
+              if (config.latitude === null || config.longitude === null) continue;
+              lat = config.latitude;
+              lon = config.longitude;
+            } catch {
+              continue; // 本番ビルドでは除外済みのため404になる。想定内なので静かにスキップする。
+            }
+          }
+          if (typeof lat !== 'number' || typeof lon !== 'number') continue;
+          const point: [number, number] = [lat, lon];
+          points.push(point);
+          addPin(map, point, location.name, isVerification ? 'verification' : 'watergate');
         }
         if (points.length) map.fitBounds(points, { padding: [40, 40], maxZoom: 14 });
         else map.setView([39.64, 141.96], 12);
+
+        // 現在地は任意・非ブロッキングで追加する。許可が無い/APIが無い場合は何もしない(静かに諦める)。
+        if ('geolocation' in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => addPin(map, [pos.coords.latitude, pos.coords.longitude], '現在地', 'current-location'),
+            () => {},
+            { maximumAge: 60_000, timeout: 8000 }
+          );
+        }
       } catch { document.querySelector<HTMLElement>('.map-fallback')!.hidden = false; }
     }
     void initMap();
@@ -76,7 +109,7 @@ const experiences = [
   .site-header{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px max(20px,calc((100vw - 1120px)/2));background:#f5fafbef;backdrop-filter:blur(12px);border-bottom:1px solid #dbe7ec}.brand{display:flex;align-items:center;gap:10px;color:#183d50;font-size:15px;font-weight:750;text-decoration:none}.brand-mark{font-size:30px;line-height:1;color:#148aa0}nav{display:flex;gap:12px}nav a{display:flex;align-items:center;min-height:44px;padding:0 8px;font-size:14px;text-decoration:none;color:#476679}
   .hero{position:relative;overflow:hidden;background:#dceaf5}.hero-canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.5;pointer-events:none}.hero-inner{position:relative;max-width:1120px;margin:auto;padding:80px 24px 72px}.eyebrow{font-size:12px;font-weight:750;color:#13768e;letter-spacing:.12em;margin:0 0 12px}h1{font-size:clamp(34px,5vw,62px);line-height:1.3;letter-spacing:.03em;margin:0 0 24px;color:#173a4e}.lead{line-height:1.9;color:#345970;font-size:17px;margin:0 0 28px}.button{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:48px;border-radius:12px;padding:12px 18px;background:#e7f3f8;color:#17556e;text-decoration:none;font-weight:700;font-size:15px}.primary{display:inline-flex;background:#176f92;color:white;min-width:190px;box-shadow:0 6px 18px #176f9230}.hero-note{font-size:13px;color:#466c80;margin:16px 0 0}
   .content{max-width:1120px;padding:0 24px 64px;margin:auto}section[id]{padding-top:64px;scroll-margin-top:64px}.section-heading{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:28px}.section-heading p:last-child{font-size:14px;color:#557183}h2{font-size:clamp(23px,3vw,30px);line-height:1.4;margin:0 0 18px}.experience-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}.menu-card{border:1px solid #dae6ec;border-radius:20px;overflow:hidden;background:white;box-shadow:0 8px 28px #173a4e06;display:flex;flex-direction:column}.card-art{height:145px;position:relative;overflow:hidden;display:grid;place-items:center;background:#dceff2}.card-art>span{font-size:76px;color:#176f92;z-index:1}.art-1{background:#e4eaf5}.art-2{background:#e0eee7}.gate-lines{position:absolute;bottom:-30px;width:75%;height:70px;border:9px double #176f921c;border-radius:40%}.card-body{padding:24px;display:flex;flex-direction:column;flex:1;gap:12px}.tag{align-self:start;border-radius:6px;background:#f1f6f8;color:#416a7c;padding:3px 8px;font-size:11px;font-weight:700}h3{font-size:19px;line-height:1.5;margin:0}.card-body p{font-size:14px;line-height:1.85;color:#506c7e;margin:0 0 8px;flex:1}.card-body small{font-size:11px;color:#667f8d}.upcoming{padding:20px 0;color:#617786;font-size:14px}.upcoming summary{cursor:pointer;min-height:44px;align-content:center}.upcoming p{line-height:1.8}
-  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;list-style:none;padding:0;margin:28px 0}.steps li{display:flex;gap:14px}.steps li>span{background:#dceef4;color:#176f92;font-weight:800;border-radius:50%;width:32px;height:32px;display:grid;place-items:center;flex:none}.steps h3{font-size:16px}.steps p{font-size:14px;color:#557183;line-height:1.85;margin:8px 0 0}.tip{background:white;border:1px solid #d9e7ec;border-radius:14px;padding:22px}.tip strong{font-size:15px}.tip p,.section-note{font-size:14px;color:#557183;line-height:1.8}.tip p{margin-bottom:0}#locations-map{height:320px;border-radius:18px;z-index:1;border:1px solid #d9e7ec}:global(.watergate-pin){color:#147993;font-size:28px;text-shadow:0 0 2px white}footer{max-width:1120px;margin:auto;padding:24px;display:flex;justify-content:space-between;gap:18px;border-top:1px solid #d9e7ec;font-size:12px;color:#557183}footer a{color:inherit}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;list-style:none;padding:0;margin:28px 0}.steps li{display:flex;gap:14px}.steps li>span{background:#dceef4;color:#176f92;font-weight:800;border-radius:50%;width:32px;height:32px;display:grid;place-items:center;flex:none}.steps h3{font-size:16px}.steps p{font-size:14px;color:#557183;line-height:1.85;margin:8px 0 0}.tip{background:white;border:1px solid #d9e7ec;border-radius:14px;padding:22px}.tip strong{font-size:15px}.tip p,.section-note{font-size:14px;color:#557183;line-height:1.8}.tip p{margin-bottom:0}#locations-map{height:320px;border-radius:18px;z-index:1;border:1px solid #d9e7ec}:global(.watergate-pin){color:#147993;font-size:28px;text-shadow:0 0 2px white}:global(.verification-pin){color:#a3471f;font-size:24px;text-shadow:0 0 2px white}:global(.current-location-pin){color:#1f7a3d;font-size:22px;text-shadow:0 0 2px white}footer{max-width:1120px;margin:auto;padding:24px;display:flex;justify-content:space-between;gap:18px;border-top:1px solid #d9e7ec;font-size:12px;color:#557183}footer a{color:inherit}
   @media(max-width:720px){.site-header{flex-wrap:wrap;gap:0;padding:8px 18px}.brand{width:100%;font-size:14px}nav{width:100%;justify-content:space-between}nav a{font-size:12px;padding:0}.hero-inner{padding:44px 22px}.lead{font-size:14px}.desktop-break{display:none}.content{padding:0 18px 40px}section[id]{padding-top:42px;scroll-margin-top:112px}.section-heading{display:block;margin-bottom:20px}.experience-grid,.steps{grid-template-columns:1fr;gap:18px}.card-art{height:115px}.card-body{padding:22px}.card-body small{font-size:12px}.steps{gap:22px}footer{flex-direction:column;padding:24px 18px}h2{font-size:24px}}
   @media(prefers-reduced-motion:reduce){:global(html){scroll-behavior:auto}}
 </style>
