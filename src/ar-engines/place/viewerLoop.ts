@@ -33,7 +33,7 @@ export function createViewerLoop(
     handle = undefined;
     if (disposed || !allowed()) { previous = undefined; return; }
     if (previous !== undefined && time - previous < interval) { schedule(); return; }
-    const delta = previous === undefined ? 0 : Math.min((time - previous) / 1000, 0.1);
+    const delta = previous === undefined ? 0 : (time - previous) / 1000;
     previous = time;
     dirty = false;
     drawing = true;

@@ -19,15 +19,7 @@ export default defineConfig({
   },
   projects: [
     { name: 'ui', grepInvert: /@webgl/, use: { ...devices['Desktop Chrome'] } },
-    {
-      name: 'webgl', grep: /@webgl/, workers: 1,
-      use: {
-        ...devices['Desktop Chrome'],
-        // A trace filmstrip repeatedly reads back the software-rendered GPU canvas.
-        // Keep actions/DOM/source traces and the separate failure screenshot, without that observer load.
-        trace: { mode: 'retain-on-failure', screenshots: false, snapshots: true, sources: true },
-      },
-    },
+    { name: 'webgl', grep: /@webgl/, workers: 1, use: { ...devices['Desktop Chrome'] } },
   ],
   webServer: {
     // ASTRO_PREVIEW_BACKGROUND: astroはAIエージェント実行を検知すると自動で

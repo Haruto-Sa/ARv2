@@ -47,4 +47,10 @@ describe('ordinary viewer demand loop', () => {
     loop.invalidate(); loop.dispose(); loop.refresh(); loop.invalidate(); c.tick(100);
     expect(frame).not.toHaveBeenCalled(); expect(c.callbacks.size).toBe(0);
   });
+  it('preserves elapsed time for damping below 10fps; only the animation consumer clamps time', () => {
+    const c = clock(); const frame = vi.fn(() => true);
+    const loop = createViewerLoop(() => true, frame, c.scheduler);
+    loop.invalidate(); c.tick(0); c.tick(750);
+    expect(frame).toHaveBeenLastCalledWith(0.75);
+  });
 });

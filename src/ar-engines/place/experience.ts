@@ -419,7 +419,7 @@ export async function mountPlacementExperience(root: HTMLElement) {
         // Preserve 60 Hz damping duration even when a slow device renders fewer frames.
         controls!.dampingFactor = 1 - Math.pow(1 - 0.05, (delta || 1 / 60) * 60);
         const moving = controls!.update();
-        renderFrame(delta);
+        renderFrame(Math.min(delta, 0.1));
         return moving || (!!mixer && mixer.timeScale !== 0 && actions.some(action => action.isRunning()));
       },
     );
