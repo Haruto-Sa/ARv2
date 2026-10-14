@@ -75,7 +75,6 @@ test.describe('landing page', () => {
 
     await expect(visibleCards.filter({ hasText: '小本川流木捕捉工シミュレーション' })).toHaveAttribute('href', '/unity/');
     await expect(visibleCards.filter({ hasText: '平面AR' })).toHaveAttribute('href', '/ar/place');
-    await expect(visibleCards.filter({ hasText: '3Dビューア' })).toHaveAttribute('href', '/viewer');
     await expect(visibleCards.filter({ hasText: '点群3D空間(Matterport)' })).toHaveAttribute('href', '/matterport/');
     for (const title of ['現地AR', '360度動画']) {
       const card = visibleCards.filter({ hasText: title });
@@ -116,7 +115,6 @@ test.describe('landing page', () => {
 // ページ内アンカー(#start)も、ページ遷移(/ar/marker等)も両方含む。
 const MENU_CARDS: { title: string; href: string; expectedUrl: RegExp }[] = [
   { title: '平面AR', href: '/ar/place', expectedUrl: /\/ar\/place$/ },
-  { title: '3Dビューア', href: '/viewer', expectedUrl: /\/viewer$/ },
   { title: '水門3Dシミュレーション', href: '/heigawa/', expectedUrl: /\/heigawa\/$/ },
   { title: '小本川流木捕捉工シミュレーション', href: '/unity/', expectedUrl: /\/unity\/$/ },
   { title: '点群3D空間(Matterport)', href: '/matterport/', expectedUrl: /\/matterport\/$/ },
