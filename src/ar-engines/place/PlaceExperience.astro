@@ -16,7 +16,7 @@ const guide = viewer ? [
 <main id="placement" data-viewer={String(viewer)} data-mode={viewer ? 'viewer' : 'loading'}>
   <div id="viewport" aria-label="水門の3D表示"></div>
   <section id="overlay">
-    <header class="experience-header"><a id="home" href={withBase('/')} aria-label="ホームに戻る">⌂ ホーム</a><h1>{viewer ? '水門3Dビューア' : '手のひら・平面AR'}</h1><button id="help" aria-label="使い方を開く">? 使い方</button></header>
+    <header class="experience-header"><a id="home" href={withBase('/')} aria-label="ホームに戻る">⌂ ホーム</a><h1>{viewer ? '水門3Dビューア' : '平面AR'}</h1><button id="help" aria-label="使い方を開く">? 使い方</button></header>
     <div class="camera-card" id="camera-card">
       <p class="eyebrow">机の上に、小さな水門を。</p>
       <div class="camera-symbol" aria-hidden="true">◎</div>
