@@ -19,9 +19,13 @@ export default defineConfig({
   },
   // @webgl: real-model/real-GPU tests that are slow and must not share a renderer
   // concurrently; everything else (UI project) mocks the GLB fetch and can run in parallel.
+  // @touch: タッチ操作の遷移テストだけ、可能な範囲でWebKitでも確かめる(hasTouchが必要なため
+  // uiプロジェクトからは除外する)。既存の大半のテスト(hero canvasのWebGL判定、Leaflet
+  // マップ等)はWebKit固有の差異で揺れやすく、webkit-touchプロジェクトの対象外にする。
   projects: [
-    { name: 'ui', grepInvert: /@webgl/, use: { ...devices['Desktop Chrome'] } },
+    { name: 'ui', grepInvert: /@webgl|@touch/, use: { ...devices['Desktop Chrome'] } },
     { name: 'webgl', grep: /@webgl/, workers: 1, use: { ...devices['Desktop Chrome'] } },
+    { name: 'webkit-touch', use: { ...devices['Desktop Safari'], hasTouch: true }, grep: /@touch/ },
   ],
   webServer: {
     // ASTRO_PREVIEW_BACKGROUND: astroはAIエージェント実行を検知すると自動で
