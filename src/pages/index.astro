@@ -4,7 +4,7 @@ import { withBase } from '../lib/paths';
 
 // 体験メニュー。active なものだけリンクを持つ。soon はプレースホルダー(クリック不可)。
 // 開発者向けの比較ページ・検証用地点・デバッグUIは公開版に出さない(docs/ar-spec.md §6)。
-// ユーザー指定の6要素(現地AR・床置きAR・水門3Dシミュレーション・小本川流木捕捉工シミュレーション・
+// ユーザー指定の6要素(現地AR・平面AR・水門3Dシミュレーション・小本川流木捕捉工シミュレーション・
 // Matterport・360度動画)は追加・削除せずそのまま維持する。3Dビューアはこの6要素とは別に、
 // AR非対応端末向けの既存の代替機能として残している(docs/ar-spec.md §3.1)。
 // 現地AR(実物大を実際の水門に重ねるAR)は、まだ採用方式が未確定で /ar/onsite が未実装のため soon。
@@ -19,13 +19,14 @@ const experiences = [
   },
   {
     icon: '🧩',
-    title: '床置きAR',
+    title: '平面AR',
     description: 'テーブルや床などの平面を検出し、縮小した水門モデルを置いて、まわりから眺められます。',
     status: 'active' as const,
     href: withBase('/ar/place'),
     image: withBase('/images/menu/place-ar.jpg'),
   },
   {
+    id: '3d-viewer',
     icon: '🖥️',
     title: '3Dビューア',
     description: 'ARに対応していない端末でも、水門の3Dモデルを見られます。',
@@ -138,6 +139,7 @@ const steps = [
                   aria-hidden={dup ? 'true' : undefined}
                   tabindex={dup ? -1 : undefined}
                   style={item.image ? `--card-image: url(${item.image})` : undefined}
+                  data-card={item.id}
                 >
                   {!item.image && <div class="menu-icon">{item.icon}</div>}
                   <div class="menu-card-text">
@@ -164,7 +166,7 @@ const steps = [
 
     <section id="map" class="map-section reveal">
       <h2>水門地点マップ</h2>
-      <p class="section-note">現地AR・床置きARの対象地点です。</p>
+      <p class="section-note">現地AR・平面ARの対象地点です。</p>
       <div id="locations-map"></div>
     </section>
 
@@ -196,11 +198,21 @@ const steps = [
     import { loadLocationCatalog, loadLocationConfig } from '../lib/config/locationConfig';
     import { withBase } from '../lib/paths';
     import { initWaterCanvas } from '../lib/water-shader';
+    import { supportsPlaneAR } from '../lib/arCapability';
     import * as L from 'leaflet';
     import 'leaflet/dist/leaflet.css';
 
     const heroCanvas = document.querySelector<HTMLCanvasElement>('.hero-canvas');
     if (heroCanvas) initWaterCanvas(heroCanvas);
+
+    // 3Dビューアは「現地AR・平面ARのどちらも使えない端末向けの代替」としてのみ出す。
+    // 平面ARが使える端末では、実物のARを優先したいので非表示にする。
+    supportsPlaneAR().then((supported) => {
+      if (!supported) return;
+      document.querySelectorAll('[data-card="3d-viewer"]').forEach((el) => {
+        (el as HTMLElement).hidden = true;
+      });
+    });
 
     const DEFAULT_PIN_COLOR = '#e0341f';
     const VERIFICATION_PIN_COLOR = '#a3471f';
@@ -728,6 +740,9 @@ const steps = [
     position: relative;
     overflow: hidden;
     transition: box-shadow 0.3s var(--ease-soft), transform 0.3s var(--ease-soft);
+  }
+  .menu-card[hidden] {
+    display: none;
   }
   .menu-card.soon {
     opacity: 0.6;

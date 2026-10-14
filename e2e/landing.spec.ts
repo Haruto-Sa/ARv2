@@ -74,7 +74,7 @@ test.describe('landing page', () => {
     const visibleCards = page.locator('.menu-card:not([aria-hidden="true"])');
 
     await expect(visibleCards.filter({ hasText: '小本川流木捕捉工シミュレーション' })).toHaveAttribute('href', '/unity/');
-    await expect(visibleCards.filter({ hasText: '床置きAR' })).toHaveAttribute('href', '/ar/place');
+    await expect(visibleCards.filter({ hasText: '平面AR' })).toHaveAttribute('href', '/ar/place');
     await expect(visibleCards.filter({ hasText: '3Dビューア' })).toHaveAttribute('href', '/viewer');
     await expect(visibleCards.filter({ hasText: '点群3D空間(Matterport)' })).toHaveAttribute('href', '/matterport/');
     for (const title of ['現地AR', '360度動画']) {
