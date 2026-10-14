@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
 test('fixed experience cards link to available pages', async ({ page }) => {
  await page.goto('/');
- await expect(page.locator('.menu-card')).toHaveCount(3);
- for (const href of ['/ar/place', '/viewer', '/unity/']) await expect(page.locator(`.menu-card a[href="${href}"]`)).toBeVisible();
+ await expect(page.locator('.menu-card')).toHaveCount(6);
+ for (const href of ['/ar/place', '/viewer', '/unity/', '/matterport/']) await expect(page.locator(`.menu-card a[href="${href}"]`)).toBeVisible();
+ await expect(page.locator('.menu-card.soon')).toHaveCount(2);
  await expect(page.locator('a[href*="/lab/"]')).toHaveCount(0);
 });
 test('mobile menu fits the viewport and has usable buttons', async ({ page }) => {
