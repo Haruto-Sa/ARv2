@@ -30,5 +30,5 @@
     "autoplay": true
   },
   "rendering": { "depthTest": true, "depthWrite": true },
-  "debug": true
+  "debug": false
 }

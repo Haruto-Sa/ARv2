@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "validate-config": "tsx scripts/validate-config.ts",
-    "codex-review": "tsx scripts/codex-review.ts"
+    "codex-review": "tsx scripts/codex-review.ts",
+    "verify-placement": "tsx scripts/verify-placement.ts"
   },
   "dependencies": {
     "@astrojs/svelte": "^9.0.1",
