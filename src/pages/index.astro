@@ -4,10 +4,12 @@ import { withBase } from '../lib/paths';
 
 // 体験メニュー。active なものだけリンクを持つ。soon はプレースホルダー(クリック不可)。
 // 開発者向けの比較ページ・検証用地点・デバッグUIは公開版に出さない(docs/ar-spec.md §6)。
+// ユーザー指定の6要素(現地AR・床置きAR・水門3Dシミュレーション・小本川流木捕捉工シミュレーション・
+// Matterport・360度動画)は追加・削除せずそのまま維持する。3Dビューアはこの6要素とは別に、
+// AR非対応端末向けの既存の代替機能として残している(docs/ar-spec.md §3.1)。
 // 現地AR(実物大を実際の水門に重ねるAR)は、まだ採用方式が未確定で /ar/onsite が未実装のため soon。
-// 「小本川流木捕捉工シミュレーション」は Unity WebGL (/unity/) 上の体験。実機確認の結果、
-// このシーンは小本川に見立てた川に流木捕捉工を配置するシミュレーションのみで、閉伊川水門は
-// 表示されない。閉伊川水門・津波を独立した体験として訴求しない(過去に表記が混同していた)。
+// 「水門3Dシミュレーション」(/heigawa/)と「小本川流木捕捉工シミュレーション」(/unity/)は
+// 別々のUnity WebGLビルドで、別々の体験として扱う(過去に1つに混同されていた)。
 const experiences = [
   {
     icon: '📍',
@@ -21,6 +23,7 @@ const experiences = [
     description: 'テーブルや床などの平面を検出し、縮小した水門モデルを置いて、まわりから眺められます。',
     status: 'active' as const,
     href: withBase('/ar/place'),
+    image: withBase('/images/menu/place-ar.jpg'),
   },
   {
     icon: '🖥️',
@@ -28,19 +31,15 @@ const experiences = [
     description: 'ARに対応していない端末でも、水門の3Dモデルを見られます。',
     status: 'active' as const,
     href: withBase('/viewer'),
+    image: withBase('/images/menu/viewer.jpg'),
   },
   {
-    icon: '🏠',
-    title: '点群3D空間(Matterport)',
-    description: '現地の点群スキャンを、埋め込みビューでそのまま歩き回れます。',
+    icon: '🌊',
+    title: '水門3Dシミュレーション',
+    description: '閉伊川水門を実際の地形・まち並みとともにUnityで再現。警報発生時に水門が自動で閉まり、まちへの浸水がどう変わるかを3Dで確かめられます。',
     status: 'active' as const,
-    href: withBase('/matterport/'),
-  },
-  {
-    icon: '🎥',
-    title: '360度動画',
-    description: '現地で撮影した360度映像を見られます。',
-    status: 'soon' as const,
+    href: withBase('/heigawa/'),
+    image: withBase('/images/menu/heigawa-unity.jpg'),
   },
   {
     icon: '🪵',
@@ -48,6 +47,21 @@ const experiences = [
     description: '流木を受け止める捕捉工を、小本川に見立てた川に配置して、水位や流木の変化を確かめられます。',
     status: 'active' as const,
     href: withBase('/unity/'),
+    image: withBase('/images/menu/driftwood-unity.jpg'),
+  },
+  {
+    icon: '🏠',
+    title: '点群3D空間(Matterport)',
+    description: '現地の点群スキャンを、埋め込みビューでそのまま歩き回れます。',
+    status: 'active' as const,
+    href: withBase('/matterport/'),
+    image: withBase('/images/menu/matterport.jpg'),
+  },
+  {
+    icon: '🎥',
+    title: '360度動画',
+    description: '現地で撮影した360度映像を見られます。',
+    status: 'soon' as const,
   },
 ];
 
@@ -92,13 +106,13 @@ const steps = [
       <canvas class="hero-canvas" aria-hidden="true"></canvas>
       <div class="hero-content">
         <span class="hero-icon" aria-hidden="true">🌊</span>
-        <h1>閉伊川水門を、AR・3Dスキャン・映像で体験する</h1>
+        <h1>宮古市の水害対策を、AR・3Dで見て、学ぶ。</h1>
         <svg class="hero-underline" viewBox="0 0 160 12" aria-hidden="true">
           <path d="M2 8 C 30 2, 55 2, 80 7 S 130 12, 158 5" />
         </svg>
         <p class="lead">
-          岩手県宮古市・閉伊川水門を、現地に行かなくても様々な方法で体験できるプロジェクトです。
-          位置情報ARでは、水門の3Dモデルを実物大でその場に重ねて表示します。
+          岩手県宮古市では、水害から暮らしを守るために、水門の整備や流木をせき止める仕組みづくりが進められています。
+          現地に行かなくても、AR・3Dスキャン・映像でその取り組みに触れながら、防災をデジタルで学べるプロジェクトです。
         </p>
         <a class="btn-primary" href="#menu">体験メニューを見る</a>
       </div>
@@ -118,21 +132,26 @@ const steps = [
               const dup = i >= experiences.length;
               return item.status === 'active' ? (
                 <a
-                  class="menu-card"
+                  class={`menu-card${item.image ? ' has-image' : ''}`}
                   href={item.href}
                   aria-hidden={dup ? 'true' : undefined}
                   tabindex={dup ? -1 : undefined}
+                  style={item.image ? `background-image: url(${item.image})` : undefined}
                 >
-                  <div class="menu-icon">{item.icon}</div>
-                  <h3>{item.title}</h3>
-                  <p>{item.description}</p>
+                  {!item.image && <div class="menu-icon">{item.icon}</div>}
+                  <div class="menu-card-text">
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                  </div>
                   <span class="menu-arrow">→</span>
                 </a>
               ) : (
                 <div class="menu-card soon" aria-hidden={dup ? 'true' : undefined}>
                   <div class="menu-icon">{item.icon}</div>
-                  <h3>{item.title}</h3>
-                  <p>{item.description}</p>
+                  <div class="menu-card-text">
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                  </div>
                   <span class="badge">近日公開</span>
                 </div>
               );
@@ -236,7 +255,7 @@ const steps = [
             .bindPopup(`${icon} ${loc.name}`);
         }
         if (latlngs.length) {
-          map.fitBounds(latlngs, { padding: [20, 20] });
+          map.fitBounds(latlngs, { padding: [20, 20], maxZoom: 15 });
         } else {
           map.setView([39.7021, 141.1544], 14);
         }
@@ -634,14 +653,18 @@ const steps = [
     flex-direction: column;
     gap: 6px;
     flex: 0 0 240px;
+    min-height: 220px;
     padding: 18px;
     border-radius: 18px;
     border: none;
     background: var(--surface);
+    background-size: cover;
+    background-position: center;
     box-shadow: 0 6px 18px -10px rgba(22, 50, 74, 0.16);
     color: inherit;
     text-decoration: none;
     position: relative;
+    overflow: hidden;
     transition: box-shadow 0.3s var(--ease-soft), transform 0.3s var(--ease-soft);
   }
   .menu-card.soon {
@@ -654,10 +677,31 @@ const steps = [
   .menu-icon {
     font-size: 26px;
   }
+  .menu-card.has-image {
+    color: #fff;
+  }
+  .menu-card.has-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10, 20, 30, 0) 38%, rgba(8, 16, 26, 0.88) 100%);
+    pointer-events: none;
+  }
+  .menu-card-text {
+    position: relative;
+    z-index: 1;
+  }
+  .menu-card.has-image .menu-card-text {
+    margin-top: auto;
+  }
   .menu-card h3 {
     margin: 0;
     font-size: 15px;
     color: var(--text);
+  }
+  .menu-card.has-image h3 {
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
   }
   .menu-card p {
     margin: 0;
@@ -665,14 +709,23 @@ const steps = [
     color: var(--text-soft);
     line-height: 1.5;
   }
+  .menu-card.has-image p {
+    color: rgba(255, 255, 255, 0.88);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  }
   .menu-arrow {
     position: absolute;
+    z-index: 1;
     right: 16px;
     bottom: 14px;
     color: var(--accent);
     opacity: 0.6;
     font-size: 14px;
     transition: opacity 0.25s var(--ease-soft), transform 0.25s var(--ease-soft);
+  }
+  .menu-card.has-image .menu-arrow {
+    color: #fff;
+    opacity: 0.85;
   }
   a.menu-card:hover .menu-arrow {
     opacity: 1;
