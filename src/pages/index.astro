@@ -98,6 +98,7 @@ const steps = [
       <a href="#menu">体験メニュー</a>
       <a href="#map">地図</a>
       <a href="#usage">使い方</a>
+      <span class="nav-indicator" aria-hidden="true"></span>
     </nav>
   </header>
 
@@ -136,7 +137,7 @@ const steps = [
                   href={item.href}
                   aria-hidden={dup ? 'true' : undefined}
                   tabindex={dup ? -1 : undefined}
-                  style={item.image ? `background-image: url(${item.image})` : undefined}
+                  style={item.image ? `--card-image: url(${item.image})` : undefined}
                 >
                   {!item.image && <div class="menu-icon">{item.icon}</div>}
                   <div class="menu-card-text">
@@ -161,13 +162,13 @@ const steps = [
       </div>
     </section>
 
-    <section id="map" class="map-section">
+    <section id="map" class="map-section reveal">
       <h2>水門地点マップ</h2>
       <p class="section-note">現地AR・床置きARの対象地点です。</p>
       <div id="locations-map"></div>
     </section>
 
-    <section id="usage" class="usage-section">
+    <section id="usage" class="usage-section reveal">
       <h2>使い方</h2>
       <ol class="steps">
         {
@@ -290,16 +291,26 @@ const steps = [
       { passive: true }
     );
 
-    // ナビの現在地ハイライト: 表示中のセクションに対応するリンクへ .active を付ける。
+    // ナビの現在地ハイライト: 表示中のセクションに対応するリンクへ .active を付け、
+    // 下線(.nav-indicator)をそのリンクの位置・幅へスライドさせる。
     const navLinks = new Map<string, HTMLAnchorElement>();
     document.querySelectorAll<HTMLAnchorElement>('.site-nav a[href^="#"]').forEach((a) => {
       navLinks.set(a.getAttribute('href')!.slice(1), a);
     });
+    const navIndicator = document.querySelector<HTMLElement>('.nav-indicator');
+    function moveNavIndicator(link: HTMLAnchorElement): void {
+      if (!navIndicator) return;
+      navIndicator.style.width = `${link.offsetWidth}px`;
+      navIndicator.style.transform = `translateX(${link.offsetLeft}px)`;
+      navIndicator.classList.add('visible');
+    }
     const sectionObserver = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           const link = navLinks.get(entry.target.id);
-          if (link) link.classList.toggle('active', entry.isIntersecting);
+          if (!link) continue;
+          link.classList.toggle('active', entry.isIntersecting);
+          if (entry.isIntersecting) moveNavIndicator(link);
         }
       },
       { rootMargin: '-30% 0px -60% 0px' }
@@ -327,6 +338,23 @@ const steps = [
       menuFlow.classList.add('pre-reveal');
       flowObserver.observe(menuFlow);
     }
+
+    // 地図・使い方セクションも、初回スクロールで同様にフェードイン。
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            revealObserver.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.12 }
+    );
+    document.querySelectorAll('.reveal').forEach((el) => {
+      el.classList.add('pre-reveal');
+      revealObserver.observe(el);
+    });
 
     // 体験メニューのオート横流れ。ネイティブの scrollLeft を直接動かすため、ユーザーの
     // ドラッグ/スクロール操作(同じ scrollLeft を操作する)といつでも共存できる。
@@ -437,14 +465,25 @@ const steps = [
     }
     .menu-flow,
     .menu-flow.pre-reveal,
+    .reveal,
+    .reveal.pre-reveal,
     .menu-arrow,
     .btn-primary,
     .site-header,
-    .hero-icon {
+    .hero-icon,
+    .menu-card.has-image,
+    .menu-card.has-image::before {
       transition: none !important;
       animation: none !important;
       opacity: 1 !important;
       transform: none !important;
+    }
+    .nav-indicator {
+      transition: none !important;
+    }
+    .menu-flow {
+      mask-image: none !important;
+      -webkit-mask-image: none !important;
     }
     .menu-card[aria-hidden='true'] {
       display: none;
@@ -489,6 +528,7 @@ const steps = [
     color: var(--text);
   }
   .site-nav {
+    position: relative;
     display: flex;
     gap: 18px;
   }
@@ -504,6 +544,20 @@ const steps = [
   .site-nav a.active {
     color: var(--accent);
     font-weight: 700;
+  }
+  .nav-indicator {
+    position: absolute;
+    left: 0;
+    bottom: -6px;
+    width: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--accent);
+    opacity: 0;
+    transition: transform 0.35s var(--ease-soft), width 0.35s var(--ease-soft), opacity 0.25s var(--ease-soft);
+  }
+  .nav-indicator.visible {
+    opacity: 1;
   }
 
   .wrap {
@@ -540,10 +594,10 @@ const steps = [
   @keyframes float {
     0%,
     100% {
-      transform: translateY(0);
+      transform: translateY(0) rotate(0deg);
     }
     50% {
-      transform: translateY(-8px);
+      transform: translateY(-8px) rotate(-4deg);
     }
   }
   .wave-divider {
@@ -630,18 +684,26 @@ const steps = [
     cursor: grab;
     scrollbar-width: none;
     transition: opacity 0.6s var(--ease-soft), transform 0.6s var(--ease-soft);
+    /* マーケーの左右端をなだらかにフェードさせ、カードが途切れる印象を和らげる。 */
+    mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 32px), transparent);
   }
   .menu-flow::-webkit-scrollbar {
     display: none;
   }
   /* pre-reveal はJSが付与したときだけ効く。JS未実行時は常に表示された状態が既定。 */
-  .menu-flow.pre-reveal {
+  .menu-flow.pre-reveal,
+  .reveal.pre-reveal {
     opacity: 0;
     transform: translateY(14px);
   }
-  .menu-flow.pre-reveal.visible {
+  .menu-flow.pre-reveal.visible,
+  .reveal.pre-reveal.visible {
     opacity: 1;
     transform: none;
+  }
+  .reveal {
+    transition: opacity 0.6s var(--ease-soft), transform 0.6s var(--ease-soft);
   }
   .menu-track {
     display: flex;
@@ -679,8 +741,22 @@ const steps = [
   }
   .menu-card.has-image {
     color: #fff;
+    background-image: none;
   }
   .menu-card.has-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: var(--card-image);
+    background-size: cover;
+    background-position: center;
+    transform: scale(1);
+    transition: transform 0.5s var(--ease-soft);
+  }
+  a.menu-card.has-image:hover::before {
+    transform: scale(1.07);
+  }
+  .menu-card.has-image::after {
     content: '';
     position: absolute;
     inset: 0;
