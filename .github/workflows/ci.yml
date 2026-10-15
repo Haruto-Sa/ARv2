@@ -5,9 +5,17 @@ on:
   push:
     branches: ['main']
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -35,13 +43,26 @@ jobs:
         env:
           DEPLOY_TARGET: gh-pages
 
+      - name: Verify deployed placement files
+        run: npm run verify-placement -- --dir dist --expect production
+
+      - name: Assert /lab is excluded from the production build
+        run: scripts/assert-no-lab.sh
+
       - name: Build (Cloudflare Pages base)
         run: npm run build
         env:
           DEPLOY_TARGET: cloudflare
 
+      - name: Verify deployed placement files
+        run: npm run verify-placement -- --dir dist --expect production
+
+      - name: Assert /lab is excluded from the production build
+        run: scripts/assert-no-lab.sh
+
   e2e:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -60,3 +81,14 @@ jobs:
 
       - name: E2E tests
         run: npm run test:e2e
+
+      - name: Upload E2E diagnostics
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore

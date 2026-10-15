@@ -2,78 +2,57 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { withBase } from '../lib/paths';
 
-const DEFAULT_LAT = 39.80249663004133;
-const DEFAULT_LON = 141.13550877979688;
-
-const patterns = [
-  {
-    id: 'locar',
-    title: 'Pattern A: LocAR',
-    description: 'LocAR.js + three.js。GPSスムージングと高度安定化を備えた実装。',
-    href: withBase('/ar/locar'),
-  },
-  {
-    id: 'arjs',
-    title: 'Pattern B: AR.js',
-    description: 'A-Frame + AR.js の位置情報AR機能(gps-new-entity-place)を使用。',
-    href: withBase('/ar/arjs'),
-  },
-  {
-    id: 'deviceorientation',
-    title: 'Pattern C: DeviceOrientation',
-    description: 'コンパス絶対値に依存しない、シルエット位置合わせによる独自実装。',
-    href: withBase('/ar/deviceorientation'),
-  },
-];
-
 // 体験メニュー。active なものだけリンクを持つ。soon はプレースホルダー(クリック不可)。
+// 開発者向けの比較ページ・検証用地点・デバッグUIは公開版に出さない(docs/ar-spec.md §6)。
+// ユーザー指定の6要素(現地AR・平面AR・水門3Dシミュレーション・小本川流木捕捉工シミュレーション・
+// Matterport・360度動画)は追加・削除せずそのまま維持する。
+// 現地AR(実物大を実際の水門に重ねるAR)は、まだ採用方式が未確定で /ar/onsite が未実装のため soon。
+// 「水門3Dシミュレーション」(/heigawa/)と「小本川流木捕捉工シミュレーション」(/unity/)は
+// 別々のUnity WebGLビルドで、別々の体験として扱う(過去に1つに混同されていた)。
 const experiences = [
   {
     icon: '📍',
-    title: 'ロケーションAR',
-    description: '水門の3Dモデルを実物大でその場に重ねて表示します。',
-    status: 'active' as const,
-    href: '#start',
+    title: '現地AR',
+    description: '実物大の水門モデルを、実際の水門の前で重ねて表示します。採用方式を検証中です。',
+    status: 'soon' as const,
   },
   {
-    icon: '✋',
-    title: '手のひらAR',
-    description: 'マーカーを使って手のひらサイズで表示します。',
+    icon: '🧩',
+    title: '平面AR',
+    description: 'テーブルや床などの平面を検出し、縮小した水門モデルを置いて、まわりから眺められます。',
     status: 'active' as const,
-    href: withBase('/ar/marker'),
+    href: withBase('/ar/place'),
+    image: withBase('/images/menu/place-ar.jpg'),
+  },
+  {
+    icon: '🌊',
+    title: '水門3Dシミュレーション',
+    description: '閉伊川水門を実際の地形・まち並みとともにUnityで再現。警報発生時に水門が自動で閉まり、まちへの浸水がどう変わるかを3Dで確かめられます。',
+    status: 'active' as const,
+    href: withBase('/heigawa/'),
+    image: withBase('/images/menu/heigawa-unity.jpg'),
+  },
+  {
+    icon: '🪵',
+    title: '小本川流木捕捉工シミュレーション',
+    description: '流木を受け止める捕捉工を、小本川に見立てた川に配置して、水位や流木の変化を確かめられます。',
+    status: 'active' as const,
+    href: withBase('/unity/'),
+    image: withBase('/images/menu/driftwood-unity.jpg'),
   },
   {
     icon: '🏠',
     title: '点群3D空間(Matterport)',
-    description: '現地の点群スキャンをブラウザ上で歩き回れます。',
-    status: 'soon' as const,
+    description: '現地の点群スキャンを、埋め込みビューでそのまま歩き回れます。',
+    status: 'active' as const,
+    href: withBase('/matterport/'),
+    image: withBase('/images/menu/matterport.jpg'),
   },
   {
     icon: '🎥',
     title: '360度動画',
     description: '現地で撮影した360度映像を見られます。',
     status: 'soon' as const,
-  },
-  {
-    icon: '🎮',
-    title: '閉伊川3D世界',
-    description: 'Unityで構築した閉伊川流域の3D空間を、WebGLでブラウザから探索できます。',
-    status: 'active' as const,
-    href: withBase('/heigawa/'),
-  },
-  {
-    icon: '🪵',
-    title: '流木コンテンツ',
-    description: '拾い上げた流木を使ったコンテンツ。ネイティブアプリからWebGLへ移植中です。',
-    status: 'active' as const,
-    href: withBase('/unity/'),
-  },
-  {
-    icon: '🧪',
-    title: '開発者実験',
-    description: '3つのAR方式を素早く切り替えて実機比較するための開発者向けページ。',
-    status: 'active' as const,
-    href: withBase('/lab/compare'),
   },
 ];
 
@@ -83,14 +62,12 @@ const experiencesLoop = [...experiences, ...experiences];
 
 const steps = [
   { title: 'カメラ・位置情報・モーションセンサーを許可する', description: '開始時にブラウザが確認を求めます。すべて許可してください。' },
-  { title: '体験したい方式と地点を選ぶ', description: '下の「体験メニュー」から選び、必要なら緯度経度を指定します。' },
+  { title: '体験したい機能を選ぶ', description: '下の「体験メニュー」から選びます。' },
   { title: 'スマートフォンをかざす', description: '屋外の見通しの良い場所で、画面越しに水門が重なって表示されます。' },
 ];
 ---
 
 <BaseLayout title="閉伊川水門プロジェクト">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-
   <header class="site-header">
     <span class="site-brand">
       <svg class="site-mark" viewBox="0 0 24 24" aria-hidden="true">
@@ -112,6 +89,7 @@ const steps = [
       <a href="#menu">体験メニュー</a>
       <a href="#map">地図</a>
       <a href="#usage">使い方</a>
+      <span class="nav-indicator" aria-hidden="true"></span>
     </nav>
   </header>
 
@@ -120,13 +98,13 @@ const steps = [
       <canvas class="hero-canvas" aria-hidden="true"></canvas>
       <div class="hero-content">
         <span class="hero-icon" aria-hidden="true">🌊</span>
-        <h1>閉伊川水門を、AR・3Dスキャン・映像で体験する</h1>
+        <h1>宮古市の水害対策を、AR・3Dで見て、学ぶ。</h1>
         <svg class="hero-underline" viewBox="0 0 160 12" aria-hidden="true">
           <path d="M2 8 C 30 2, 55 2, 80 7 S 130 12, 158 5" />
         </svg>
         <p class="lead">
-          岩手県宮古市・閉伊川水門を、現地に行かなくても様々な方法で体験できるプロジェクトです。
-          位置情報ARでは、水門の3Dモデルを実物大でその場に重ねて表示します。
+          岩手県宮古市では、水害から暮らしを守るために、水門の整備や流木をせき止める仕組みづくりが進められています。
+          現地に行かなくても、AR・3Dスキャン・映像でその取り組みに触れながら、防災をデジタルで学べるプロジェクトです。
         </p>
         <a class="btn-primary" href="#menu">体験メニューを見る</a>
       </div>
@@ -146,21 +124,26 @@ const steps = [
               const dup = i >= experiences.length;
               return item.status === 'active' ? (
                 <a
-                  class="menu-card"
+                  class={`menu-card${item.image ? ' has-image' : ''}`}
                   href={item.href}
                   aria-hidden={dup ? 'true' : undefined}
                   tabindex={dup ? -1 : undefined}
+                  style={item.image ? `--card-image: url(${item.image})` : undefined}
                 >
-                  <div class="menu-icon">{item.icon}</div>
-                  <h3>{item.title}</h3>
-                  <p>{item.description}</p>
+                  {!item.image && <div class="menu-icon">{item.icon}</div>}
+                  <div class="menu-card-text">
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                  </div>
                   <span class="menu-arrow">→</span>
                 </a>
               ) : (
                 <div class="menu-card soon" aria-hidden={dup ? 'true' : undefined}>
                   <div class="menu-icon">{item.icon}</div>
-                  <h3>{item.title}</h3>
-                  <p>{item.description}</p>
+                  <div class="menu-card-text">
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                  </div>
                   <span class="badge">近日公開</span>
                 </div>
               );
@@ -170,43 +153,13 @@ const steps = [
       </div>
     </section>
 
-    <section id="start" class="quick-start">
-      <h2>ロケーションARを始める</h2>
-      <p class="section-note">
-        緯度経度を指定するとその地点にモデルが表示されます。実機がある場所と離れた地点でも配置を確認できます。
-      </p>
-      <form id="quick-start-form" method="get">
-        <div class="field-row">
-          <label>
-            緯度
-            <input type="number" step="any" name="lat" id="lat-input" value={DEFAULT_LAT} required />
-          </label>
-          <label>
-            経度
-            <input type="number" step="any" name="lon" id="lon-input" value={DEFAULT_LON} required />
-          </label>
-          <button type="button" id="use-my-location" class="btn-plain">現在地を使う</button>
-        </div>
-        <div class="pattern-buttons">
-          {
-            patterns.map((p) => (
-              <button type="submit" formaction={p.href} class="pattern-button">
-                <span class="pattern-title">{p.title}</span>
-                <span class="pattern-desc">{p.description}</span>
-              </button>
-            ))
-          }
-        </div>
-      </form>
-    </section>
-
-    <section id="map" class="map-section">
+    <section id="map" class="map-section reveal">
       <h2>水門地点マップ</h2>
-      <p class="section-note">ピンをクリックすると上のフォームに緯度経度が入力されます。</p>
+      <p class="section-note">現地AR・平面ARの対象地点です。</p>
       <div id="locations-map"></div>
     </section>
 
-    <section id="usage" class="usage-section">
+    <section id="usage" class="usage-section reveal">
       <h2>使い方</h2>
       <ol class="steps">
         {
@@ -231,30 +184,20 @@ const steps = [
   </footer>
 
   <script>
-    import { loadLocationCatalog } from '../lib/config/locationConfig';
+    import { loadLocationCatalog, loadLocationConfig } from '../lib/config/locationConfig';
     import { withBase } from '../lib/paths';
     import { initWaterCanvas } from '../lib/water-shader';
+    import * as L from 'leaflet';
+    import 'leaflet/dist/leaflet.css';
 
     const heroCanvas = document.querySelector<HTMLCanvasElement>('.hero-canvas');
     if (heroCanvas) initWaterCanvas(heroCanvas);
 
-    const latInput = document.getElementById('lat-input') as HTMLInputElement | null;
-    const lonInput = document.getElementById('lon-input') as HTMLInputElement | null;
-
-    document.getElementById('use-my-location')?.addEventListener('click', () => {
-      if (!navigator.geolocation || !latInput || !lonInput) return;
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          latInput.value = String(pos.coords.latitude);
-          lonInput.value = String(pos.coords.longitude);
-        },
-        (err) => console.warn('現在地の取得に失敗しました', err)
-      );
-    });
-
     const DEFAULT_PIN_COLOR = '#e0341f';
+    const VERIFICATION_PIN_COLOR = '#a3471f';
+    const CURRENT_LOCATION_PIN_COLOR = '#1f7a3d';
 
-    function pinIcon(L: any, color: string) {
+    function pinIcon(color: string) {
       return L.divIcon({
         className: 'ar-map-pin',
         html: `<svg width="26" height="34" viewBox="0 0 26 34" xmlns="http://www.w3.org/2000/svg">
@@ -268,9 +211,8 @@ const steps = [
     }
 
     async function initLocationsMap() {
-      const L = (window as any).L;
       const mapEl = document.getElementById('locations-map');
-      if (!mapEl || !L) return;
+      if (!mapEl) return;
 
       const map = L.map('locations-map', { zoomControl: true });
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -282,20 +224,45 @@ const steps = [
         const catalog = await loadLocationCatalog(withBase('/config/locations/index.json'));
         const latlngs: [number, number][] = [];
         for (const loc of catalog) {
-          latlngs.push([loc.latitude, loc.longitude]);
-          const icon = loc.icon || '📍';
-          const marker = L.marker([loc.latitude, loc.longitude], { icon: pinIcon(L, loc.color || DEFAULT_PIN_COLOR) })
+          // 第二地域連携棟は検証用。後日オーナーが手動で削除予定。本番ビルドではlab-*接頭辞により自動的に除外される。
+          const isVerification = loc.id.startsWith('lab-');
+          let lat = loc.latitude;
+          let lon = loc.longitude;
+          if (isVerification) {
+            try {
+              const { config } = await loadLocationConfig(withBase(`/config/locations/${loc.id}.json`));
+              if (config.latitude === null || config.longitude === null) continue;
+              lat = config.latitude;
+              lon = config.longitude;
+            } catch {
+              continue; // 本番ビルドでは除外済みのため404になる。想定内なので静かにスキップする。
+            }
+          }
+          if (typeof lat !== 'number' || typeof lon !== 'number') continue;
+          latlngs.push([lat, lon]);
+          const icon = loc.icon || (isVerification ? '📍' : '🚪');
+          const color = isVerification ? VERIFICATION_PIN_COLOR : loc.color || DEFAULT_PIN_COLOR;
+          L.marker([lat, lon], { icon: pinIcon(color) })
             .addTo(map)
             .bindPopup(`${icon} ${loc.name}`);
-          marker.on('click', () => {
-            if (latInput) latInput.value = String(loc.latitude);
-            if (lonInput) lonInput.value = String(loc.longitude);
-          });
         }
         if (latlngs.length) {
-          map.fitBounds(latlngs, { padding: [20, 20] });
+          map.fitBounds(latlngs, { padding: [20, 20], maxZoom: 15 });
         } else {
           map.setView([39.7021, 141.1544], 14);
+        }
+
+        // 現在地は任意・非ブロッキングで追加する。許可が無い/APIが無い場合は何もしない(静かに諦める)。
+        if ('geolocation' in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              L.marker([pos.coords.latitude, pos.coords.longitude], { icon: pinIcon(CURRENT_LOCATION_PIN_COLOR) })
+                .addTo(map)
+                .bindPopup('📍 現在地');
+            },
+            () => {},
+            { maximumAge: 60_000, timeout: 8000 }
+          );
         }
       } catch (e) {
         console.warn('ロケーション一覧の読み込みに失敗しました', e);
@@ -303,11 +270,7 @@ const steps = [
       }
     }
 
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-    script.crossOrigin = '';
-    script.onload = () => initLocationsMap();
-    document.head.appendChild(script);
+    initLocationsMap();
 
     // ヘッダーの背景をスクロール量に応じて濃くする(視認性のための機能的な変化)。
     const header = document.querySelector('.site-header');
@@ -319,16 +282,26 @@ const steps = [
       { passive: true }
     );
 
-    // ナビの現在地ハイライト: 表示中のセクションに対応するリンクへ .active を付ける。
+    // ナビの現在地ハイライト: 表示中のセクションに対応するリンクへ .active を付け、
+    // 下線(.nav-indicator)をそのリンクの位置・幅へスライドさせる。
     const navLinks = new Map<string, HTMLAnchorElement>();
     document.querySelectorAll<HTMLAnchorElement>('.site-nav a[href^="#"]').forEach((a) => {
       navLinks.set(a.getAttribute('href')!.slice(1), a);
     });
+    const navIndicator = document.querySelector<HTMLElement>('.nav-indicator');
+    function moveNavIndicator(link: HTMLAnchorElement): void {
+      if (!navIndicator) return;
+      navIndicator.style.width = `${link.offsetWidth}px`;
+      navIndicator.style.transform = `translateX(${link.offsetLeft}px)`;
+      navIndicator.classList.add('visible');
+    }
     const sectionObserver = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           const link = navLinks.get(entry.target.id);
-          if (link) link.classList.toggle('active', entry.isIntersecting);
+          if (!link) continue;
+          link.classList.toggle('active', entry.isIntersecting);
+          if (entry.isIntersecting) moveNavIndicator(link);
         }
       },
       { rootMargin: '-30% 0px -60% 0px' }
@@ -356,6 +329,23 @@ const steps = [
       menuFlow.classList.add('pre-reveal');
       flowObserver.observe(menuFlow);
     }
+
+    // 地図・使い方セクションも、初回スクロールで同様にフェードイン。
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            revealObserver.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.12 }
+    );
+    document.querySelectorAll('.reveal').forEach((el) => {
+      el.classList.add('pre-reveal');
+      revealObserver.observe(el);
+    });
 
     // 体験メニューのオート横流れ。ネイティブの scrollLeft を直接動かすため、ユーザーの
     // ドラッグ/スクロール操作(同じ scrollLeft を操作する)といつでも共存できる。
@@ -473,14 +463,25 @@ const steps = [
     }
     .menu-flow,
     .menu-flow.pre-reveal,
+    .reveal,
+    .reveal.pre-reveal,
     .menu-arrow,
     .btn-primary,
     .site-header,
-    .hero-icon {
+    .hero-icon,
+    .menu-card.has-image,
+    .menu-card.has-image::before {
       transition: none !important;
       animation: none !important;
       opacity: 1 !important;
       transform: none !important;
+    }
+    .nav-indicator {
+      transition: none !important;
+    }
+    .menu-flow {
+      mask-image: none !important;
+      -webkit-mask-image: none !important;
     }
     .menu-card[aria-hidden='true'] {
       display: none;
@@ -525,6 +526,7 @@ const steps = [
     color: var(--text);
   }
   .site-nav {
+    position: relative;
     display: flex;
     gap: 18px;
   }
@@ -540,6 +542,20 @@ const steps = [
   .site-nav a.active {
     color: var(--accent);
     font-weight: 700;
+  }
+  .nav-indicator {
+    position: absolute;
+    left: 0;
+    bottom: -6px;
+    width: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--accent);
+    opacity: 0;
+    transition: transform 0.35s var(--ease-soft), width 0.35s var(--ease-soft), opacity 0.25s var(--ease-soft);
+  }
+  .nav-indicator.visible {
+    opacity: 1;
   }
 
   .wrap {
@@ -576,10 +592,10 @@ const steps = [
   @keyframes float {
     0%,
     100% {
-      transform: translateY(0);
+      transform: translateY(0) rotate(0deg);
     }
     50% {
-      transform: translateY(-8px);
+      transform: translateY(-8px) rotate(-4deg);
     }
   }
   .wave-divider {
@@ -666,18 +682,26 @@ const steps = [
     cursor: grab;
     scrollbar-width: none;
     transition: opacity 0.6s var(--ease-soft), transform 0.6s var(--ease-soft);
+    /* マーケーの左右端をなだらかにフェードさせ、カードが途切れる印象を和らげる。 */
+    mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 32px), transparent);
   }
   .menu-flow::-webkit-scrollbar {
     display: none;
   }
   /* pre-reveal はJSが付与したときだけ効く。JS未実行時は常に表示された状態が既定。 */
-  .menu-flow.pre-reveal {
+  .menu-flow.pre-reveal,
+  .reveal.pre-reveal {
     opacity: 0;
     transform: translateY(14px);
   }
-  .menu-flow.pre-reveal.visible {
+  .menu-flow.pre-reveal.visible,
+  .reveal.pre-reveal.visible {
     opacity: 1;
     transform: none;
+  }
+  .reveal {
+    transition: opacity 0.6s var(--ease-soft), transform 0.6s var(--ease-soft);
   }
   .menu-track {
     display: flex;
@@ -689,14 +713,18 @@ const steps = [
     flex-direction: column;
     gap: 6px;
     flex: 0 0 240px;
+    min-height: 220px;
     padding: 18px;
     border-radius: 18px;
     border: none;
     background: var(--surface);
+    background-size: cover;
+    background-position: center;
     box-shadow: 0 6px 18px -10px rgba(22, 50, 74, 0.16);
     color: inherit;
     text-decoration: none;
     position: relative;
+    overflow: hidden;
     transition: box-shadow 0.3s var(--ease-soft), transform 0.3s var(--ease-soft);
   }
   .menu-card.soon {
@@ -709,10 +737,45 @@ const steps = [
   .menu-icon {
     font-size: 26px;
   }
+  .menu-card.has-image {
+    color: #fff;
+    background-image: none;
+  }
+  .menu-card.has-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: var(--card-image);
+    background-size: cover;
+    background-position: center;
+    transform: scale(1);
+    transition: transform 0.5s var(--ease-soft);
+  }
+  a.menu-card.has-image:hover::before {
+    transform: scale(1.07);
+  }
+  .menu-card.has-image::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10, 20, 30, 0) 38%, rgba(8, 16, 26, 0.88) 100%);
+    pointer-events: none;
+  }
+  .menu-card-text {
+    position: relative;
+    z-index: 1;
+  }
+  .menu-card.has-image .menu-card-text {
+    margin-top: auto;
+  }
   .menu-card h3 {
     margin: 0;
     font-size: 15px;
     color: var(--text);
+  }
+  .menu-card.has-image h3 {
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
   }
   .menu-card p {
     margin: 0;
@@ -720,14 +783,23 @@ const steps = [
     color: var(--text-soft);
     line-height: 1.5;
   }
+  .menu-card.has-image p {
+    color: rgba(255, 255, 255, 0.88);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  }
   .menu-arrow {
     position: absolute;
+    z-index: 1;
     right: 16px;
     bottom: 14px;
     color: var(--accent);
     opacity: 0.6;
     font-size: 14px;
     transition: opacity 0.25s var(--ease-soft), transform 0.25s var(--ease-soft);
+  }
+  .menu-card.has-image .menu-arrow {
+    color: #fff;
+    opacity: 0.85;
   }
   a.menu-card:hover .menu-arrow {
     opacity: 1;
@@ -742,85 +814,6 @@ const steps = [
     color: color-mix(in srgb, var(--accent2) 70%, var(--text));
     font-size: 11px;
     font-weight: 700;
-  }
-
-  .field-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: end;
-    gap: 12px;
-    margin-bottom: 18px;
-  }
-  .field-row label {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: 13px;
-    color: var(--text-soft);
-  }
-  .field-row input {
-    padding: 9px 12px;
-    border-radius: 12px;
-    border: 1px solid var(--border-soft);
-    background: var(--surface);
-    color: var(--text);
-    font-size: 14px;
-    width: 14em;
-    transition: border-color 0.25s var(--ease-soft);
-  }
-  .field-row input:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
-  .btn-plain {
-    padding: 9px 16px;
-    border-radius: 999px;
-    border: 1px solid var(--border-soft);
-    background: var(--surface);
-    color: var(--text);
-    font-size: 13px;
-    cursor: pointer;
-    transition: border-color 0.25s var(--ease-soft), background-color 0.25s var(--ease-soft);
-  }
-  .btn-plain:hover {
-    border-color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 8%, var(--surface));
-  }
-
-  .pattern-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 14px;
-  }
-  .pattern-button {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-    padding: 18px;
-    border-radius: 18px;
-    border: none;
-    background: var(--surface);
-    box-shadow: 0 6px 18px -10px rgba(22, 50, 74, 0.16);
-    color: inherit;
-    text-align: left;
-    cursor: pointer;
-    font: inherit;
-    transition: box-shadow 0.3s var(--ease-soft), transform 0.3s var(--ease-soft);
-  }
-  .pattern-button:hover {
-    box-shadow: 0 14px 28px -12px rgba(22, 50, 74, 0.22);
-    transform: translateY(-3px);
-  }
-  .pattern-title {
-    font-weight: 700;
-    font-size: 15px;
-    color: var(--text);
-  }
-  .pattern-desc {
-    font-size: 13px;
-    color: var(--text-soft);
-    line-height: 1.5;
   }
 
   #locations-map {

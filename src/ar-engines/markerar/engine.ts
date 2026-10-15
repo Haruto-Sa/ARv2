@@ -2,16 +2,13 @@
 //
 // A-Frame/AR.js の <script> 読み込みと <a-scene> の構築のみを扱う。UI(DOM
 // テキスト・ボタン)は一切扱わない。Pattern B(src/ar-engines/arjs/engine.ts)と
-// 同じ CDN 方式・同じバージョンで A-Frame/AR.js を読み込むが、GPS 用の
+// 同じ vendor 配置・同じバージョンで A-Frame/AR.js を読み込むが、GPS 用の
 // `-location-only` スクリプトは不要なため読み込まない。controller.ts からのみ呼ばれる。
 
 import * as THREE from 'three';
 import { normalizeIntoOrigin } from '../../lib/model/normalizeModel';
 import { withBase } from '../../lib/paths';
 import type { LocationConfig } from '../../lib/config/locationConfig';
-
-const AFRAME_VERSION = '1.6.0';
-const ARJS_VERSION = '3.4.7';
 
 // マーカーAR(手のひらサイズの卓上表示)向けの目標サイズ。config の
 // targetHeightMeters(GPS実寸、例: 5m)をそのまま使うと、マーカー1枚分の
@@ -36,9 +33,11 @@ function loadScript(src: string): Promise<void> {
   });
 }
 
+// CDN(aframe.io / raw.githack)からではなく、同梱したビルド済みファイルを読む
+// (docs/ar-spec.md §8)。理由は src/ar-engines/arjs/engine.ts の同名関数のコメントを参照。
 export async function loadAframeAndArjs(): Promise<void> {
-  await loadScript(`https://aframe.io/releases/${AFRAME_VERSION}/aframe.min.js`);
-  await loadScript(`https://raw.githack.com/AR-js-org/AR.js/${ARJS_VERSION}/aframe/build/aframe-ar.js`);
+  await loadScript(withBase('/vendor/aframe/aframe-1.6.0.min.js'));
+  await loadScript(withBase('/vendor/arjs/aframe-ar-3.4.7.js'));
 }
 
 export function mountScene(config: LocationConfig): void {

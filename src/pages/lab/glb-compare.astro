@@ -1,0 +1,215 @@
+---
+// GLB圧縮比較ページ(docs/ar-spec.md §11 P0・§7)。
+// 元ファイル/Draco/Meshopt を切り替えて読み込み、読み込み時間・三角形数・
+// アニメクリップの有無を表示する。iPhoneでの読み込み時間の実測はユーザー自身が
+// このページで行う(このページ自体は「測るための道具」で、数値を決め打ちしない)。
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="GLB圧縮比較(lab)" noindex>
+  <div class="wrap">
+    <p class="back"><a href="/lab/">← lab トップへ</a></p>
+    <h1>GLB圧縮比較</h1>
+    <p class="lead">
+      水門モデル(<code>suimon-kousin.glb</code>)の無圧縮・Draco圧縮・Meshopt圧縮の3種類を切り替えて読み込みます。
+      iPhoneでは下のボタンを押してから「読み込み時間」が出るまでの実測値を記録してください(Wi-Fi/回線・端末ごとに記録を分けると比較しやすいです)。
+    </p>
+
+    <div id="variant-buttons" class="variant-buttons"></div>
+
+    <div class="canvas-wrap">
+      <canvas id="viewer-canvas"></canvas>
+      <div id="loading-overlay" class="loading-overlay">読み込み中…</div>
+    </div>
+
+    <dl id="stats" class="stats">
+      <div><dt>読み込み時間</dt><dd id="stat-loadtime">—</dd></div>
+      <div><dt>三角形数</dt><dd id="stat-triangles">—</dd></div>
+      <div><dt>アニメクリップ</dt><dd id="stat-animations">—</dd></div>
+      <div><dt>ファイルサイズ</dt><dd id="stat-filesize">—</dd></div>
+    </dl>
+
+    <p class="note">
+      ドラッグはできません(自動回転のみ)。崩れ・テクスチャのにじみ・アニメのずれがないか目視で確認してください。
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  import { GlbCompareViewer, VARIANTS, type VariantId } from '../../lib/model/glbCompareViewer';
+
+  const canvas = document.getElementById('viewer-canvas') as HTMLCanvasElement;
+  const viewer = new GlbCompareViewer(canvas);
+  const loadingOverlay = document.getElementById('loading-overlay')!;
+  const buttonsEl = document.getElementById('variant-buttons')!;
+
+  const statLoadTime = document.getElementById('stat-loadtime')!;
+  const statTriangles = document.getElementById('stat-triangles')!;
+  const statAnimations = document.getElementById('stat-animations')!;
+  const statFilesize = document.getElementById('stat-filesize')!;
+
+  const fileSizeCache = new Map<string, number>();
+  async function getFileSize(path: string): Promise<number | null> {
+    if (fileSizeCache.has(path)) return fileSizeCache.get(path)!;
+    try {
+      const res = await fetch(path, { method: 'HEAD' });
+      const len = res.headers.get('content-length');
+      if (len) {
+        const n = parseInt(len, 10);
+        fileSizeCache.set(path, n);
+        return n;
+      }
+    } catch {
+      /* ignore */
+    }
+    return null;
+  }
+
+  function formatBytes(n: number): string {
+    return `${(n / 1024 / 1024).toFixed(2)} MiB`;
+  }
+
+  let activeId: VariantId = 'original';
+
+  function renderButtons() {
+    buttonsEl.innerHTML = '';
+    for (const v of VARIANTS) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = v.label;
+      btn.className = 'variant-button' + (v.id === activeId ? ' active' : '');
+      btn.addEventListener('click', () => loadVariant(v.id));
+      buttonsEl.appendChild(btn);
+    }
+  }
+
+  async function loadVariant(id: VariantId) {
+    const variant = VARIANTS.find((v) => v.id === id);
+    if (!variant) return;
+    activeId = id;
+    renderButtons();
+    loadingOverlay.hidden = false;
+    statLoadTime.textContent = '計測中…';
+
+    try {
+      const [result, sizeBytes] = await Promise.all([viewer.load(variant), getFileSize(variant.path)]);
+      // 読み込み中に別の変種がクリックされていたら、後から解決したこの結果でDOMを
+      // 上書きしない(クリック順と解決順がずれるレースコンディションの対策)。
+      if (activeId !== id) return;
+      statLoadTime.textContent = `${result.loadMs.toFixed(0)} ms`;
+      statTriangles.textContent = result.triangleCount.toLocaleString('ja-JP');
+      statAnimations.textContent =
+        result.animationNames.length > 0 ? `${result.animationNames.length}個 (${result.animationNames.join(', ')})` : 'なし';
+      statFilesize.textContent = sizeBytes != null ? formatBytes(sizeBytes) : '不明';
+    } catch (e) {
+      if (activeId !== id) return;
+      statLoadTime.textContent = '読み込みエラー';
+      console.error('[glb-compare]', e);
+    } finally {
+      if (activeId !== id) return;
+      loadingOverlay.hidden = true;
+    }
+  }
+
+  renderButtons();
+  loadVariant('original');
+</script>
+
+<style>
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 16px 64px;
+  }
+  .back {
+    margin: 0 0 12px;
+    font-size: 13px;
+  }
+  .back a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 12px;
+  }
+  .lead {
+    opacity: 0.85;
+    line-height: 1.7;
+    font-size: 14px;
+    margin: 0 0 20px;
+  }
+  .variant-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .variant-button {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border-soft);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .variant-button.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 700;
+  }
+  .canvas-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-soft);
+  }
+  #viewer-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .loading-overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(10, 16, 22, 0.55);
+    color: #fff;
+    font-size: 14px;
+  }
+  .loading-overlay[hidden] {
+    display: none;
+  }
+  .stats {
+    margin: 20px 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+  }
+  .stats > div {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-soft);
+    background: var(--surface);
+  }
+  .stats dt {
+    font-size: 11px;
+    opacity: 0.65;
+    margin: 0 0 2px;
+  }
+  .stats dd {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .note {
+    margin-top: 16px;
+    font-size: 12px;
+    opacity: 0.65;
+  }
+</style>

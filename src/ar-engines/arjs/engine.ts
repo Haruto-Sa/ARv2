@@ -10,9 +10,6 @@ import { normalizeIntoOrigin } from '../../lib/model/normalizeModel';
 import { withBase } from '../../lib/paths';
 import type { LocationConfig } from '../../lib/config/locationConfig';
 
-const AFRAME_VERSION = '1.6.0';
-const ARJS_VERSION = '3.4.7';
-
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const existing = document.querySelector(`script[src="${src}"]`);
@@ -28,10 +25,14 @@ function loadScript(src: string): Promise<void> {
   });
 }
 
+// CDN(aframe.io / raw.githack)からではなく、同梱したビルド済みファイルを読む
+// (docs/ar-spec.md §8)。npm版のaframe/@ar-js-org/ar.jsはthree.jsの別バージョンを
+// 道連れにするため、この2ライブラリはビルド済みUMDファイルを vendor 配置している
+// (public/vendor/aframe, public/vendor/arjs を参照)。
 export async function loadAframeAndArjs(): Promise<void> {
-  await loadScript(`https://aframe.io/releases/${AFRAME_VERSION}/aframe.min.js`);
-  await loadScript(`https://raw.githack.com/AR-js-org/AR.js/${ARJS_VERSION}/three.js/build/ar-threex-location-only.js`);
-  await loadScript(`https://raw.githack.com/AR-js-org/AR.js/${ARJS_VERSION}/aframe/build/aframe-ar.js`);
+  await loadScript(withBase('/vendor/aframe/aframe-1.6.0.min.js'));
+  await loadScript(withBase('/vendor/arjs/ar-threex-location-only-3.4.7.js'));
+  await loadScript(withBase('/vendor/arjs/aframe-ar-3.4.7.js'));
 }
 
 export function mountScene(config: LocationConfig): void {

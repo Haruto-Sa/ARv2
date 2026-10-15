@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>画面から学ぶ 水門ARの技術解説</title>
+<style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f4f7fa;color:#20334a;font:17px/1.85 system-ui,sans-serif}a{color:#086baf}header{padding:36px max(24px,calc((100vw - 1120px)/2));background:#fff;border-bottom:1px solid #dae4ec}header p{margin:0;color:#52677a}.layout{display:grid;grid-template-columns:220px minmax(0,800px);gap:40px;max-width:1120px;margin:auto;padding:32px 24px}nav{position:sticky;top:24px;align-self:start}nav a{display:block;padding:12px 16px;margin-bottom:6px;border-radius:10px;text-decoration:none;background:white}nav a[aria-current=page]{background:#096d9e;color:white}article{background:white;border:1px solid #dce6ed;border-radius:18px;padding:32px;min-width:0}h1{font-size:clamp(25px,4vw,36px);line-height:1.5;margin:8px 0 16px}h2{font-size:22px;margin:32px 0 10px}p{margin:12px 0}.eyebrow{font-size:14px;color:#087298;font-weight:700}figure{margin:24px 0}img{display:block;width:100%;height:auto;border:1px solid #dce6ed;border-radius:10px}.phone img{max-width:280px;margin:auto}figcaption{font-size:14px;color:#5c6f80;margin-top:10px}.note{padding:16px;border-left:4px solid #0b85af;background:#eef7fb}details{margin-top:24px;padding:16px;background:#f3f6f9;border-radius:10px}summary{cursor:pointer;font-weight:700}footer{margin:30px 0;font-size:14px}.page[hidden]{display:none}@media(max-width:760px){header{padding:24px}.layout{display:block;padding:16px}nav{position:static;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}nav a{font-size:14px;padding:10px;margin:0}article{padding:22px}body{font-size:16px}}@media print{nav{display:none}.layout{display:block}.page[hidden]{display:block!important}article{break-before:page;border:0}header{padding:0}}</style>
+</head>
+<body>
+<header>
+<p>水門AR · 初学者向け解説</p>
+<strong>画面ごとに、使い方としくみを読む</strong>
+</header>
+<div class="layout">
+<nav aria-label="解説するページ">
+<a href="#intro">1. はじめに</a>
+<a href="#home">2. トップページ</a>
+<a href="#ar">3. 平面AR</a>
+<a href="#viewer">4. 3Dビューア</a>
+<a href="#unity">5. 3D世界・WebGL</a>
+<a href="#code">6. 作る人の地図</a>
+</nav>
+<main>
+<article class="page" id="intro">
+<span class="eyebrow">1 / 6 · はじめに</span>
+<h1>画面を見ながら、水門ARのしくみを学ぶ</h1>
+<p>このアプリには、現実の机に水門を置く体験、水門だけを回して見る画面、川のシミュレーションがあります。まず使い方を理解し、そのあと裏側のしくみを読んでください。</p>
+<h2>画面でできること</h2>
+<p>ARは、カメラで見ている現実に3Dの物体を重ねる技術です。3Dビューアは、画面の中だけで立体を見るものです。WebGLは、ブラウザで立体を描くためのしくみです。</p>
+<h2>使う順番</h2>
+<p>トップページで体験を選びます。スマホで机に置きたいときは平面AR、扉の動きを確認したいときは3Dビューア、川の変化を試したいときは3D世界を選びます。</p>
+<h2>裏で何が起きるか</h2>
+<p>Astroがページを用意し、JavaScriptが操作に反応します。水門はThree.js、川のシミュレーションはUnityで描きます。同じ「3D」でも担当するプログラムが違います。</p>
+<footer>
+<a href="#home">次へ：トップページ →</a>
+</footer>
+</article>
+<article class="page" id="home">
+<span class="eyebrow">2 / 6 · トップページ</span>
+<h1>体験の入口を選ぶ</h1>
+<p>使える体験を固定カードで並べました。左上のホームから、いつでもこのページへ戻れます。</p>
+<figure class="">
+<img src="screenshots/landing-desktop.png" alt="トップページの実際の画面">
+<figcaption>アプリをブラウザで動かして撮影した画面です。</figcaption>
+</figure>
+<h2>画面でできること</h2>
+<p>平面AR・3Dビューア・閉伊川3D世界の3つを選べます。下には使い方と水門の場所を確認する地図があります。準備中の機能は別の欄にまとめています。</p>
+<h2>使う順番</h2>
+<p>カードの説明を読み、青いボタンを押します。使い方が分からないときは、上の「使い方」から最初の手順を確認します。</p>
+<h2>裏で何が起きるか</h2>
+<p>Astroが文章とリンクをHTMLにします。背景の水はWebGLで描き、地図はLeafletという地図用ライブラリで表示します。体験を選ぶと、別のページへ移動します。</p>
+<footer>
+<a href="#ar">次へ：平面AR →</a>
+</footer>
+</article>
+<article class="page" id="ar">
+<span class="eyebrow">3 / 6 · 平面AR</span>
+<h1>机や床に、小さな水門を置く</h1>
+<p>スマホで使う体験です。最初に3つの手順を読み、自分でカメラ起動ボタンを押します。</p>
+<figure class="phone">
+<img src="screenshots/plane-start-mobile.png" alt="平面ARの実際の画面">
+<figcaption>スマホサイズのブラウザで撮影した起動画面です。実機のカメラ映像ではありません。</figcaption>
+</figure>
+<h2>画面でできること</h2>
+<p>対応スマホで、現実の平面に水門を表示できます。右上の「使い方」で手順を読み直せます。PCや非対応端末では3Dビューアが開きます。</p>
+<h2>使う順番</h2>
+<p>明るく模様のある机や床を選びます。カメラを起動して許可し、端末をゆっくり動かします。WebXRでは床に円が出たら「ここに配置」。iPhoneではシステム画面のARタブで平面に置きます。</p>
+<h2>裏で何が起きるか</h2>
+<p>WebXR対応端末では、ブラウザがカメラと端末の位置を扱います。Hit Testは「画面の中心から見た先で、平面に当たる場所」を調べる処理です。そこにThree.jsの水門を置きます。iPhoneでは水門をUSDZという形式に変換し、AppleのQuick Lookへ渡します。</p>
+<p class="note">iPhoneのQuick Lookは静止モデルの表示です。扉のアニメーションを見るには3Dビューアを使います。Quick Look内のボタンはOSが用意するため、閉じるボタンでブラウザへ戻ってから左上のホームを押してください。</p>
+<details>
+<summary>技術用語をもう少し読む</summary>
+<p>平面は机や床のような平らな面。Hit Testは平面の位置を探す処理。Anchorは検出した位置とのつながりを保つしくみです（利用できる端末で使用）。USDZはAppleのAR表示へ渡すファイル形式です。</p>
+</details>
+<footer>
+<a href="#viewer">次へ：3Dビューア →</a>
+</footer>
+</article>
+<article class="page" id="viewer">
+<span class="eyebrow">4 / 6 · 3Dビューア</span>
+<h1>水門の形と扉の動きを見る</h1>
+<p>カメラを使わず、画面の中で水門を観察できます。</p>
+<figure class="">
+<img src="screenshots/viewer-desktop.png" alt="3Dビューアの実際の画面">
+<figcaption>アプリをブラウザで動かして撮影した画面です。</figcaption>
+</figure>
+<h2>画面でできること</h2>
+<p>水門を回転・拡大して観察し、扉の動きを再生・一時停止できます。「大きさ・向きを調整」を開くと、幅と向きを変更できます。</p>
+<h2>使う順番</h2>
+<p>水門をドラッグして回します。スマホでは2本指、PCではホイールで拡大します。画面下のボタンで扉の動きを止め、構造を確認します。</p>
+<h2>裏で何が起きるか</h2>
+<p>Three.jsがGLB形式の水門モデルを読み込みます。GLBは形・色・動きをまとめた3Dデータです。OrbitControlsがドラッグを視点の変更に変え、AnimationMixerがモデルの扉の動きを再生します。平面ARと同じモデルを使います。</p>
+<footer>
+<a href="#unity">次へ：3D世界・WebGL →</a>
+</footer>
+</article>
+<article class="page" id="unity">
+<span class="eyebrow">5 / 6 · 3D世界・WebGL</span>
+<h1>川の流れと捕捉工を試す</h1>
+<p>初回は3つの手順を確認してから、シミュレーションを読み込みます。</p>
+<figure class="">
+<img src="screenshots/unity-desktop.png" alt="3D世界・WebGLの実際の画面">
+<figcaption>アプリをブラウザで動かして撮影した画面です。</figcaption>
+</figure>
+<h2>画面でできること</h2>
+<p>捕捉工（流木を受け止める設備）を配置し、シミュレーションを開始できます。視点を切り替え、再生速度を変え、終了・リセットして別の配置を試せます。</p>
+<h2>使う順番</h2>
+<p>「捕捉工の配置・再生速度を調整」を開き、「初期位置に置く」またはドラッグで配置します。「シミュレーションを開始」で流れを観察し、「終了・リセット」でやり直します。</p>
+<h2>裏で何が起きるか</h2>
+<p>Unityで作った3D世界をWeb向けに書き出しています。JavaScriptのローダーがプログラムとデータを読み込み、WebAssemblyが計算し、WebGLが描画します。ページのボタンはSendMessageを使い、Unity内のGameControllerへ「開始」「リセット」などの指示を送ります。</p>
+<footer>
+<a href="#code">次へ：作る人の地図 →</a>
+</footer>
+</article>
+<article class="page" id="code">
+<span class="eyebrow">6 / 6 · 作る人の地図</span>
+<h1>どこを読めば、どの処理が分かるか</h1>
+<p>実際にコードを読むときの入口です。全部を一度に理解する必要はありません。</p>
+<h2>画面でできること</h2>
+<p>画面のHTML、操作のJavaScript、3Dモデルを分けて読むと理解しやすくなります。</p>
+<h2>使う順番</h2>
+<p>まずページの見た目を読み、次にボタンのイベントを追い、最後に描画やデータ読み込みを確認します。</p>
+<h2>裏で何が起きるか</h2>
+<p>トップ: src/pages/index.astro。水門UI: src/ar-engines/place/PlaceExperience.astro。水門の処理: src/ar-engines/place/experience.ts。Unityの入口: public/unity/index.html。共通ガイド: public/shared/onboarding.js。共通UI: public/shared/experience.css。</p>
+<h2>データが画面に届くまで</h2>
+<p>水門の場合は、設定JSONでモデルの場所を選び、GLBを読み込み、Three.jsが画面へ描きます。ドラッグやボタンはJavaScriptが受け取り、視点やアニメーションを更新します。</p>
+<p>川の場合は、HTMLのローダーがUnityのデータとWebAssemblyを読み込みます。ページからUnityへはSendMessage、Unityからページへはunity-stateという通知で状態を伝えます。画面上の水位や、操作ボタンの有効・無効がこの通知で変わります。</p>
+<details><summary>他の技術と、開発時のページ</summary><p>TypeScriptはJavaScriptに型のチェックを加える言語です。Astroはページを作る枠組み、Svelteはリポジトリ内の一部の操作UIを作る枠組みです。Leafletは地図を表示します。</p><p>/lab/ はAR方式を比較する開発用ページです。位置情報・端末の向きを使う方式やマーカー方式を試すもので、机や床を探す平面ARとは別です。本番ビルドでは既定で公開しません。</p><p>カメラやARにはHTTPSでの配信が必要です。アプリの案内とは別に、許可の確認はOSやブラウザが出します。iPhoneのQuick LookのUIもOSが担当します。</p></details>
+<footer>
+<a href="#intro">はじめに戻る →</a>
+</footer>
+</article>
+<footer>関連ドキュメント：<a href="https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API">WebXR</a> / <a href="https://developer.apple.com/augmented-reality/quick-look/">Apple Quick Look</a> / <a href="https://threejs.org/docs/">Three.js</a> / <a href="https://docs.unity3d.com/Manual/webgl-interactingwithbrowserscripting.html">UnityとJavaScript</a>
+<p>オフラインで読む場合は、このHTMLとscreenshotsフォルダを一緒に保存してください。</p>
+</footer>
+</main>
+</div>
+<script>const pages=[...document.querySelectorAll('.page')];function show(){const id=location.hash.slice(1);const active=pages.find(p=>p.id===id)||pages[0];pages.forEach(p=>p.hidden=p!==active);document.querySelectorAll('nav a').forEach(a=>{if(a.hash==='#'+active.id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')})}addEventListener('hashchange',()=>{show();window.scrollTo(0,0)});show();</script>
+</body>
+</html>

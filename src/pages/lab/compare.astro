@@ -10,14 +10,14 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 const patterns = [
-  { id: 'locar', title: 'Pattern A: LocAR', href: '/ar/locar', debugNote: 'デバッグ表示は locations/<id>.json の debug:true で有効化' },
+  { id: 'locar', title: 'Pattern A: LocAR', href: '/lab/ar/locar', debugNote: 'デバッグ表示は locations/<id>.json の debug:true で有効化' },
   {
     id: 'deviceorientation',
     title: 'Pattern C: DeviceOrientation',
-    href: '/ar/deviceorientation',
+    href: '/lab/ar/deviceorientation',
     debugNote: 'URLに ?debug=1 を付けるとオーバーレイ表示',
   },
-  { id: 'arjs', title: 'Pattern B: AR.js', href: '/ar/arjs', debugNote: 'デバッグオーバーレイ未実装' },
+  { id: 'arjs', title: 'Pattern B: AR.js', href: '/lab/ar/arjs', debugNote: 'デバッグオーバーレイ未実装' },
 ];
 ---
 
@@ -41,7 +41,7 @@ const patterns = [
       }
     </ul>
 
-    <p class="note"><a href="/">← ホームへ戻る</a></p>
+    <p class="note"><a href="/lab/">← lab トップへ</a> ・ <a href="/">ホームへ戻る</a></p>
   </div>
 </BaseLayout>
 

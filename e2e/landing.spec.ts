@@ -67,11 +67,26 @@ test.describe('landing page', () => {
     expect(await scrollLeft()).toBe(start);
   });
 
-  test('quick-start pattern buttons point at the three location-AR engines', async ({ page }) => {
+  test('menu links to active experiences; onsite AR and 360 video remain unavailable', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('button.pattern-button[formaction="/ar/locar"]')).toBeVisible();
-    await expect(page.locator('button.pattern-button[formaction="/ar/arjs"]')).toBeVisible();
-    await expect(page.locator('button.pattern-button[formaction="/ar/deviceorientation"]')).toBeVisible();
+    // メニューはマーキー(横流れ)用に2セット連続で描画される。後半セットは
+    // aria-hidden="true" でスクリーンリーダー・ロケータから隠された複製。
+    const visibleCards = page.locator('.menu-card:not([aria-hidden="true"])');
+
+    await expect(visibleCards.filter({ hasText: '小本川流木捕捉工シミュレーション' })).toHaveAttribute('href', '/unity/');
+    await expect(visibleCards.filter({ hasText: '平面AR' })).toHaveAttribute('href', '/ar/place');
+    await expect(visibleCards.filter({ hasText: '点群3D空間(Matterport)' })).toHaveAttribute('href', '/matterport/');
+    for (const title of ['現地AR', '360度動画']) {
+      const card = visibleCards.filter({ hasText: title });
+      await expect(card).toHaveClass(/soon/);
+      await expect(card).not.toHaveAttribute('href', /.+/);
+    }
+  });
+
+  test('production build has no /lab or dev-only links on the top page', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('a[href*="/lab/"]')).toHaveCount(0);
+    await expect(page.getByText('開発者実験')).toHaveCount(0);
   });
 
   test('dragging the menu and releasing over a card does not navigate', async ({ page }) => {
@@ -82,7 +97,7 @@ test.describe('landing page', () => {
     // 「要素位置が安定するまで待つ」判定が、動き続ける要素では終わらずタイムアウトしうる)。
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
-    const card = visibleCard(page, '閉伊川3D世界');
+    const card = visibleCard(page, '水門3Dシミュレーション');
     await card.scrollIntoViewIfNeeded();
     const box = await card.boundingBox();
     if (!box) throw new Error('menu card has no bounding box');
@@ -99,11 +114,10 @@ test.describe('landing page', () => {
 // 体験メニューの「active」なカードそれぞれについて、期待する遷移先。
 // ページ内アンカー(#start)も、ページ遷移(/ar/marker等)も両方含む。
 const MENU_CARDS: { title: string; href: string; expectedUrl: RegExp }[] = [
-  { title: 'ロケーションAR', href: '#start', expectedUrl: /#start$/ },
-  { title: '手のひらAR', href: '/ar/marker', expectedUrl: /\/ar\/marker$/ },
-  { title: '閉伊川3D世界', href: '/heigawa/', expectedUrl: /\/heigawa\/$/ },
-  { title: '流木コンテンツ', href: '/unity/', expectedUrl: /\/unity\/$/ },
-  { title: '開発者実験', href: '/lab/compare', expectedUrl: /\/lab\/compare$/ },
+  { title: '平面AR', href: '/ar/place', expectedUrl: /\/ar\/place$/ },
+  { title: '水門3Dシミュレーション', href: '/heigawa/', expectedUrl: /\/heigawa\/$/ },
+  { title: '小本川流木捕捉工シミュレーション', href: '/unity/', expectedUrl: /\/unity\/$/ },
+  { title: '点群3D空間(Matterport)', href: '/matterport/', expectedUrl: /\/matterport\/$/ },
 ];
 
 function visibleCard(page: import('@playwright/test').Page, title: string) {
