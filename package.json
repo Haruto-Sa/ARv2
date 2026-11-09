@@ -21,7 +21,7 @@
   "dependencies": {
     "@astrojs/svelte": "^9.0.1",
     "leaflet": "^1.9.4",
-    "locar": "^0.1.4",
+    "locar": "^0.2.12",
     "svelte": "^5.57.0",
     "three": "^0.175.0"
   },
