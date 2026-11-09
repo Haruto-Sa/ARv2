@@ -32,7 +32,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
+
+      - name: Rebuild allowed native dependency
+        run: npm rebuild esbuild
 
       - name: Build
         run: npm run build
